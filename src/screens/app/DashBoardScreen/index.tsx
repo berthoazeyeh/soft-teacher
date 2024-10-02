@@ -1,0 +1,270 @@
+import { useEffect, useState, } from 'react';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { clearUserStored, useCurrentUser, useTheme } from 'store';
+import dynamicStyles from './style';
+import { Header } from './components';
+import { I18n } from 'i18n';
+import { useDispatch } from 'react-redux';
+import { Picker } from '@react-native-picker/picker';
+import { FlatList } from 'react-native';
+import { Divider } from 'react-native-paper';
+import { showCustomMessage, Theme } from 'utils';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { Eleve } from 'models';
+import { getData, LOCAL_URL } from 'apis';
+import useSWR from 'swr';
+import { useIsFocused } from '@react-navigation/native';
+import { RefreshControl } from 'react-native';
+import useSWRMutation from 'swr/mutation';
+
+
+
+
+function DashBoardScreen(props: any): React.JSX.Element {
+    const { navigation, route } = props;
+    const theme = useTheme()
+    const styles = dynamicStyles(theme)
+    const [visible, setVisible] = useState(false)
+    const dispatch = useDispatch()
+    const [page, setPage] = useState(1);
+    const itemsPerPage = 6;
+    const [selectedValue, setSelectedValue] = useState<Eleve | null>(null);
+    const [data, setData] = useState<Item[]>([]);
+    const user = useCurrentUser();
+    const [student, setStudent] = useState<any[]>([
+        { id: 1, name: "Terminal D1", cours: ["Methemetique", "Informatque"], },
+        { id: 2, name: "3 eme M2", cours: ["Informatque"], },
+    ])
+    const [refresh, setRefresh] = useState(false)
+    const isFocused = useIsFocused();
+
+    let ElementList = I18n.t("Dashboard.ElementList");
+    const { data: students, error, isLoading } = useSWR(`${LOCAL_URL}/api/parent-search/${user?.id}`,
+        getData, { refreshInterval: 1000000, refreshWhenHidden: true, },);
+    const { trigger: getParentStudent } = useSWRMutation(`${LOCAL_URL}/api/parent-search/${user?.id}`, getData)
+    useEffect(() => {
+        // HandleGetStudent()
+    }, [refresh])
+
+    const HandleGetStudent = async () => {
+        if (user?.id) {
+            const student = await getParentStudent();
+            if (student && student.data) {
+                setStudent(student.data[0].students)
+            }
+            setRefresh(false);
+        }
+    }
+    useEffect(() => {
+        if (route.params && route.params?.item) {
+            console.log("''''", route?.params?.item);
+            console.log("..>>>>>", selectedValue);
+            setSelectedValue(route.params.item)
+        }
+    }, [data, navigation])
+
+    useEffect(() => {
+        if (isFocused) {
+            ElementList = I18n.t("Dashboard.ElementList");
+            if (route.params && route.params.student && route.params.student?.id) {
+                setSelectedValue(route.params.student)
+            }
+            if (students?.success)
+                if (students && students.data) {
+                    setStudent(students.data[0].students)
+                }
+        }
+    }, [isFocused, data]);
+
+
+    const onMenuPressed = (val: boolean) => {
+        setVisible(val)
+    }
+    const onLogoutPressed = (isSetting: boolean) => {
+        setVisible(false)
+        if (isSetting) {
+            navigation.navigate("SettingsScreen")
+        } else {
+            dispatch(clearUserStored(null))
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'AuthStacks' }],
+            })
+            console.log("log out");
+        }
+    }
+    const renderHeader = () => (<>
+        <View style={styles.header}>
+            <View style={styles.profil}>
+                {isLoading &&
+                    <ActivityIndicator color={"green"} size={25} />
+                }
+                {!isLoading &&
+                    <MaterialCommunityIcons name={"school"} size={20} color={theme.primaryText} />
+                }
+            </View>
+            <Picker
+                itemStyle={{ color: theme.primaryText, ...Theme.fontStyle.montserrat.bold }}
+                selectedValue={selectedValue}
+                onValueChange={(itemValue) => setSelectedValue(itemValue)}
+                style={styles.picker}>
+                <Picker.Item
+                    style={styles.pickerItemStyle}
+                    label={"Choisir une salle de classe"}
+                    value={"studentI.id"} />
+                {student.map(studentI => <Picker.Item
+                    style={styles.pickerItemStyle}
+                    key={studentI}
+                    label={studentI.name}
+                    value={studentI} />)}
+            </Picker>
+        </View>
+        <Divider />
+    </>
+    );
+
+    interface Item {
+        id: number;
+        name: string;
+        color: string;
+        icon: string;
+        screen: string;
+        haveBadge: boolean;
+    }
+    useEffect(() => {
+        loadPage(page);
+    }, [page]);
+    const loadPage = (pageNum: number) => {
+        const startIndex = (pageNum - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        setData(data1.slice(startIndex, endIndex));
+    };
+    const data1: Item[] = [
+        { id: 1, color: "green", haveBadge: false, name: "Liste d'eleve", icon: 'account-group', screen: "StudentListScreen" }, // Profil étudiant
+        { id: 2, color: '#2C2C2C', haveBadge: true, name: "Mes cours", icon: 'school', screen: 'MyCourcesScreen' },// Cours
+        { id: 3, color: '#2C2C2C', haveBadge: true, name: "Emploi de temps", icon: 'calendar', screen: 'MyTimeTableScreen' }, // Emploi du temps
+        { id: 4, color: "green", haveBadge: true, name: "Les Devoirs", icon: 'checkbox-marked-outline', screen: 'MyAssignmentScreen' }, // Présence
+        { id: 5, color: 'green', haveBadge: true, name: "Appel et suivi", icon: 'clipboard-list', screen: 'CourcesListeScreen' }, // Inscription aux matières
+        { id: 6, color: "#2C2C2C", haveBadge: true, name: "Cahier de texte", icon: 'pencil', screen: 'NotebookScreen' }, // Devoirs
+        { id: 7, color: '#2C2C2C', haveBadge: false, name: "Saisie des notes", icon: 'book-open-variant', screen: 'GradeEntryScreen' }, // Carnet de notes
+        { id: 8, color: "green", haveBadge: true, name: "Anciens bulletins", icon: 'library', screen: 'PastReportCardsScreen' }, // Bibliothèque
+    ];
+
+    const handlePagePress = (pageNum: number) => {
+        setPage(pageNum);
+    };
+    const totalPages = Math.ceil(data1.length / itemsPerPage);
+
+
+
+
+    const renderItem = ({ item }: { item: Item }) => (
+        <TouchableOpacity
+            onPress={() => {
+                console.log(selectedValue);
+
+                if (selectedValue && selectedValue.id) {
+                    navigation.navigate('DashboadElementStacks', {
+                        screen: item.screen,
+                        params: {
+                            children: selectedValue,
+                        },
+                    });
+                } else {
+                    showCustomMessage("Information", I18n.t("Dashboard.NoChildSelectedMessage"), "warning", "bottom")
+                }
+            }}
+            style={[styles.item, { backgroundColor: item.color }]}>
+            {item.haveBadge &&
+                <View style={{ alignSelf: "flex-end", backgroundColor: theme.primaryText, height: 20, borderRadius: 5 }}>
+                    <Text style={styles.itemTextlabels}>{0}</Text>
+                </View>
+            }
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                <MaterialCommunityIcons name={item.icon} size={60} color="white" />
+                <Text style={styles.itemText}>{item.name}</Text>
+            </View>
+        </TouchableOpacity>
+    );
+
+    const renderFooter = () => {
+        return (
+            <View style={styles.paginationContainer}>
+                <TouchableOpacity
+                    onPress={() => handlePagePress(page - 1)}
+                    style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}
+                >
+                    {page > 1 && <>
+                        <MaterialCommunityIcons name={"chevron-left"} size={20} color={theme.primaryText} />
+                        <Text style={page > 1 ? styles.selectedPageText : styles.pageText}>
+                            {"Prev."}
+                        </Text>
+                    </>
+                    }
+
+                </TouchableOpacity >
+                <View style={styles.paginationContent}>
+                    {[...Array(totalPages)].map((_, index) => {
+                        const pageNum = index + 1;
+                        return (
+                            <TouchableOpacity
+                                key={pageNum}
+                                style={[
+                                    styles.pageButton,
+                                    pageNum === page ? styles.selectedPageButton : null,
+                                ]}
+                                onPress={() => handlePagePress(pageNum)}
+                            >
+                                <Text style={pageNum === page ? styles.selectedPageText : styles.pageText}>
+                                    {pageNum}
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    })}
+                </View>
+
+                <TouchableOpacity
+                    style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}
+                    onPress={() => handlePagePress(page + 1)}
+                >
+                    {page < 3 &&
+                        <>
+                            <Text style={styles.selectedPageText}>
+                                {"Next."}
+                            </Text>
+                            <MaterialCommunityIcons name={"chevron-right"} size={20} color={theme.primaryText} />
+
+                        </>
+                    }
+                </TouchableOpacity >
+            </View>
+        );
+    };
+
+    return (
+        <View style={styles.container}>
+            <Header title={"Tableau de Bord"} visible={visible} theme={theme} onLogoutPressed={onLogoutPressed} setVisible={onMenuPressed} />
+            <FlatList
+                data={data}
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.id.toString()}
+                numColumns={2}
+                ListHeaderComponent={renderHeader}
+                columnWrapperStyle={styles.column}
+                contentContainerStyle={{ justifyContent: "space-between" }}
+                ListFooterComponent={renderFooter}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refresh}
+                        onRefresh={() => {
+                            setRefresh(true)
+                        }}
+                    />} />
+        </View >
+    )
+
+}
+
+export default DashBoardScreen

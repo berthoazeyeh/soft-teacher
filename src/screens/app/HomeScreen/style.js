@@ -1,0 +1,127 @@
+import { StyleSheet } from 'react-native';
+import Theme from "theme"
+
+const dynamicStyles = (theme, isSelected) => {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            justifyContent: 'center',
+            backgroundColor: theme.primaryBackground,
+        },
+        content: {
+            flex: 1,
+            backgroundColor: theme.primaryBackground,
+        },
+        etiquettesItem: {
+            borderEndEndRadius: 20,
+            borderTopEndRadius: 20,
+            borderBottomRightRadius: 20,
+            borderBottomLeftRadius: 20,
+            backgroundColor: theme.primary,
+            width: 22,
+            height: 22,
+            position: "absolute",
+            alignContent: "center",
+            alignItems: "center"
+        },
+        itemContainer: {
+            zIndex: 1,
+            marginBottom: 5,
+            padding: 10,
+            margin: 10,
+            elevation: 1,
+            paddingHorizontal: 15,
+            backgroundColor: theme.gray3,
+            borderEndEndRadius: 10,
+            borderTopEndRadius: 10,
+            borderBottomRightRadius: 10,
+            borderBottomLeftRadius: 10,
+            borderWidth: isSelected ? 1.5 : 0,
+            borderColor: isSelected ? theme.primary : "white",
+        },
+        logo: {
+            position: "relative",
+            flex: 1,
+            width: "100%",
+            marginVertical: 5
+
+        },
+        emptyDataText: {
+            fontSize: 14,
+            paddingVertical: 3,
+            ...Theme.fontStyle.montserrat.semiBold,
+            color: theme.primaryText,
+            textAlign: "center"
+        },
+        emptyData: {
+            padding: 20,
+            alignItems: "center"
+        },
+        containerWrap: {
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            justifyContent: 'flex-start',
+            alignItems: "center"
+        },
+        item: {
+            backgroundColor: 'lightblue',
+            paddingHorizontal: 10,
+            paddingVertical: 3,
+            marginHorizontal: 5,
+            marginVertical: 3,
+            borderRadius: 25,
+        },
+        title: {
+            flex: 1,
+            fontSize: 25,
+            ...Theme.fontStyle.montserrat.bold,
+            color: "black",
+            overflow: "hidden"
+
+        },
+        name: {
+            fontSize: 16,
+            color: "black",
+
+        },
+        date: {
+            fontSize: 14,
+            color: '#666',
+        },
+        liveTrackButtom: {
+            marginTop: 7,
+            backgroundColor: theme.primary,
+            paddingHorizontal: 10,
+            paddingVertical: 5,
+            borderRadius: 25,
+            justifyContent: "center",
+            alignItems: "center",
+            marginBottom: 0
+        },
+        liveTrackButtomText: {
+            color: theme.secondaryText,
+            ...Theme.fontStyle.montserrat.semiBold,
+        },
+        TitleContainer: {
+            flex: 1,
+            marginTop: 10,
+            marginLeft: 20,
+            marginRight: 10,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            paddingBottom: 5
+        },
+        etiquettesItemText: {
+            ...Theme.fontStyle.montserrat.semiBold,
+            color: theme.secondaryText,
+        },
+        fieldText: {
+            fontSize: 16,
+            paddingVertical: 3,
+            ...Theme.fontStyle.montserrat.bold,
+            color: theme.primaryText,
+        },
+    });
+};
+
+export default dynamicStyles;
