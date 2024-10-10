@@ -1,6 +1,6 @@
 import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
-import { AddAssignmentScreen, AttendanceScreen, CourcesListeScreen, GradeEntryScreen, MyAbsencesScreen, MyAssignmentScreen, MyCourcesScreen, MyTimeTableScreen, NotebookScreen, PastReportCardsScreen, StudentDetailsScreen, StudentListScreen } from 'screens';
+import { AddAssignmentScreen, AssignmemtRenderStudentListScreen, AttendanceScreen, CourcesListeScreen, ExamsListeScreen, GradeEntryScreen, MyAbsencesScreen, MyAssignmentScreen, MyCourcesScreen, MyExamsAbsencesScreen, MyTimeTableScreen, NotebookScreen, PastReportCardsScreen, SeeAndMarkStudentAsignmemtScreen, StudentDetailsScreen, StudentListScreen } from 'screens';
 
 export type AuthStackList = {
     StudentListScreen: undefined;
@@ -13,6 +13,8 @@ export type AuthStackList = {
     AttendanceScreen: undefined;
     CourcesListeScreen: undefined;
     MyAssignmentScreen: undefined;
+    MyExamsAbsencesScreen: undefined;
+    ExamsListeScreen: undefined;
 };
 interface Item {
     name: string;
@@ -21,8 +23,7 @@ interface Item {
 }
 
 const elements: Item[] = [
-    // { name: "StudentListScreen", screen: StudentListScreen, haveHeader: false },
-    { name: "MyTimeTableScreen", screen: MyTimeTableScreen, haveHeader: true },
+    { name: "MyTimeTableScreen", screen: MyTimeTableScreen, haveHeader: false },
     { name: "MyCourcesScreen", screen: MyCourcesScreen, haveHeader: false },
     { name: "PastReportCardsScreen", screen: PastReportCardsScreen, haveHeader: false },
     { name: "NotebookScreen", screen: NotebookScreen, haveHeader: false },
@@ -33,7 +34,12 @@ const elements: Item[] = [
     { name: "StudentDetailsScreen", screen: StudentDetailsScreen, haveHeader: false },
     { name: "MyAssignmentScreen", screen: MyAssignmentScreen, haveHeader: false },
     { name: "AddAssignmentScreen", screen: AddAssignmentScreen, haveHeader: false },
+    { name: "AssignmemtRenderStudentListScreen", screen: AssignmemtRenderStudentListScreen, haveHeader: false },
+    { name: "SeeAndMarkStudentAsignmemtScreen", screen: SeeAndMarkStudentAsignmemtScreen, haveHeader: false },
+    { name: "ExamsListeScreen", screen: ExamsListeScreen, haveHeader: false },
+    { name: "MyExamsAbsencesScreen", screen: MyExamsAbsencesScreen, haveHeader: false },
 ];
+
 const DashboadElementStack = createStackNavigator<AuthStackList>()
 
 const DashboadElementStacks = () => {

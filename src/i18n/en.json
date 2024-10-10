@@ -112,5 +112,41 @@
         "auth_next": "Next",
         "languageEnglish": "English",
         "languageFrench": "French"
+    },
+    "SettingsScreen": {
+        "screenTitle": "Settings",
+        "accountTitle": "Account",
+        "mapStylingTitle": "Map Styling",
+        "privacyTitle": "Privacy",
+        "languageTitle": "Language",
+        "darkModeSwitch": "Dark Mode",
+        "privacySettings": {
+            "notificationPrimaryLabel": "Notifications",
+            "notificationSecondaryLabel": "Toggle to enable / disable",
+            "toastMessages": [
+                "Notifications settings saved",
+                "Failed to save settings"
+            ]
+        },
+        "accountSettings": {
+            "userNameLabel": "Username",
+            "passwordLabel": "Password",
+            "changeButtonTitle": "Change",
+            "newPasswordPlaceholder": "New Password",
+            "confirmPasswordPlaceholder": "Confirm Password",
+            "toastMessages": [
+                "Password Required",
+                "Password and confirmation doesn't match",
+                "Check network connectivity.",
+                "Failed to update. Please try again later.",
+                "Profile Updated!",
+                "Please login again with the new credentials."
+            ]
+        },
+        "languageSettings": {
+            "toastMessages": [
+                "Language updated to"
+            ]
+        }
     }
 }

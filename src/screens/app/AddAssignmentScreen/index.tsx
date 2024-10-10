@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
-import { isDarkMode, useTheme } from "store";
+import { isDarkMode, useCurrentUser, useTheme } from "store";
 import dynamicStyles from "./style";
-import { getRandomColor, groupTasksByDate, Theme } from "utils";
-import { HeaderDashBoad } from "./Components";
-import { getData, LOCAL_URL } from "apis";
+import { getRandomColor, groupTasksByDate, showCustomMessage, Theme } from "utils";
+import { HeaderDashBoad, HorizontalScrollWithAddButton } from "./Components";
+import { getData, LOCAL_URL, postData, postDataDoc, RechargeMobileWalletEnd } from "apis";
 import useSWRMutation from "swr/mutation";
 import { I18n } from 'i18n';
 import { SafeAreaView } from "react-native";
@@ -16,37 +16,129 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from "moment";
 import { ScrollView } from "react-native";
 import Modal from "react-native-modal";
-import HorizontalScrollWithAddButton from "./Components/HorizontalScrollWithAddButton";
 import DocumentScanner, { ResponseType } from 'react-native-document-scanner-plugin'
 import { PermissionsAndroid } from "react-native";
 import DocumentPicker from 'react-native-document-picker';
+import * as z from 'zod';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+
+const schema = z.object({
+    type: z.number({ required_error: I18n.t('AddAssignmentScreen.error_type.required') })
+        .min(0, I18n.t('AddAssignmentScreen.error_type.min')),
+    subject: z.number({ required_error: I18n.t('AddAssignmentScreen.error_subject.required') })
+        .min(0, I18n.t('AddAssignmentScreen.error_subject.min')),
+    title: z.string({ required_error: I18n.t('AddAssignmentScreen.error_title.required') })
+        .min(5, I18n.t('AddAssignmentScreen.error_title.min')),
+    description: z.string({ required_error: I18n.t('AddAssignmentScreen.error_description.required') })
+        .min(5, I18n.t('AddAssignmentScreen.error_description.min')),
+    date: z.date({ required_error: I18n.t('AddAssignmentScreen.error_date.required') }),
+    document: z.array(z.any({ required_error: I18n.t('AddAssignmentScreen.error_document.required') }), { required_error: I18n.t('AddAssignmentScreen.error_document.required') }).nonempty(I18n.t('AddAssignmentScreen.error_document.nonempty')),
+});
 
 
 function AddAssignmentScreen(props: any): React.JSX.Element {
     const { navigation, route } = props
-    const { children } = route.params
+    const { classRoom } = route.params
     const [files, setFiles] = useState<any>([]);
     const theme = useTheme()
-    const [assignment, setAssignment] = useState<any[]>([])
-    const [isLoading, setIsLoading] = useState(true)
+    const user = useCurrentUser()
+    const [isLoadingType, setIsLoadingType] = useState(true)
+    const [isLoadingSubject, setIsLoadingSubject] = useState(true)
+    const [isLoading, setIsLoading] = useState(false)
     const [showDatePicker, setShowDatePicker] = useState(false)
-    const [selectedDate, setSelectedDate] = useState<any>(null)
     const [showModal, setShowModal] = useState(false)
     const [isScan, setIsScan] = useState<any>(null)
-    const [visibleImage, setVisibleImage] = useState(false)
-    const [selectedValue, setSelectedValue] = useState<any>();
-    const [description, setDescription] = useState("");
+    const [subjectList, setSubjectList] = useState<any>([])
+    const [assignmentType, setAssignmentType] = useState<any>([])
 
+    const form = useForm({
+        resolver: zodResolver(schema),
+        mode: "onChange",
+    });
+    const { trigger: createNewAssignment } = useSWRMutation(`${LOCAL_URL}/api/crud/assignment`, postDataDoc)
 
     const styles = dynamicStyles(theme)
-    const { trigger: getStudentCoursesID } = useSWRMutation(`${LOCAL_URL}/api/op.admission/search?domain=[('student_id','=',${children?.id})]`, getData)
-    const [student, setStudent] = useState<any[]>([
-        { id: 1, name: "Methemetique" },
-        { id: 2, name: "Informatque", },
-    ])
+    const { trigger: getAssignmentTypes } = useSWRMutation(`${LOCAL_URL}/api/grading.assignment.type/search`, getData)
+    const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/subjects/faculty/${user?.id}/${classRoom?.id}`, getData)
 
 
-    console.log("files", files);
+    useEffect(() => {
+        getTeacherSubjectInClassRoom();
+        getAssignmentType()
+    }, [])
+    const getTeacherSubjectInClassRoom = async () => {
+        try {
+            setIsLoadingSubject(true);
+            const subject = await getTeacherSubjectInClassRoome();
+            if (subject?.success) {
+                const data: any[] = subject?.success ? subject?.data : []
+                setSubjectList(data);
+            } else {
+                showCustomMessage(I18n.t('AddAssignmentScreen.info'), subject.message, "warning", "bottom")
+            }
+        } catch (err: any) {
+            showCustomMessage(I18n.t('AddAssignmentScreen.info'), I18n.t('AddAssignmentScreen.loadingError') + err.message, "warning", "bottom")
+            console.error('Une erreur s\'est produite :', err);
+        } finally {
+            setIsLoadingSubject(false);
+        }
+    };
+    const getAssignmentType = async () => {
+        try {
+            setIsLoadingType(true);
+            const subject = await getAssignmentTypes();
+            if (subject?.success) {
+                const data: any[] = subject?.success ? subject?.data : []
+                setAssignmentType(data);
+
+            } else {
+                showCustomMessage(I18n.t('AddAssignmentScreen.info'), I18n.t('AddAssignmentScreen.loadingError') + " " + subject.message, "warning", "bottom")
+            }
+        } catch (err: any) {
+            showCustomMessage(I18n.t('AddAssignmentScreen.info'), I18n.t('AddAssignmentScreen.loadingError') + err.message, "warning", "bottom")
+            console.error('Une erreur s\'est produite :', err);
+        } finally {
+            setIsLoadingType(false);
+        }
+
+    };
+
+
+    const handleSubmittedFormuler = async (data: any) => {
+        console.log(data);
+
+        setIsLoading(true);
+        const assignmentData = {
+            'name': data.title,
+            'faculty_id': user.id,
+            'room_id': classRoom.id,
+            'subject_id': data.subject,
+            'description': data.description,
+            'submission_date': data.date,
+            'assignment_type': data.type,
+            'document': data.document[0],
+
+        }
+        try {
+            const response = await createNewAssignment(assignmentData);
+            if (response?.success) {
+                showCustomMessage("Succes", response.message, 'success', "center");
+                const data = response.data;
+                navigation.goBack();
+            } else {
+                showCustomMessage(I18n.t('AddAssignmentScreen.info'), response?.message, "warning", "bottom")
+            }
+
+        } catch (err: any) {
+            showCustomMessage(I18n.t('AddAssignmentScreen.info'), I18n.t('AddAssignmentScreen.loadingError') + err.message, "warning", "bottom")
+            console.error('Une erreur s\'est produite :', err);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
 
     const permmition = async () => {
         const granted = await PermissionsAndroid.request(
@@ -68,18 +160,16 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
 
         }
     }
-    const startChossingDocumment = async () => {
+    const startChossingDocumment = async (onchange: (val: any) => void) => {
         try {
             const result = await DocumentPicker.pick({
                 type: [DocumentPicker.types.pdf, DocumentPicker.types.images, DocumentPicker.types.xls, DocumentPicker.types.plainText, DocumentPicker.types.docx, DocumentPicker.types.doc],
                 copyTo: "cachesDirectory"
             });
-            // console.log(
-            //     result
-            // );
             const nouvelleListe: any[] = files;
             const listeFusionnee: any[] = nouvelleListe ? nouvelleListe.concat(result) : result;
             if (result) {
+                onchange(listeFusionnee)
                 setFiles(listeFusionnee)
             }
 
@@ -97,7 +187,7 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
         }
     }
 
-    const startScanningDocumment = async () => {
+    const startScanningDocumment = async (onchange: (val: any) => void) => {
         if (await permmition()) {
             const { scannedImages } = await DocumentScanner.scanDocument({})
             const nouvelleListe = files;
@@ -109,16 +199,17 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
             let listeFusionnee = nouvelleListe ? nouvelleListe.concat(listeCorrect) : listeCorrect;
 
             if (scannedImages && scannedImages.length > 0) {
+                onchange(listeFusionnee)
                 setFiles(listeFusionnee)
             }
         }
     }
-    const onPressAddButton = () => {
+    const onPressAddButton = (onchange: (val: any) => void) => {
         if (isScan != null) {
             if (isScan === true) {
-                startScanningDocumment()
+                startScanningDocumment(onchange)
             } else {
-                startChossingDocumment()
+                startChossingDocumment(onchange)
             }
         } else {
             setShowModal(true)
@@ -127,20 +218,23 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
 
 
 
-    const onPress = (scan: boolean) => {
+    const onPress = (scan: boolean, onChange: (...event: any[]) => void) => {
         setShowModal(false)
         if (scan) {
-            startScanningDocumment()
+            startScanningDocumment(onChange)
         } else {
-            startChossingDocumment()
+            startChossingDocumment(onChange)
         }
 
     }
-    const onChangeDate = (event: any, selectedDate: any) => {
-        setShowDatePicker(false);
-        setSelectedDate(selectedDate)
+
+    const onDeleteItem = (item: any, onchange: (val: any) => void) => {
+        const updatedList = files.filter((file: any) => file.name !== item.name);
+        onchange(updatedList);
+        setFiles(updatedList);
     }
-    const renderHeader = () => (<>
+
+    const renderHeader = (data: any[], selectedValue: any, setSelectedValue: any, text: any, isLoading: boolean) => (<>
         <View style={styles.header}>
             <View style={styles.profil}>
                 {isLoading &&
@@ -157,13 +251,13 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
                 style={styles.picker}>
                 <Picker.Item
                     style={styles.pickerItemStyle}
-                    label={"Choisir le cours"}
+                    label={text}
                     value={"studentI.id"} />
-                {student.map(studentI => <Picker.Item
+                {data?.map(studentI => <Picker.Item
                     style={styles.pickerItemStyle}
                     key={studentI}
                     label={studentI.name}
-                    value={studentI} />)}
+                    value={studentI?.id} />)}
             </Picker>
         </View>
     </>
@@ -171,70 +265,143 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
 
 
     return <SafeAreaView style={styles.container}>
-        <HeaderDashBoad navigation={navigation} children={children} theme={theme} />
+        <HeaderDashBoad navigation={navigation} children={classRoom} theme={theme} />
         <ScrollView style={styles.content}>
 
             <Text style={{ textAlign: "center", ...Theme.fontStyle.montserrat.bold, color: theme.primary, paddingVertical: 15, fontSize: 18, }}>
-                {"Creer un nouveau devoir pour la classe "}
+                {I18n.t('AddAssignmentScreen.createNewAssignment')}
             </Text>
-            {renderHeader()}
-
-            <TextInput
-                placeholder="Titre du devoir"
-                value={description}
-                onChangeText={(text) => setDescription(text)}
-                style={styles.input}
-                textAlign="left"
-                textAlignVertical="top"
-                numberOfLines={1}
-            />
-            <TextInput
-                placeholder="Description du devoir (100 à 250 mots)"
-                value={description}
-                onChangeText={(text) => setDescription(text)}
-                style={styles.input}
-                textAlign="left"
-                textAlignVertical="top"
-                numberOfLines={5}
-                multiline={true} />
+            <Controller
+                control={form.control}
+                name="subject"
+                render={({ field, fieldState }) => {
+                    return <View >
+                        {renderHeader(subjectList, field.value, field.onChange, I18n.t('AddAssignmentScreen.chooseCourse'), isLoadingSubject)}
+                        {fieldState.invalid && <Text style={styles.textdanger1}>{fieldState?.error?.message}</Text>}
+                    </View>
+                }} />
+            <Controller
+                control={form.control}
+                name="type"
+                render={({ field, fieldState }) => {
+                    return <View >
+                        {renderHeader(assignmentType, field.value, field.onChange, I18n.t('AddAssignmentScreen.chooseExerciseType'), isLoadingType)}
+                        {fieldState.invalid && <Text style={styles.textdanger1}>{fieldState?.error?.message}</Text>}
+                    </View>
+                }} />
 
 
+            <Controller
+                control={form.control}
+                name="title"
+                render={({ field, fieldState }) => {
+                    return <View >
+                        <TextInput
+                            placeholder={I18n.t('AddAssignmentScreen.assignmentTitle')}
+                            value={field.value || ''}
+                            onChangeText={field.onChange}
+                            onChange={() => (form.formState.isValid)}
+                            style={styles.input}
+                            textAlign="left"
+                            textAlignVertical="top"
+                            numberOfLines={1}
+                        />
+                        {fieldState.invalid && <Text style={styles.textdanger1}>{fieldState?.error?.message}</Text>}
+                    </View>
+                }} />
 
-            <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateInput}>
-                <MaterialCommunityIcons name="calendar-today" size={20} color={theme.primary} />
-                <Text style={styles.dateText}>
-
-                    {selectedDate ? `  ${moment(selectedDate).format("LLLL")}` : "  Choisir la date de fin"}
-                </Text>
-            </TouchableOpacity>
-            {showDatePicker && (
-                <DateTimePicker
-                    value={selectedDate ? new Date(selectedDate) : new Date()}
-                    minimumDate={new Date()}
-                    mode={'date'}
-                    display="default"
-                    onChange={onChangeDate} />
-            )}
-            <Button
-                mode="contained-tonal"
-                style={{ marginTop: 20, width: "100%" }}
-                onPress={() => setShowModal(true)}
-                icon={"file"}>
-                Charger les documents
-            </Button>
-            <HorizontalScrollWithAddButton onPressAddButton={onPressAddButton} files={files} />
+            <Controller
+                control={form.control}
+                name="description"
+                render={({ field, fieldState }) => {
+                    return <View >
+                        <TextInput
+                            placeholder={I18n.t('AddAssignmentScreen.assignmentDescription')}
+                            value={field.value || ''}
+                            onChangeText={field.onChange}
+                            onChange={() => (form.formState.isValid)}
+                            style={styles.input}
+                            textAlign="left"
+                            textAlignVertical="top"
+                            numberOfLines={5}
+                            multiline={true} />
+                        {fieldState.invalid && <Text style={styles.textdanger1}>{fieldState?.error?.message}</Text>}
+                    </View>
+                }} />
 
 
+
+
+            <Controller
+                control={form.control}
+                name="date"
+                render={({ field, fieldState }) => {
+                    return <View >
+                        <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateInput}>
+                            <MaterialCommunityIcons name="calendar-today" size={20} color={theme.primary} />
+                            <Text style={styles.dateText}>
+
+                                {field.value ? `  ${moment(field.value).format("LLLL")}` : "  " + I18n.t('AddAssignmentScreen.chooseEndDate')}
+                            </Text>
+                        </TouchableOpacity>
+                        {showDatePicker && (
+                            <DateTimePicker
+                                value={field.value ? new Date(field.value) : new Date()}
+                                minimumDate={new Date()}
+                                mode={'date'}
+                                display="default"
+                                onChange={(event: any, selectedDate: any) => {
+                                    field.onChange(selectedDate)
+                                    setShowDatePicker(false)
+                                }} />
+                        )}
+                        {fieldState.invalid && <Text style={styles.textdanger1}>{fieldState?.error?.message}</Text>}
+                    </View>
+                }} />
+
+
+
+            <Controller
+                control={form.control}
+                name="document"
+                render={({ field, fieldState }) => {
+                    return <View >
+                        <Button
+                            mode="contained-tonal"
+                            style={{ marginTop: 20, width: "100%" }}
+                            onPress={() => setShowModal(true)}
+                            icon={"file"}>
+                            {I18n.t('AddAssignmentScreen.uploadDocuments')}
+                        </Button>
+                        {fieldState.invalid && <Text style={styles.textdanger1}>{fieldState?.error?.message}</Text>}
+                        <HorizontalScrollWithAddButton onPressAddButton={onPressAddButton} files={files} onDeleteItem={onDeleteItem} onchange={field.onChange} />
+
+                    </View>
+                }} />
 
             <Button
                 mode="contained-tonal"
                 style={{ marginTop: 20, marginBottom: 30, width: "100%", backgroundColor: theme.primary }}
-                onPress={() => setShowModal(true)}
-                icon={"publish"}
+                onPress={() => {
+                    if (!form.formState.isValid) {
+                        console.log("----------------------", form.formState.isValid);
+                        showCustomMessage(I18n.t('AddAssignmentScreen.info'), I18n.t('AddAssignmentScreen.allFieldsRequired'), "warning", "bottom")
+                        form.handleSubmit(handleSubmittedFormuler)();
+
+                        return;
+                    }
+                    form.handleSubmit(handleSubmittedFormuler)();
+                }
+                }
 
                 labelStyle={{ color: theme.secondaryText, fontSize: 18 }}
-            >
-                Publier le devoir
+
+                icon={isLoading ? undefined : "publish"}>
+                {isLoading ?
+                    <ActivityIndicator color={theme.secondaryText} />
+                    : I18n.t('AddAssignmentScreen.publishAssignment')
+                }
+
             </Button>
         </ScrollView>
 
@@ -247,33 +414,38 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
             backdropColor={isDarkMode() ? theme.underlayColor : 'black'}>
             <View style={styles.modalView}>
                 <ScrollView>
-                    <View style={styles.contentContainer}>
-                        <View style={styles.viewBar} />
-                        <Text style={styles.titleBottonSheet}>Telecherger ou scanner les documments liers au devoirs</Text>
-                        <Divider style={{ width: "50%" }} />
-                        <Button
-                            mode="contained-tonal"
-                            style={{ flex: 1, marginVertical: 20, width: "100%" }}
-                            onPress={() => {
-                                setIsScan(true)
-                                onPress(true)
+                    <Controller
+                        control={form.control}
+                        name="document"
+                        render={({ field, fieldState }) => {
+                            return <View style={styles.contentContainer}>
+                                <View style={styles.viewBar} />
+                                <Text style={styles.titleBottonSheet}>{I18n.t('AddAssignmentScreen.uploadOrScanDocs')}</Text>
+                                <Divider style={{ width: "50%" }} />
+                                <Button
+                                    mode="contained-tonal"
+                                    style={{ flex: 1, marginVertical: 20, width: "100%" }}
+                                    onPress={() => {
+                                        setIsScan(true)
+                                        onPress(true, field.onChange)
 
-                            }}
-                            icon={"eye"}>
-                            Scanner le devoirs
-                        </Button>
-                        <Button
-                            mode="contained-tonal"
-                            style={{ flex: 1, backgroundColor: theme.primary, width: "100%" }}
-                            labelStyle={{ color: theme.secondaryText }}
-                            onPress={() => {
-                                setIsScan(false)
-                                onPress(false)
-                            }}
-                            icon={"file"}>
-                            Telecharger depuis mon appariel
-                        </Button>
-                    </View>
+                                    }}
+                                    icon={"eye"}>
+                                    {I18n.t('AddAssignmentScreen.scanAssignment')}
+                                </Button>
+                                <Button
+                                    mode="contained-tonal"
+                                    style={{ flex: 1, backgroundColor: theme.primary, width: "100%" }}
+                                    labelStyle={{ color: theme.secondaryText }}
+                                    onPress={() => {
+                                        setIsScan(false)
+                                        onPress(false, field.onChange)
+                                    }}
+                                    icon={"file"}>
+                                    {I18n.t('AddAssignmentScreen.uploadFromDevice')}
+                                </Button>
+                            </View>
+                        }} />
                 </ScrollView>
             </View>
         </Modal>

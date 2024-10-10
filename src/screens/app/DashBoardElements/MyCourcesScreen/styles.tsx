@@ -5,7 +5,6 @@ const { height, width } = Dimensions.get('window')
 const dynamicStyles = (theme: any) => {
     return StyleSheet.create({
         container: {
-            padding: 10,
             flex: 1,
             backgroundColor: theme.primaryBackground,
         },
@@ -83,6 +82,15 @@ const dynamicStyles = (theme: any) => {
             color: theme.primaryText,
         },
 
+        headerTimeConatiner: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 10,
+            paddingHorizontal: 10,
+            // paddingVertical: 10,
+            backgroundColor: theme.primaryBackground,
+        },
 
     });
 };

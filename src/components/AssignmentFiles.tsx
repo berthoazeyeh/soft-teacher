@@ -3,7 +3,7 @@ import { FlatList } from "react-native";
 import { View } from "react-native";
 import { Image, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "store";
-import Icon from 'react-native-vector-icons/FontAwesome'; // Importez l'icône que vous souhaitez utiliser
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'; // Importez l'icône que vous souhaitez utiliser
 import { Linking } from "react-native";
 import { showCustomMessage, Theme } from "utils";
 
@@ -39,26 +39,26 @@ const AssignmentFiles = ({ items, handleViewImages }: Props) => {
 
     };
     const renderItem = ({ item, index }: any) => {
-        if (item.type === 'image') {
+        if (item.mimetype === 'image/jpeg') {
             return (<>
-                <TouchableOpacity style={styles.item} onPress={() => handleOpen(item.uri)}>
-                    <Image source={{ uri: item.uri }} style={styles.image} />
+                <TouchableOpacity style={styles.item} onPress={() => handleOpen(item.url)}>
+                    <Image source={{ uri: item.url }} style={styles.image} />
                 </TouchableOpacity>
                 <View style={{ position: "absolute", right: 0, top: 5, justifyContent: "center", alignContent: "center", alignSelf: "center", alignItems: "center", backgroundColor: "blue", borderRadius: 20, paddingHorizontal: 5 }}>
                     <Text style={{ ...Theme.fontStyle.montserrat.bold, color: theme.secondaryText }}>{index + 1}</Text>
                 </View>
             </>
             );
-        } else if (item.type === 'file') {
+        } else {
             return (
                 <>
                     <TouchableOpacity
                         key={item.code}
                         style={styles.itemContainer}
                         onPress={() => {
-                            handlePressUrl(item?.uri)
+                            handlePressUrl(item?.url)
                         }}>
-                        <Text style={styles.iconText}><Icon name="file-pdf-o" size={24} color="#007aff" /></Text>
+                        <Text style={styles.iconText}><MaterialCommunityIcons name="file-pdf-box" size={44} color="#007aff" /></Text>
                         <Text style={styles.itemText}>{item.name}</Text>
                     </TouchableOpacity>
                     <View style={{ position: "absolute", right: 0, top: 5, justifyContent: "center", alignContent: "center", alignSelf: "center", alignItems: "center", backgroundColor: "blue", borderRadius: 20, paddingHorizontal: 5 }}>
@@ -68,7 +68,6 @@ const AssignmentFiles = ({ items, handleViewImages }: Props) => {
             );
 
         }
-        return null;
     };
 
     const handleOpen = (detail: any) => {
@@ -83,7 +82,7 @@ const AssignmentFiles = ({ items, handleViewImages }: Props) => {
                 showsVerticalScrollIndicator={false}
                 data={items}
                 renderItem={renderItem}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item, index) => index.toString()}
             />
         </View>
     );
@@ -92,7 +91,6 @@ const AssignmentFiles = ({ items, handleViewImages }: Props) => {
 const style = (theme: any) => StyleSheet.create({
     container: {
         marginVertical: 20,
-        marginBottom: 50
     },
     header: {
         fontSize: 18,
@@ -116,6 +114,7 @@ const style = (theme: any) => StyleSheet.create({
 
     itemText: {
         padding: 10,
+        flex: 1,
         fontSize: 16,
     },
     item: {

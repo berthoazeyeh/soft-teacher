@@ -5,7 +5,6 @@ const { height, width } = Dimensions.get('window')
 const dynamicStyles = (theme) => {
     return StyleSheet.create({
         container: {
-            padding: 10,
             flexGrow: 1,
 
             backgroundColor: theme.primaryBackground,

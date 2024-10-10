@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator, Easing } from "react-native";
 import { isDarkMode, useTheme } from "store";
 import dynamicStyles from "./styles";
-import { getRandomColor, profils, Theme } from "utils";
+import { getRandomColor, profils, showCustomMessage, Theme } from "utils";
 import { FlatList } from "react-native";
 import moment from "moment";
 import { Image } from "react-native";
@@ -11,22 +11,32 @@ import { Checkbox, Searchbar } from "react-native-paper";
 import { Animated } from "react-native";
 import Modal from 'react-native-modal';
 import { ScrollView } from "react-native-gesture-handler";
+import useSWRMutation from "swr/mutation";
+import { getData, LOCAL_URL, postData } from "apis";
+import AttendanceScreen from "../AttendanceScreen";
+import AttendanceItem from "./Components/AttendenceItem";
+import { RefreshControl } from "react-native";
 
 
 function MyAbsencesScreen(props: any): React.JSX.Element {
     const { navigation, route } = props
-    const { class: classe, courses } = route.params
+    const { classRoom, subject } = route.params
     const theme = useTheme()
     const [isLoading, setIsLoading] = useState(false)
+    const [updatingUser, setUpdatingUser] = useState(false)
     const [showSearch, setShowSearch] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
     const [selectedStudent, setSelectedStudent] = useState<any>(null)
     const styles = dynamicStyles(theme)
+    const [dataAttend, setDataAttend] = useState<any[]>([]);
     const [filteredData, setFilteredData] = useState<any[]>([])
+    const [attendanceList, setAttendanceList] = useState<any[]>([])
+    const [refresh, setRefresh] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
 
     useLayoutEffect(() => {
         navigation.setOptions({
-            title: courses?.name,
+            title: classRoom?.name + `  -- (${filteredData.length}  Eleve(s))`,
             headerRight: () => <TouchableOpacity
                 style={{ marginRight: 20 }}
                 onPress={() => {
@@ -39,31 +49,77 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
         });
     }, []);
 
-    const [modalVisible, setModalVisible] = useState(true);
 
-    const [checkedItems, setCheckedItems] = useState<any>({
-        infirmerie: false,
-        punition: false,
-        exclusion: false,
-        dispense: false,
-        observations: false,
-        encouragements: false,
-        defautsCarnet: false,
-        leconNonApprise: false,
-        oubliMateriel: false,
-        travailNonFait: false,
-    });
+    moment.locale("en");
+    const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/attendances/session/room/${subject?.id}/${classRoom?.id}`, getData)
+
+    const { trigger: setAttendencesForStudent } = useSWRMutation(`${LOCAL_URL}/api/crud/attendance-line/session/${subject?.id}/${classRoom?.id}`, postData)
+
+
+    const postAttendencesForStudent = async (key: any, value: any, student: any, onccesPostAttendences?: () => void,) => {
+
+        setUpdatingUser(true)
+        const data = {
+            [key]: true,
+            student_id: student?.id,
+            remark: "--"
+        }
+        try {
+            const assigma = await setAttendencesForStudent(data)
+            if (!assigma?.success) {
+                showCustomMessage("Information", assigma?.message, "warning", "bottom")
+                return;
+            }
+            setModalVisible(false);
+            showCustomMessage(student?.name, "State updated to " + key, "success", "top")
+
+        } catch (error: any) {
+            showCustomMessage("Information", 'Une erreur s\'est produite :' + error?.message, "warning", "bottom")
+
+        } finally {
+            getTeacherTimeTables(false)
+            onccesPostAttendences && onccesPostAttendences()
+            setUpdatingUser(false)
+        }
+    };
+
+    const getTeacherTimeTables = async (relording: boolean) => {
+        if (relording)
+            setAttendanceList([]);
+        try {
+            setIsLoading(true);
+            const res = await getTeacherSubjectInClassRoome();
+            // console.log(";;;;;;;;'''''''", res);
+            if (res?.success) {
+                const timetable: any[] = res?.success ? res?.data : []
+                setAttendanceList(timetable);
+
+            } else {
+                showCustomMessage("Information", res?.message, "warning", "bottom")
+            }
+        } catch (err: any) {
+            showCustomMessage("Information", 'Une erreur s\'est produite :' + err?.message, "warning", "bottom")
+            console.error('Une erreur s\'est produite :', err);
+        } finally {
+            setIsLoading(false);
+            setRefresh(false);
+        }
+
+    };
+
+    useEffect(() => {
+        getTeacherTimeTables(true)
+    }, [refresh])
+
+
+
 
     const toggleModal = () => {
         setModalVisible(!modalVisible);
+        setUpdatingUser(false);
+
     };
 
-    const handleCheckBoxChange = (key: any) => {
-        setCheckedItems((prevState: any) => ({
-            ...prevState,
-            [key]: !prevState[key],
-        }));
-    };
 
     const headerHeight = useRef(new Animated.Value(60)).current;  // Assuming 60 is your header height
 
@@ -87,33 +143,23 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
         }).start();
     };
 
-    const data = [
-        { id: 1, name: "John Doe", hasMarkedAttendance: true, status: true, timeMarked: "09:00 AM", date: "2024-09-23", remarks: "On time" },
-        { id: 2, name: "Jane Smith", hasMarkedAttendance: true, status: false, timeMarked: "09:15 AM", date: "2024-09-23", remarks: "Absent" },
-        { id: 3, name: "Michael Johnson", hasMarkedAttendance: false, status: false, timeMarked: null, date: "2024-09-23", remarks: "Pending" },
-        { id: 4, name: "Emily Davis", hasMarkedAttendance: true, status: true, timeMarked: "08:50 AM", date: "2024-09-23", remarks: "Early arrival" },
-        { id: 5, name: "Daniel Brown", hasMarkedAttendance: true, status: true, timeMarked: "09:05 AM", date: "2024-09-23", remarks: "On time" },
-        { id: 6, name: "Olivia Williams", hasMarkedAttendance: false, status: false, timeMarked: null, date: "2024-09-23", remarks: "Pending" },
-        { id: 7, name: "James Miller", hasMarkedAttendance: true, status: false, timeMarked: "09:30 AM", date: "2024-09-23", remarks: "Absent" },
-        { id: 8, name: "Sophia Wilson", hasMarkedAttendance: true, status: true, timeMarked: "08:55 AM", date: "2024-09-23", remarks: "On time" },
-        { id: 9, name: "Liam Martinez", hasMarkedAttendance: true, status: true, timeMarked: "09:10 AM", date: "2024-09-23", remarks: "Slightly late" },
-        { id: 10, name: "Emma Anderson", hasMarkedAttendance: true, status: false, timeMarked: "09:25 AM", date: "2024-09-23", remarks: "Absent" },
-        { id: 11, name: "Noah Thomas", hasMarkedAttendance: true, status: true, timeMarked: "08:45 AM", date: "2024-09-23", remarks: "Early arrival" },
-        { id: 12, name: "Ava Taylor", hasMarkedAttendance: false, status: false, timeMarked: null, date: "2024-09-23", remarks: "Pending" },
-        { id: 13, name: "William Lee", hasMarkedAttendance: true, status: true, timeMarked: "09:20 AM", date: "2024-09-23", remarks: "Slightly late" },
-        { id: 14, name: "Mia Harris", hasMarkedAttendance: true, status: true, timeMarked: "09:00 AM", date: "2024-09-23", remarks: "On time" },
-        { id: 15, name: "Ethan Clark", hasMarkedAttendance: true, status: false, timeMarked: "09:35 AM", date: "2024-09-23", remarks: "Absent" },
-        { id: 16, name: "Isabella Lewis", hasMarkedAttendance: true, status: true, timeMarked: "09:05 AM", date: "2024-09-23", remarks: "On time" },
-        { id: 17, name: "Mason Walker", hasMarkedAttendance: false, status: false, timeMarked: null, date: "2024-09-23", remarks: "Pending" },
-        { id: 18, name: "Lucas Hall", hasMarkedAttendance: true, status: true, timeMarked: "08:55 AM", date: "2024-09-23", remarks: "Early arrival" },
-        { id: 19, name: "Charlotte Young", hasMarkedAttendance: true, status: true, timeMarked: "09:10 AM", date: "2024-09-23", remarks: "Slightly late" },
-        { id: 20, name: "Elijah King", hasMarkedAttendance: true, status: false, timeMarked: "09:30 AM", date: "2024-09-23", remarks: "Absent" }
-    ];
-
+    const onPressAddElement = (student: any, data: any[]) => {
+        setSelectedStudent(student);
+        setDataAttend(data);
+    }
 
     const onChangeSearch = (query: string) => {
+        const sortedData = attendanceList.sort((a, b) => {
+            if (a.attendance_line === "" && b.attendance_line !== "") {
+                return -1;
+            } else if (a.attendance_line !== "" && b.attendance_line === "") {
+                return 1;
+            } else {
+                return 0;
+            }
+        });
         setSearchQuery(query);
-        const filtered = data.filter(item =>
+        const filtered = sortedData.filter(item =>
             item.name.toLowerCase().includes(query.toLowerCase())
         );
         setFilteredData(filtered);
@@ -121,7 +167,7 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
 
     useEffect(() => {
         onChangeSearch("")
-    }, []);
+    }, [attendanceList]);
     const renderEmptyElement = () => (
         <View style={styles.emptyData}>
             {isLoading &&
@@ -166,60 +212,24 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
         </Animated.View>}
         <View style={styles.content}>
             <FlatList
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refresh}
+                        onRefresh={() => {
+                            setRefresh(true)
+                        }}
+                    />}
                 data={filteredData}
                 renderItem={({ item, index }) =>
-                    <TouchableOpacity
-                        onPress={() => {
-                        }}
-                        style={{ flexDirection: "row", marginBottom: 15, gap: 20, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: theme.gray, paddingBottom: 10, alignItems: "center" }}>
-                        <View style={{ width: 50, height: 50, borderRadius: 50, backgroundColor: theme.gray }}>
-                            <Image source={profils} style={{ width: 50, height: 50, borderRadius: 50, backgroundColor: theme.gray }} />
-                        </View >
+                    <AttendanceItem
+                        theme={theme}
+                        setStudent={setSelectedStudent}
+                        setModalVisible={setModalVisible}
+                        setSelectedStudent={onPressAddElement}
+                        postAttendencesForStudent={postAttendencesForStudent}
+                        item={item}
 
-
-                        <View style={{ justifyContent: "space-between", flex: 1, gap: 5, alignContent: "center", }}>
-                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 20, color: theme.primaryText }}>{item.name}</Text>
-
-                            <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
-                                {
-                                    item.hasMarkedAttendance && <>
-                                        <TouchableOpacity
-                                            style={{ borderWidth: 1, borderColor: theme.gray, paddingHorizontal: 5, paddingVertical: 3, alignItems: "center", borderRadius: 5, backgroundColor: item.status ? theme.primary : theme.primaryBackground }}
-                                        >
-                                            <Text style={{ color: item.status ? theme.secondaryText : theme.primaryText, fontSize: 16 }}>{"Present"}</Text>
-                                        </TouchableOpacity>
-
-                                        <TouchableOpacity
-                                            style={{ borderWidth: 1, borderColor: theme.gray, paddingHorizontal: 5, paddingVertical: 3, alignItems: "center", borderRadius: 5, backgroundColor: !item.status ? "red" : theme.primaryBackground }}>
-                                            <Text style={{ color: !item.status ? theme.secondaryText : theme.primaryText, fontSize: 16 }}>{"Absent"}</Text>
-                                        </TouchableOpacity>
-                                    </>
-                                }
-                                {
-                                    !item.hasMarkedAttendance && <>
-                                        <TouchableOpacity
-                                            style={{ borderWidth: 1, borderColor: theme.gray, paddingHorizontal: 5, paddingVertical: 3, alignItems: "center", borderRadius: 5 }}
-                                        >
-                                            <Text style={{ fontSize: 16 }}>{"Present"}</Text>
-                                        </TouchableOpacity>
-
-                                        <TouchableOpacity
-                                            style={{ borderWidth: 1, borderColor: theme.gray, paddingHorizontal: 5, paddingVertical: 3, alignItems: "center", borderRadius: 5 }}>
-                                            <Text style={{ fontSize: 16 }}>{"Absent"}</Text>
-                                        </TouchableOpacity>
-                                    </>
-                                }
-                                <TouchableOpacity onPress={() => {
-                                    setSelectedStudent(item)
-                                    setModalVisible(true)
-                                }}>
-                                    <MaterialCommunityIcons name='plus-box' size={35} color={theme.gray4} />
-                                </TouchableOpacity>
-
-                            </View>
-
-                        </View>
-                    </TouchableOpacity>
+                    />
 
                 }
                 keyExtractor={(item, index) => index.toString()}
@@ -235,88 +245,41 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
             <View style={styles.modalView}>
                 <View style={[styles.modalContent]}>
                     <Text style={styles.titleText}>{selectedStudent?.name}</Text>
-                    <ScrollView >
-                        <View style={styles.checkboxContainer}>
-                            <Checkbox
-                                status={checkedItems.infirmerie ? 'checked' : 'unchecked'}
-                                onPress={() => handleCheckBoxChange('infirmerie')}
-                            />
-                            <Text>Infirmerie</Text>
-                        </View>
-                        <View style={styles.checkboxContainer}>
-                            <Checkbox
-                                status={checkedItems.punition ? 'checked' : 'unchecked'}
-                                onPress={() => handleCheckBoxChange('punition')}
-                            />
-                            <Text>Punition</Text>
-                        </View>
-                        <View style={styles.checkboxContainer}>
-                            <Checkbox
-                                status={checkedItems.exclusion ? 'checked' : 'unchecked'}
-                                onPress={() => handleCheckBoxChange('exclusion')}
-                            />
-                            <Text>Exclusion</Text>
-                        </View>
-                        <View style={styles.checkboxContainer}>
-                            <Checkbox
-                                status={checkedItems.dispense ? 'checked' : 'unchecked'}
-                                onPress={() => handleCheckBoxChange('dispense')}
-                            />
-                            <Text>Dispense</Text>
-                        </View>
-                        <View style={styles.checkboxContainer}>
-                            <Checkbox
-                                status={checkedItems.observations ? 'checked' : 'unchecked'}
-                                onPress={() => handleCheckBoxChange('observations')}
-                            />
-                            <Text>Observations</Text>
-                        </View>
-                        <View style={styles.checkboxContainer}>
-                            <Checkbox
-                                status={checkedItems.encouragements ? 'checked' : 'unchecked'}
-                                onPress={() => handleCheckBoxChange('encouragements')}
-                            />
-                            <Text>Encouragements</Text>
-                        </View>
-                        <View style={styles.checkboxContainer}>
-                            <Checkbox
-                                status={checkedItems.defautsCarnet ? 'checked' : 'unchecked'}
-                                onPress={() => handleCheckBoxChange('defautsCarnet')}
-                            />
-                            <Text>Défauts de carnet/carte</Text>
-                        </View>
-                        <View style={styles.checkboxContainer}>
-                            <Checkbox
-                                status={checkedItems.leconNonApprise ? 'checked' : 'unchecked'}
-                                onPress={() => handleCheckBoxChange('leconNonApprise')}
-                            />
-                            <Text>Leçon non apprise</Text>
-                        </View>
-                        <View style={styles.checkboxContainer}>
-                            <Checkbox
-                                status={checkedItems.oubliMateriel ? 'checked' : 'unchecked'}
-                                onPress={() => handleCheckBoxChange('oubliMateriel')}
-                            />
-                            <Text>Oubli de matériel</Text>
-                        </View>
-                        <View style={styles.checkboxContainer}>
-                            <Checkbox
-                                status={checkedItems.travailNonFait ? 'checked' : 'unchecked'}
-                                onPress={() => handleCheckBoxChange('travailNonFait')}
-                            />
-                            <Text>Travail non fait</Text>
-                        </View>
-                        {/* </View> */}
-                    </ScrollView>
+                    <View style={{ flex: 1, width: "100%" }}>
+                        <ScrollView >
 
-                    <TouchableOpacity onPress={toggleModal} style={styles.closeButton}>
-                        <Text style={styles.closeButtonText}>Fermer</Text>
-                    </TouchableOpacity>
+                            {dataAttend?.map(([key, value], index) =>
+                                <TouchableOpacity key={index} style={styles.checkboxContainer}
+                                    onPress={() => {
+                                        postAttendencesForStudent(key, value, selectedStudent)
+                                    }}
+                                >
+                                    <Checkbox
+                                        status={value ? 'checked' : 'unchecked'}
+                                        onPress={() => postAttendencesForStudent(key, value, selectedStudent)}
+                                    />
+                                    <Text style={styles.itemTitleText}>{capitalizeFirstLetter(key)}</Text>
+                                </TouchableOpacity>)}
+
+                        </ScrollView>
+
+                    </View>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", width: "100%" }}>
+                        <View>
+                            {updatingUser && <ActivityIndicator size={"large"} style={{ marginHorizontal: 20 }} />}
+                        </View>
+                        <TouchableOpacity onPress={toggleModal} style={styles.closeButton}>
+                            <Text style={styles.closeButtonText}>Fermer</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </View>
         </Modal>
-    </View>
-
+    </View>;
+    function capitalizeFirstLetter(text: any) {
+        if (!text) return '';
+        return text.charAt(0).toUpperCase() + text.slice(1);
+    }
 
 }
 

@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from "react-native";
-import { isDarkMode, useTheme } from "store";
+import { isDarkMode, useCurrentUser, useTheme } from "store";
 import dynamicStyles from "./style";
-import { getRandomColor, groupTasksByDate, Theme } from "utils";
+import { getRandomColor, groupTasksByDate, showCustomMessage, Theme } from "utils";
 import { AnimatedFAB, Button, Dialog, Divider, FAB, IconButton, MD3Colors, Portal } from "react-native-paper";
 import { FlatList } from "react-native";
 import moment from "moment";
@@ -16,13 +16,17 @@ import Modal from 'react-native-modal';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { CustomerLoader } from "components";
 import { SafeAreaView } from "react-native";
+import { RefreshControl } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 
 
 function MyAssignmentScreen(props: any): React.JSX.Element {
     const { navigation, route } = props
-    const { children } = route.params
+    const { classRoom } = route.params
     const theme = useTheme()
+    const user = useCurrentUser();
     const [assignment, setAssignment] = useState<any[]>([])
+    const [document, setDocument] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [showModal, setShowModal] = useState(false)
     const [modalVisible, setModalVisible] = useState(false)
@@ -30,6 +34,7 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
     const [visibleImage, setVisibleImage] = useState(false)
     const [curentScanText, setCurentScanText] = useState<any>();
     const [isExtended, setIsExtended] = useState(true);
+    const [refresh, setRefresh] = useState(true);
 
     const [curentImagesView, setCurentImagesView] = useState([{
         uri: "https://images.unsplash.com/photo-1571501679680-de32f1e7aad4",
@@ -42,9 +47,18 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
     },]);
     const [visible, setVisible] = useState(false)
     const styles = dynamicStyles(theme)
-    const { trigger: getStudentCoursesID } = useSWRMutation(`${LOCAL_URL}/api/op.admission/search?domain=[('student_id','=',${children?.id})]`, getData)
-    const { trigger: checkIfStudentHasSubmitAssigment } = useSWRMutation(`${LOCAL_URL}/api/op.admission/search?domain=[('student_id','=',${children?.id})]`, getData)
-    const hideDialog = (v: boolean) => setVisible(v);
+    const { trigger: getStudentCoursesID } = useSWRMutation(`${LOCAL_URL}/api/op.admission/search?domain=[('student_id','=',${classRoom?.id})]`, getData)
+    const { trigger: checkIfStudentHasSubmitAssigment } = useSWRMutation(`${LOCAL_URL}/api/op.admission/search?domain=[('student_id','=',${classRoom?.id})]`, getData)
+
+
+    const hideDialog = (v: boolean, doc?: any) => {
+        if (doc) {
+            setDocument([doc])
+        }
+        setVisible(v);
+    };
+
+
     const renderDoc = async (v: boolean, item: any) => {
         setCurentScanText(item)
         setShowModal(v);
@@ -52,7 +66,7 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
 
     const searchSubmitedAssignment = async (setLoading: (arg0: boolean) => void, item: any) => {
         setLoading(true);
-        const response = await getData(`${LOCAL_URL}/api/op.assignment.sub.line/search?domain=[('student_id','=',${children?.id}),('assignment_id','=',${item?.id})]`);
+        const response = await getData(`${LOCAL_URL}/api/op.assignment.sub.line/search?domain=[('student_id','=',${classRoom?.id}),('assignment_id','=',${item?.id})]`);
         setLoading(false);
         if (response?.success) {
             return response;
@@ -63,7 +77,7 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
 
     }
     const items = [
-        { id: '1', type: 'image', uri: 'https://www.fomesoutra.com/joomlatools-files/docman-images/generated/0ea6f098a59fcf2462afc50d130ff034.jpg', name: 'Image 1' },
+        { id: '1', type: 'image', uri: 'https://soft.metuaa.com/web/content/1049', name: 'Image 1' },
         { id: '2', type: 'image', uri: 'https://static.fnac-static.com/multimedia/Images/FR/NR/f8/8a/cb/13339384/1541-1/tsp20211119084117/Livres-d-exercices-mathematiques-terminale-specialite-et-maths-expertes.jpg', name: 'Image 1' },
         { id: '6', type: 'file', name: 'Document 1.pdf', uri: 'https://simo.education/pdf2/MTD.pdf' },
         { id: '7', type: 'image', uri: 'https://img.freepik.com/photos-premium/vue-panoramique-plage-contre-ciel_1048944-16126290.jpg?ga=GA1.1.1593920591.1714745952', name: 'Image 2' },
@@ -71,7 +85,7 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
 
     const onScroll = ({ nativeEvent }: any) => {
         const currentScrollPosition = Math.floor(nativeEvent.contentOffset.y);
-        setIsExtended(currentScrollPosition <= 0); // Show FAB when at the top
+        setIsExtended(currentScrollPosition <= 0);
     };
 
     const handleButtonPress = (val: boolean, index: number) => {
@@ -83,13 +97,24 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
 
     }
     useEffect(() => {
-        getStudentAssigment()
         const interval = setInterval(() => {
             setIsExtended(prevState => !prevState);
         }, 3000);
 
         return () => clearInterval(interval);
     }, [])
+
+    useEffect(() => {
+        getStudentAssigment()
+    }, [refresh])
+    useFocusEffect(
+        useCallback(() => {
+            setRefresh(true);
+            return () => {
+            };
+        }, [])
+    );
+
     const renderEmptyVehiclesElement = (message: any, isLoading: boolean) => (
         <View style={styles.emptyData}>
             {isLoading && <>
@@ -105,30 +130,37 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
     const getStudentAssigment = async () => {
         setIsLoading(true)
 
-        const assigma = await getData(`${LOCAL_URL}/api/op.assignment/search`)
-        console.log("assigma-----", assigma);
-
-        let assigmCorrect: any[] = [];
-        const assigms: any[] = assigma?.success ? assigma?.data : []
-        assigms?.forEach((item) => {
-
-            assigmCorrect.push({
-                id: item.id,
-                name: "Chimie",
-                date: item?.submission_date,
-                tache: "item?.name",
-                status: true,
-                lieuRemise: "Salle de cours",
-                description: item?.description
+        try {
+            const assigma = await getData(`${LOCAL_URL}/api/assignments/faculty/${user?.id}/${classRoom?.id}`)
+            if (!assigma?.success) {
+                showCustomMessage("Information", assigma.message, "warning", "bottom")
+                return;
+            }
+            let assigmCorrect: any[] = [];
+            const assigms: any[] = assigma?.success ? assigma?.data : []
+            assigms?.forEach((item) => {
+                console.log(item);
+                assigmCorrect.push({
+                    id: item.id,
+                    tache: item?.name,
+                    date: item?.submission_date,
+                    name: item?.subject_id.name,
+                    lieuRemise: item.room_id.name,
+                    description: item?.description,
+                    document: item?.document
+                })
             })
-        })
-        const sections1 = Object.entries(groupTasksByDate(assigmCorrect));
-        setAssignment(sections1);
-        console.log("getStudentAssigment----", assigmCorrect.length);
-        setIsLoading(false)
-        // } else {
-        //     setIsLoading(false)
-        // }
+            const sections1 = Object.entries(groupTasksByDate(assigmCorrect));
+            setAssignment(sections1);
+            console.log("getStudentAssigment----", assigmCorrect.length);
+
+        } catch (error: any) {
+            showCustomMessage("Information", 'Une erreur s\'est produite :' + error.message, "warning", "bottom")
+
+        } finally {
+            setIsLoading(false)
+            setRefresh(false)
+        }
     };
     const handleViewImages = (url: string) => {
         setCurentImagesView([{
@@ -137,20 +169,30 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
         setVisibleImage(true)
     }
     return <SafeAreaView style={styles.container}>
-        <HeaderDashBoad navigation={navigation} children={children} theme={theme} />
+        <HeaderDashBoad navigation={navigation} children={classRoom} theme={theme} />
         <Text style={{ textAlign: "center", ...Theme.fontStyle.montserrat.bold, color: theme.primary, paddingVertical: 5 }}>
             {I18n.t("Home.renderWorkHeader")}
         </Text>
-        <FlatList
-            onScroll={onScroll}
-            scrollEventThrottle={16}
-            showsHorizontalScrollIndicator={false}
-            showsVerticalScrollIndicator={false}
-            data={assignment}
-            renderItem={({ item }) => <TaskItem theme={theme} item={item} hideDialog={hideDialog} children={children} visible={visible} renderDoc={renderDoc} searchSubmitedAssignment={searchSubmitedAssignment} navigation={navigation} />}
-            keyExtractor={(item, index) => index.toString()}
-            ListEmptyComponent={() => renderEmptyVehiclesElement(I18n.t("Home.renderEmptyAssignment"), isLoading)}
-        />
+        <View style={{ flex: 1, padding: 10, }}>
+            <FlatList
+                onScroll={onScroll}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refresh}
+                        onRefresh={() => {
+                            setRefresh(true)
+                        }}
+                    />}
+                scrollEventThrottle={16}
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 12 }}
+                data={assignment}
+                renderItem={({ item }) => <TaskItem theme={theme} item={item} hideDialog={hideDialog} children={classRoom} visible={visible} renderDoc={renderDoc} searchSubmitedAssignment={searchSubmitedAssignment} navigation={navigation} />}
+                keyExtractor={(item, index) => index.toString()}
+                ListEmptyComponent={() => renderEmptyVehiclesElement(I18n.t("Home.renderEmptyAssignment"), isLoading)}
+            />
+        </View>
 
         <Portal>
             <Dialog
@@ -170,7 +212,7 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
                         }} >
                         <MaterialCommunityIcons name="close-circle-outline" size={20} color={theme.secondaryText} />
                     </TouchableOpacity>
-                    <AssignmentFiles items={items} handleViewImages={handleViewImages} />
+                    <AssignmentFiles items={document} handleViewImages={handleViewImages} />
                     <View style={{ flex: 1 }}>
                     </View>
                 </Dialog.Content>
@@ -180,87 +222,13 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
             images={curentImagesView}
             imageIndex={0}
             visible={visibleImage}
-
             onRequestClose={() => setVisibleImage(false)}
         />
-        <Modal
-            onBackButtonPress={() => setShowModal(false)}
-            onBackdropPress={() => setShowModal(false)}
-            swipeDirection={'down'}
-            isVisible={showModal}
-            style={styles.modalContent}
-            backdropColor={isDarkMode() ? theme.underlayColor : 'black'}>
-            <View style={styles.modalView}>
-                <ScrollView>
-                    <View style={styles.contentContainer}>
-                        <View style={styles.viewBar} />
-                        <Text style={styles.titleBottonSheet}>Rendre le devoir de mon enfant</Text>
-                        <Divider style={{ width: "50%" }} />
-                        <Button
-                            mode="contained-tonal"
-                            style={{ flex: 1, marginVertical: 20, width: "100%" }}
-                            onPress={() => handleButtonPress && handleButtonPress(!visible, 1)}
-                            icon={"eye"}>
-                            Scanner le devoirs
-                        </Button>
-                        <Button
-                            mode="contained-tonal"
-                            style={{ flex: 1, backgroundColor: theme.primary, width: "100%" }}
-                            labelStyle={{ color: theme.secondaryText }}
-                            onPress={() => handleButtonPress && handleButtonPress(!visible, 0)}
-                            icon={"file"}>
-                            Telecharger depuis mon appariel
-                        </Button>
-                    </View>
-                </ScrollView>
-            </View>
-        </Modal>
-        <Modal
-            //@ts-ignore 
-            animationType="slide" // Animation pour afficher la modal
-            transparent={false} // Rend la modal transparente
-            visible={modalVisible}
-            onRequestClose={() => setModalVisible(false)}
-            style={styles.modalContent}>
-            {/* //@ts-ignore */}
-            <TouchableOpacity onPress={() => setModalVisible(false)} //@ts-ignore 
-                style={styles.closeButtons}>
-                <Icon name="times" size={20} color="black" />
-            </TouchableOpacity>
-            <ChoseFileScreen
-                name={curentScanText}
-                setLoading={setIsLoading}
-                loading={isLoading}
-                closeModal={() => setModalVisible(false)}
-                children={children}
-            />
-
-        </Modal>
-        <Modal
-            //@ts-ignore 
-            animationType="slide" // Animation pour afficher la modal
-            transparent={false} // Rend la modal transparente
-            visible={modalVisibleB}
-            onRequestClose={() => setModalVisibleB(false)}
-            style={styles.modalContent}>
-            {/* //@ts-ignore */}
-            <TouchableOpacity onPress={() => setModalVisibleB(false)} //@ts-ignore 
-                style={styles.closeButtons}>
-                <Icon name="times" size={20} color="black" />
-            </TouchableOpacity>
-            <ScanFileScreen
-                name={curentScanText}
-                setLoading={setIsLoading}
-                closeModal={() => setModalVisibleB(false)}
-            />
-        </Modal>
-        {/* <CustomerLoader loading={isLoading} I18n={I18n} theme={theme} color='red' /> */}
-
         <AnimatedFAB
             icon="plus"
             label="Ajouter un devoir"
             extended={isExtended}
-            onPress={() => navigation.navigate("AddAssignmentScreen", { children })}
+            onPress={() => navigation.navigate("AddAssignmentScreen", { classRoom })}
             visible={true}
             animateFrom="right"
             iconMode="dynamic"
@@ -268,6 +236,7 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
             style={styles.fabStyle}
 
         />
+
     </SafeAreaView>
 
 }
@@ -275,7 +244,7 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
 interface createStylesProps {
     theme: any,
     item: any
-    hideDialog?: (b: boolean) => void,
+    hideDialog?: (b: boolean, doc?: any) => void,
     renderDoc?: (b: boolean, item: any) => void,
     handleButtonPress?: (b: boolean, index: number) => void,
     searchSubmitedAssignment?: (setLoading: any, item: any) => any,
@@ -286,10 +255,34 @@ interface createStylesProps {
 export const TaskItem = ({ theme, item: [date, tasks], hideDialog, visible, renderDoc, handleButtonPress, searchSubmitedAssignment, navigation, children }: createStylesProps) => {
 
     const [assignmentSubmit, setAssignmentSubmit] = useState<any[]>([])
-    const [loading, setLoading] = useState<boolean>(false)
     const [visibleSubmited, setVisibleSubmited] = useState<boolean>(false)
+    const [submitNumber, setSubmitNumber] = useState<number>(0)
+    const [loading, setLoading] = useState<boolean>(true)
     const styles = createStyles(theme);
+    const getAssigmentById = async () => {
+        setLoading(true)
+        try {
+            const assigma = await getData(`${LOCAL_URL}/api/assignment/${tasks[0]?.id}`)
+            if (!assigma?.success) {
+                showCustomMessage("Information", assigma.message, "warning", "bottom")
+                return;
+            }
+            const assigms: any = assigma?.success ? assigma?.data : []
+            if (assigms?.id) {
+                setSubmitNumber(assigms?.submissions?.length)
+            }
+            console.log("getAssigmentById----", assigms?.submissions?.length);
 
+        } catch (error: any) {
+            showCustomMessage("Information", 'Une erreur s\'est produite :' + error.message, "warning", "bottom")
+
+        } finally {
+            setLoading(false)
+        }
+    };
+    useEffect(() => {
+        getAssigmentById();
+    }, []);
     return (
         <View style={styles.container}>
             <View style={styles.dateContainer}>
@@ -300,121 +293,121 @@ export const TaskItem = ({ theme, item: [date, tasks], hideDialog, visible, rend
                     showsHorizontalScrollIndicator={false}
                     showsVerticalScrollIndicator={false}
                     data={tasks}
-                    renderItem={({ item }) => <>
-                        <View style={styles.taskContainer}>
-                            <View style={{ flex: 1 }}>
-                                <View style={styles.colorIndicator} />
-                                <View style={styles.taskDetailsContainer}>
-                                    <Text style={styles.subjectText}>{item?.name}</Text>
-                                    <Text style={styles.taskText}>{item.tache}</Text>
-                                </View>
-                            </View>
-                            <View style={styles.statusContainer}>
-                                <Text style={styles.statusText}>
-                                    {"Rendu par"}
-                                </Text>
-                                <Text style={styles.statusText1}>
-                                    {"13 Personnes"}
-                                </Text>
-                            </View>
-                        </View>
-                        {item.description &&
-                            <Text style={styles.description}>{I18n.t("Dashboard.AssignmentsScreen.descriptionLabel")} <Text style={{ ...Theme.fontStyle.montserrat.regular }}> {item.description}</Text></Text>}
-                        {item.description &&
-                            <>
-                                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                                    <View style={{ flexDirection: "row" }}>
+                    renderItem={({ item }) => {
+                        return <>
+                            <View style={styles.taskContainer}>
+                                <View style={{ flex: 1 }}>
+                                    <View style={styles.colorIndicator} />
+                                    <View style={styles.taskDetailsContainer}>
+                                        <Text style={styles.subjectText}>{item?.name}</Text>
+                                        <Text style={styles.taskText}>{item.tache}</Text>
                                     </View>
-                                    <Text style={styles.dueText}>  {I18n.t("Dashboard.AssignmentsScreen.dueDateLabel")} {item.lieuRemise}</Text>
                                 </View>
-                                {!visibleSubmited &&
-                                    <View style={{ flexDirection: "column", flex: 1, gap: 9 }}>
-                                        <Button
-                                            mode="text"
-                                            style={{ flex: 1 }}
-                                            labelStyle={{ color: theme.secondary }}
-
-                                            onPress={() => hideDialog && hideDialog(!visible)}
-                                            icon={"eye"}>
-                                            {"Voir les Devoirs"}
-                                        </Button>
-                                        <Button
-                                            mode="text"
-                                            style={{ flex: 1, }}
-                                            labelStyle={{ color: theme.secondary }}
-                                            onPress={async () => {
-                                                // const res = searchSubmitedAssignment && await searchSubmitedAssignment(setLoading, item)
-                                                // if (res?.success && res?.data.length > 0) {
-                                                //     setAssignmentSubmit(res?.data)
-                                                //     setVisibleSubmited(true)
-                                                // } else {
-                                                //     renderDoc && renderDoc(!visible, item)
-                                                // }
-                                                navigation.navigate("AddAssignmentScreen", { children })
-
-                                            }}
-                                            icon={loading ? undefined : "eye"}>
-                                            {loading ?
-                                                <ActivityIndicator color={theme.secondary} />
-                                                : "Voir les Devoirs rendus par les eleves"
-                                            }
-
-
-                                        </Button>
-                                    </View>}
-                                {visibleSubmited &&
-                                    <FlatList
-                                        data={assignmentSubmit}
-                                        scrollEnabled={false}
-                                        nestedScrollEnabled={false}
-                                        keyExtractor={(item, index) => index.toString()}
-                                        renderItem={({ item }) => <View>
-
-                                            {item?.document?.map((items: any, index: any) => {
-                                                return <TouchableOpacity
-                                                    key={items.id}
-                                                    style={styles.itemContainer}
-                                                    onPress={() => {
-                                                        // navigation.navigate('DocViewer', { file: item.document[0] });
-                                                    }}>
-                                                    <Text style={styles.iconText}><Icon name="file-pdf-o" size={24} color="#007aff" /></Text>
-                                                    <Text style={styles.itemText}>{items.name}</Text>
-                                                </TouchableOpacity>
-                                            })}
-                                            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 10 }}>
-                                                <Text style={{
-                                                    ...Theme.fontStyle.montserrat.bold
-                                                }}>
-                                                    {I18n.t("Dashboard.AssignmentsScreen.statusLabel")}  <Text style={{
-                                                        color: item?.state === 'accept' ? theme.primary : theme.primaryText
-                                                    }}>
-                                                        {item?.state}</Text>
-                                                </Text>
-                                                <Text style={{
-                                                    ...Theme.fontStyle.montserrat.semiBold,
-                                                    color: theme.primaryText
-                                                }}>{I18n.t("Dashboard.AssignmentsScreen.noteLabel")}  <Text style={{
-                                                    color: item?.marks >= 10 ? theme.primary : "red",
-
-                                                }}>{item?.marks}/20</Text></Text>
-                                            </View>
-
+                                <View style={styles.statusContainer}>
+                                    <Text style={styles.statusText}>
+                                        {"Rendu par"}
+                                    </Text>
+                                    {loading && < ActivityIndicator color={theme.secondary} />}
+                                    {
+                                        !loading &&
+                                        <Text style={styles.statusText1}>
+                                            {submitNumber + ""}{" Personnes"}
+                                        </Text>
+                                    }
+                                </View>
+                            </View>
+                            {item.description &&
+                                <Text style={styles.description}>{I18n.t("Dashboard.AssignmentsScreen.descriptionLabel")} <Text style={{ ...Theme.fontStyle.montserrat.regular }}> {item.description}</Text></Text>}
+                            {item.description &&
+                                <>
+                                    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                                        <View style={{ flexDirection: "row" }}>
                                         </View>
-                                        }
-                                        ListHeaderComponent={() =>
-                                            <View>
-                                                <Text style={{ color: theme.primary, ...Theme.fontStyle.montserrat.semiBold }}>
-                                                    {I18n.t("Dashboard.AssignmentsScreen.alreadySubmittedHeader")}
-                                                </Text>
+                                        <Text style={styles.dueText}>  {I18n.t("Dashboard.AssignmentsScreen.dueDateLabel")} {item.lieuRemise}</Text>
+                                    </View>
+                                    {!visibleSubmited &&
+                                        <View style={{ flexDirection: "column", flex: 1, gap: 9 }}>
+                                            <Button
+                                                mode="text"
+                                                style={{ flex: 1 }}
+                                                labelStyle={{ color: theme.secondary }}
+
+                                                onPress={() => {
+                                                    hideDialog && hideDialog(!visible, item?.document);
+                                                }}
+                                                icon={"eye"}>
+                                                {"Voir les documents du devoirs"}
+                                            </Button>
+                                            <Button
+                                                mode="text"
+                                                style={{ flex: 1, }}
+                                                labelStyle={{ color: theme.secondary }}
+                                                onPress={async () => {
+
+                                                    navigation.navigate("AssignmemtRenderStudentListScreen", { classRoom: children, assignment: item })
+
+                                                }}
+                                                icon={"eye"}>
+                                                {"Voir les Devoirs rendus par les eleves"}
+
+
+
+                                            </Button>
+                                        </View>}
+                                    {visibleSubmited &&
+                                        <FlatList
+                                            data={assignmentSubmit}
+                                            scrollEnabled={false}
+                                            nestedScrollEnabled={false}
+                                            keyExtractor={(item, index) => index.toString()}
+                                            renderItem={({ item }) => <View>
+
+                                                {item?.document?.map((items: any, index: any) => {
+                                                    return <TouchableOpacity
+                                                        key={items.id}
+                                                        style={styles.itemContainer}
+                                                        onPress={() => {
+                                                            // navigation.navigate('DocViewer', { file: item.document[0] });
+                                                        }}>
+                                                        <Text style={styles.iconText}><Icon name="file-pdf-o" size={24} color="#007aff" /></Text>
+                                                        <Text style={styles.itemText}>{items.name}</Text>
+                                                    </TouchableOpacity>
+                                                })}
+                                                <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 10 }}>
+                                                    <Text style={{
+                                                        ...Theme.fontStyle.montserrat.bold
+                                                    }}>
+                                                        {I18n.t("Dashboard.AssignmentsScreen.statusLabel")}  <Text style={{
+                                                            color: item?.state === 'accept' ? theme.primary : theme.primaryText
+                                                        }}>
+                                                            {item?.state}</Text>
+                                                    </Text>
+                                                    <Text style={{
+                                                        ...Theme.fontStyle.montserrat.semiBold,
+                                                        color: theme.primaryText
+                                                    }}>{I18n.t("Dashboard.AssignmentsScreen.noteLabel")}  <Text style={{
+                                                        color: item?.marks >= 10 ? theme.primary : "red",
+
+                                                    }}>{item?.marks}/20</Text></Text>
+                                                </View>
+
                                             </View>
-                                        }
-                                    />}
-                            </>
-                        }
-                        <Text style={styles.dueText}></Text>
+                                            }
+                                            ListHeaderComponent={() =>
+                                                <View>
+                                                    <Text style={{ color: theme.primary, ...Theme.fontStyle.montserrat.semiBold }}>
+                                                        {I18n.t("Dashboard.AssignmentsScreen.alreadySubmittedHeader")}
+                                                    </Text>
+                                                </View>
+                                            }
+                                        />}
+                                </>
+                            }
+                            <Text style={styles.dueText}></Text>
 
-                        <Divider />
-                    </>
+                            <Divider style={{ borderColor: "red" }} />
+                        </>
+                    }
                     }
                     keyExtractor={(item, index) => index.toString()}
                 />
@@ -426,50 +419,6 @@ export const TaskItem = ({ theme, item: [date, tasks], hideDialog, visible, rend
 
 
 
-
-export const TaskItemTimeTable = ({ theme, item: [date, tasks] }: createStylesProps) => {
-    const styles = createStyles(theme);
-    return (
-        <View style={styles.container}>
-            <View style={styles.dateContainer}>
-                <Text style={styles.dateText}>{I18n.t("Dashboard.AssignmentsScreen.for_the")}  {moment(date).format('dddd D MMMM YYYY')} </Text>
-            </View>
-            <View>
-                <FlatList
-                    showsHorizontalScrollIndicator={false}
-                    showsVerticalScrollIndicator={false}
-                    data={tasks}
-                    renderItem={({ item }) => <>
-                        <View style={[styles.taskContainer, { marginBottom: 10 }]}>
-                            <View style={{ flex: 1 }}>
-                                <View style={styles.colorIndicator} />
-                                <View style={styles.taskDetailsContainer}>
-                                    <Text style={styles.subjectText}>{item?.subject?.name}</Text>
-                                    <Text style={styles.taskText}>Mr. {item.tache ? item.tache : "  ..."}</Text>
-                                </View>
-                            </View>
-                            {/* subject */}
-                            <View style={[styles.statusContainer, { backgroundColor: theme.gray3, gap: 5, alignItems: "center" }]}>
-                                <Text style={
-                                    styles.statusText}>
-                                    {moment(item.start_datetime).format('HH : mm')}
-                                </Text>
-                                <MaterialCommunityIcons name="arrow-up-down" size={10} />
-                                <Text style={
-                                    styles.statusText}>
-                                    {moment(item.end_datetime).format('HH : mm')}
-                                </Text>
-                            </View>
-                        </View>
-                        <Divider />
-                    </>
-                    }
-                    keyExtractor={(item, index) => index.toString()}
-                />
-            </View>
-        </View>
-    );
-};
 
 const createStyles = (theme: any) => StyleSheet.create({
     container: {

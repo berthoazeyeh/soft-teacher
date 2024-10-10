@@ -1,49 +1,67 @@
 import { useEffect, useState } from "react";
 import { View, Text, ActivityIndicator, TouchableOpacity } from "react-native";
-import { useTheme } from "store";
+import { selectLanguageValue, useCurrentUser, useTheme } from "store";
 import dynamicStyles from "./styles";
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import moment from "moment";
 import { FlatList } from "react-native";
-import { getRandomColor, Theme } from "utils";
+import { getRandomColor, showCustomMessage, Theme } from "utils";
 import { CustomDatePickerForm } from "components";
 import { Divider } from "react-native-paper";
+import useSWRMutation from "swr/mutation";
+import { getCorrectDateFormat, getData, LOCAL_URL } from "apis";
+import { RefreshControl } from "react-native";
+import { useSelector } from "react-redux";
 
 
 function CourcesListeScreen(props: any): React.JSX.Element {
     const { navigation, route } = props
-    const { children } = route.params
+    const { classRoom, nexScreen } = route.params
     const theme = useTheme()
-    const [isLoading, setIsLoading] = useState(false);
-    const [selectedDate, setSelectedDate] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [refresh, setRefresh] = useState(false);
+    const [rescan, setRescan] = useState(false);
+    const [subjects, setSubject] = useState<any[]>([]);
+    const [selectedDate, setSelectedDate] = useState<any>(new Date());
     const styles = dynamicStyles(theme)
+    const user = useCurrentUser();
+    const language = useSelector(selectLanguageValue);
+
+    moment.locale("en");
+    const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/timesheet/faculty/${user?.id}/${classRoom.id}/${moment(selectedDate).format("dddd")}`, getData)
+    // moment.locale(language);
+    // console.log(nexScreen);
+
+
+    const getTeacherTimeTables = async () => {
+        setSubject([]);
+        try {
+            setIsLoading(true);
+            const res = await getTeacherSubjectInClassRoome();
+            if (res?.success) {
+                const timetable: any[] = res?.success ? res?.data : []
+                setSubject(timetable);
+                console.log(res);
+
+            } else {
+                showCustomMessage("Information", res.message, "warning", "bottom")
+            }
+        } catch (err: any) {
+            showCustomMessage("Information", 'Une erreur s\'est produite :' + err.message, "warning", "bottom")
+            console.error('Une erreur s\'est produite :', err);
+        } finally {
+            setIsLoading(false);
+            setRefresh(false);
+        }
+
+    };
     useEffect(() => {
-        console.log("children", children);
+        getTeacherTimeTables()
+    }, [rescan])
 
-    }, [])
 
-    const data = [
-        {
-            startDate: "11h",
-            endDate: "12h",
-            name: "Chimie",
-            isDone: false,
-        },
-        {
-            startDate: "08h",
-            endDate: "10h",
-            name: "Mathematique",
-            isDone: true,
 
-        },
-        {
-            startDate: "11h",
-            endDate: "12h",
-            name: "Informatique",
-            isDone: true,
-        },
 
-    ]
     const renderEmptyElement = () => (
         <View style={styles.emptyData}>
             {isLoading &&
@@ -55,10 +73,13 @@ function CourcesListeScreen(props: any): React.JSX.Element {
     );
     const incrementDate = () => {
         setSelectedDate((prevDate: any) => moment(prevDate).add(1, 'days'));
+        setRescan(!rescan)
     };
 
     const decrementDate = () => {
         setSelectedDate((prevDate: any) => moment(prevDate).subtract(1, 'days'));
+        setRescan(!rescan)
+
     };
 
 
@@ -69,7 +90,7 @@ function CourcesListeScreen(props: any): React.JSX.Element {
             }}
         >
             <MaterialCommunityIcons name='arrow-left' size={25} color={theme.primaryText} />
-            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 28, color: theme.primary }}>{children.name}</Text>
+            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 28, color: theme.primary }}>{classRoom.name}</Text>
         </TouchableOpacity>
         <Divider />
         <View style={styles.headerTimeConatiner}>
@@ -89,33 +110,43 @@ function CourcesListeScreen(props: any): React.JSX.Element {
         </View>
 
         <FlatList
-            data={data}
-            renderItem={({ item, index }) =>
-                <TouchableOpacity
-                    onPress={() => {
-                        navigation.navigate("MyAbsencesScreen", { class: children, courses: item })
+            data={subjects}
+            contentContainerStyle={styles.content}
+            refreshControl={
+                <RefreshControl
+                    refreshing={refresh}
+                    onRefresh={() => {
+                        setRefresh(true)
                     }}
-                    style={{ flexDirection: "row", marginBottom: 20, gap: 20, paddingHorizontal: 20, }}>
-                    <View style={{ justifyContent: "space-around", width: 50, }}>
-                        <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{item.startDate}</Text>
-                        <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{item.endDate}</Text>
-                    </View >
+                />}
+            renderItem={({ item, index }) =>
+                <View >
+                    <TouchableOpacity
+                        onPress={() => {
+                            navigation.navigate(nexScreen, { classRoom: classRoom, subject: item })
+                        }}
+                        style={{ flexDirection: "row", alignItems: "center", gap: 20, paddingHorizontal: 20, width: "100%" }}>
+                        <View style={{ justifyContent: "space-around", gap: 30 }}>
+                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{moment(item?.start_datetime).format("HH:mm")}</Text>
+                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{moment(item?.end_datetime).format("HH:mm")}</Text>
+                        </View >
 
-                    <View style={{ width: 10, backgroundColor: getRandomColor(), height: 80, }} />
+                        <View style={{ width: 10, backgroundColor: getRandomColor(), height: "100%", }} />
 
-                    <View style={{ justifyContent: "space-around" }}>
-                        <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 28, color: theme.primaryText }}>{item.name}</Text>
-                        <Text>{children.name}</Text>
-                        {item.isDone &&
-                            <MaterialCommunityIcons name='check-circle' size={25} color={theme.primary} />
-                        }
-                        {!item.isDone &&
-                            <MaterialCommunityIcons name='check-circle' size={25} color={"red"} />
-                        }
+                        <View style={{ justifyContent: "space-around", flex: 1, }}>
+                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 25, color: theme.primaryText, }}>{item?.subject_id?.name}</Text>
+                            <Text>{classRoom.name}</Text>
+                            {item.attendance_sheet &&
+                                <MaterialCommunityIcons name='check-circle' size={25} color={theme.primary} />
+                            }
+                            {!item.attendance_sheet &&
+                                <MaterialCommunityIcons name='check-circle' size={25} color={"red"} />
+                            }
 
-                    </View>
-                </TouchableOpacity>
-
+                        </View>
+                    </TouchableOpacity>
+                    <Divider style={{ width: "100%", marginVertical: 20 }}></Divider>
+                </View >
             }
             keyExtractor={(item, index) => index.toString()}
             ListEmptyComponent={renderEmptyElement}

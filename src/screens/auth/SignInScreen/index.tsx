@@ -10,7 +10,7 @@ import { I18n } from 'i18n';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import useSWR from "swr";
 import { Region } from "react-native-maps";
-import { CustomDatePicker, CustomerLoader } from "components";
+import {  CustomerLoader } from "components";
 import { getData, LOCAL_URL, postData } from "apis";
 import useSWRMutation from 'swr/mutation'
 import * as z from 'zod';

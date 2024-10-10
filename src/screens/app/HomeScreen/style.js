@@ -24,6 +24,37 @@ const dynamicStyles = (theme, isSelected) => {
             alignContent: "center",
             alignItems: "center"
         },
+        classRoomText: {
+            fontSize: 16,
+            paddingVertical: 3,
+            ...Theme.fontStyle.montserrat.bold,
+            color: theme.primaryText
+        },
+        classRoomContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 10,
+            paddingVertical: 10,
+            backgroundColor: 'lightblue',
+            gap: 3,
+        },
+        headerTimeConatiner: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 10,
+            paddingHorizontal: 10,
+            // paddingVertical: 10,
+            backgroundColor: 'lightblue',
+        },
+        etiquettesItem2: {
+            right: 0,
+            borderTopRightRadius: 10,
+            position: "absolute",
+            alignContent: "center",
+            alignItems: "center",
+            backgroundColor: theme.primaryText,
+        },
         itemContainer: {
             zIndex: 1,
             marginBottom: 5,
@@ -58,9 +89,10 @@ const dynamicStyles = (theme, isSelected) => {
             alignItems: "center"
         },
         containerWrap: {
+            marginTop: 0,
             flexDirection: 'row',
             flexWrap: 'wrap',
-            justifyContent: 'flex-start',
+            justifyContent: "center",
             alignItems: "center"
         },
         item: {
@@ -112,6 +144,12 @@ const dynamicStyles = (theme, isSelected) => {
             paddingBottom: 5
         },
         etiquettesItemText: {
+            ...Theme.fontStyle.montserrat.semiBold,
+            color: theme.secondaryText,
+        },
+        etiquettesItemText2: {
+            paddingHorizontal: 10,
+            paddingVertical: 1,
             ...Theme.fontStyle.montserrat.semiBold,
             color: theme.secondaryText,
         },

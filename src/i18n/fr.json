@@ -122,7 +122,84 @@
             ]
         }
     },
+    "AddAssignmentScreen": {
+        "createNewAssignment": "Créer un nouveau devoir pour la classe",
+        "chooseCourse": "Choisir le cours",
+        "chooseExerciseType": "Choisir le type d'exercice",
+        "assignmentTitle": "Titre du devoir",
+        "assignmentDescription": "Description du devoir (100 à 250 mots)",
+        "chooseEndDate": "Choisir la date de fin",
+        "uploadDocuments": "Charger les documents",
+        "publishAssignment": "Publier le devoir",
+        "allFieldsRequired": "Tous les champs sont requis",
+        "info": "Information",
+        "uploadOrScanDocs": "Télécharger ou scanner les documents liés au devoir",
+        "scanAssignment": "Scanner le devoir",
+        "uploadFromDevice": "Télécharger depuis mon appareil",
+        "loadingError": "Une erreur s'est produite :",
+        "successMessage": "Succès",
+        "error_type": {
+            "required": "Le type  d'exercice requis.",
+            "min": "Le type doit être un nombre positif."
+        },
+        "error_subject": {
+            "required": "Le sujet est requis.",
+            "min": "Le sujet doit être un nombre positif."
+        },
+        "error_title": {
+            "required": "Le titre est requis.",
+            "min": "Le titre doit contenir au moins 5 caractères."
+        },
+        "error_description": {
+            "required": "La description est requise.",
+            "min": "La description doit contenir au moins 5 caractères."
+        },
+        "error_date": {
+            "required": "La date est requise.",
+            "valid": "La date doit être valide."
+        },
+        "error_document": {
+            "required": "Le tableau des documents est requis.",
+            "nonempty": "Le tableau doit contenir au moins un élément."
+        }
+    },
     "Notification": {
         "title": "Notifications Récentes"
+    },
+    "SettingsScreen": {
+        "screenTitle": "Paramètres",
+        "accountTitle": "Compte",
+        "mapStylingTitle": "Style de carte",
+        "privacyTitle": "Confidentialités",
+        "languageTitle": "Langue",
+        "darkModeSwitch": "Mode sombre",
+        "privacySettings": {
+            "notificationPrimaryLabel": "Notifications",
+            "notificationSecondaryLabel": "Cliquez pour Activer / Désactiver",
+            "toastMessages": [
+                "Paremètres de notifications enregistrés",
+                "Echec d'enregistrement des paramètres"
+            ]
+        },
+        "accountSettings": {
+            "userNameLabel": "Identifiant",
+            "passwordLabel": "Mot de passe",
+            "changeButtonTitle": "Changer",
+            "newPasswordPlaceholder": "Nouveau mot de passe",
+            "confirmPasswordPlaceholder": "Confirmez le mot de passe",
+            "toastMessages": [
+                "Mot de passe obligatoire",
+                "Les deux mots de passe ne sont pas identiques",
+                "Vérifiez la connexion au réseau.",
+                "Echec de la mise à jour, veuillez réessayer.",
+                "Profil mis à jour!",
+                "Veuillez vous reconnecter avec les nouveaux identifiants."
+            ]
+        },
+        "languageSettings": {
+            "toastMessages": [
+                "Langue mise à jour vers"
+            ]
+        }
     }
 }

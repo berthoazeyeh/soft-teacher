@@ -52,8 +52,10 @@ const dynamicStyles = (theme) => {
             flexDirection: "row",
             marginBottom: 10,
             backgroundColor: theme.gray3,
-            margin: 10,
-            borderRadius: 10,
+            margin: 8,
+            marginVertical: 10,
+            borderRadius: 5,
+            elevation: 4,
         },
         profil: {
             padding: 5,

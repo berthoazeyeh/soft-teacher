@@ -14,7 +14,7 @@ import useSWRMutation from 'swr/mutation'
 import * as z from 'zod';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { LOCAL_URL, postData } from "apis";
+import { DATABASE, LOCAL_URL, postData } from "apis";
 
 const schema = z.object({
     email: z.string()
@@ -37,7 +37,7 @@ const LoginScreen = (props) => {
         resolver: zodResolver(schema),
         mode: "onChange",
     });
-    const { trigger: loginParrents } = useSWRMutation(`${LOCAL_URL}/api/login/parent`, postData)
+    const { trigger: loginParrents } = useSWRMutation(`${LOCAL_URL}/api/login/faculty`, postData)
 
     const [loading, setLoading] = useState(false)
     const [securePasswordEntry, setSecurePasswordEntry] = useState(true)

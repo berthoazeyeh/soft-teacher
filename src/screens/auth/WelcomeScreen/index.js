@@ -40,11 +40,8 @@ const Welcome = (props) => {
         try {
             const user_Parent_Id = user?.id
             if (!user_Parent_Id) {
-                navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'AppStacks' }],
-                })
-                // navigation.navigate("LoginScreen");
+
+                navigation.navigate("LoginScreen");
                 return;
             }
             const response = await getDataM(`${LOCAL_URL}/api/op.parent/${user_Parent_Id}`)

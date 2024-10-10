@@ -50,7 +50,7 @@ const CustomDatePickerForm = props => {
       style={styles.containerDatePicker}
       onPress={() => setShow(true)}>
       <View style={styles.viewDatePicker}>
-        <Text style={styles.datePicker}>{props?.date ? moment(props?.date).format('ddd D MMM') : moment().format('ddd D MMM')}</Text>
+        <Text style={styles.datePicker}>{props?.date ? moment(props?.date).format('ddd DD MMMM') : moment().format('ddd DD MMMM')}</Text>
         {show && renderDatePicker()}
       </View>
     </TouchableOpacity>

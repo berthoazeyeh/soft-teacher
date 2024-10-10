@@ -47,6 +47,13 @@ const dynamicStyles = (theme) => {
             backgroundColor: theme.primaryBackground,
             ...Theme.fontStyle.montserrat.bold
         },
+        textdanger1: {
+            margin: 2,
+            color: 'red',
+            ...Theme.fontStyle.montserrat.italic,
+            fontSize: 10,
+            marginLeft: 10,
+        },
         profil: {
             padding: 5,
             marginLeft: 15,

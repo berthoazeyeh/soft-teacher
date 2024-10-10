@@ -31,50 +31,49 @@ function DashBoardScreen(props: any): React.JSX.Element {
     const [selectedValue, setSelectedValue] = useState<Eleve | null>(null);
     const [data, setData] = useState<Item[]>([]);
     const user = useCurrentUser();
-    const [student, setStudent] = useState<any[]>([
-        { id: 1, name: "Terminal D1", cours: ["Methemetique", "Informatque"], },
-        { id: 2, name: "3 eme M2", cours: ["Informatque"], },
-    ])
+    const [classRoom, setClassRoom] = useState<any[]>([])
     const [refresh, setRefresh] = useState(false)
     const isFocused = useIsFocused();
 
     let ElementList = I18n.t("Dashboard.ElementList");
-    const { data: students, error, isLoading } = useSWR(`${LOCAL_URL}/api/parent-search/${user?.id}`,
-        getData, { refreshInterval: 1000000, refreshWhenHidden: true, },);
-    const { trigger: getParentStudent } = useSWRMutation(`${LOCAL_URL}/api/parent-search/${user?.id}`, getData)
+    const { data: rooms, error, isLoading } = useSWR(`${LOCAL_URL}/api/rooms/faculty/${user?.id}`,
+        getData,
+        {
+            refreshInterval: 100000,
+            refreshWhenHidden: true,
+        },
+    );
+
+    const { trigger: getTeacherClassRoome } = useSWRMutation(`${LOCAL_URL}/api/rooms/faculty/${user?.id}`, getData)
     useEffect(() => {
-        // HandleGetStudent()
+        HandleGetStudent()
     }, [refresh])
 
     const HandleGetStudent = async () => {
         if (user?.id) {
-            const student = await getParentStudent();
+            const student = await getTeacherClassRoome();
             if (student && student.data) {
-                setStudent(student.data[0].students)
+                setClassRoom(student.data)
             }
             setRefresh(false);
         }
     }
+
     useEffect(() => {
-        if (route.params && route.params?.item) {
-            console.log("''''", route?.params?.item);
-            console.log("..>>>>>", selectedValue);
-            setSelectedValue(route.params.item)
+        if (route.params && route.params?.clasRoom) {
+            setSelectedValue(route.params.clasRoom?.id)
         }
-    }, [data, navigation])
+    }, [rooms, navigation, route.params?.clasRoom?.id])
 
     useEffect(() => {
         if (isFocused) {
-            ElementList = I18n.t("Dashboard.ElementList");
-            if (route.params && route.params.student && route.params.student?.id) {
-                setSelectedValue(route.params.student)
-            }
-            if (students?.success)
-                if (students && students.data) {
-                    setStudent(students.data[0].students)
+
+            if (rooms?.success)
+                if (rooms && rooms.data) {
+                    setClassRoom(rooms.data)
                 }
         }
-    }, [isFocused, data]);
+    }, [isFocused, rooms]);
 
 
     const onMenuPressed = (val: boolean) => {
@@ -83,7 +82,7 @@ function DashBoardScreen(props: any): React.JSX.Element {
     const onLogoutPressed = (isSetting: boolean) => {
         setVisible(false)
         if (isSetting) {
-            navigation.navigate("SettingsScreen")
+            navigation.navigate("SettingsScreenStacks")
         } else {
             dispatch(clearUserStored(null))
             navigation.reset({
@@ -112,11 +111,11 @@ function DashBoardScreen(props: any): React.JSX.Element {
                     style={styles.pickerItemStyle}
                     label={"Choisir une salle de classe"}
                     value={"studentI.id"} />
-                {student.map(studentI => <Picker.Item
+                {classRoom.map(studentI => <Picker.Item
                     style={styles.pickerItemStyle}
                     key={studentI}
                     label={studentI.name}
-                    value={studentI} />)}
+                    value={studentI?.id} />)}
             </Picker>
         </View>
         <Divider />
@@ -141,12 +140,13 @@ function DashBoardScreen(props: any): React.JSX.Element {
     };
     const data1: Item[] = [
         { id: 1, color: "green", haveBadge: false, name: "Liste d'eleve", icon: 'account-group', screen: "StudentListScreen" }, // Profil étudiant
-        { id: 2, color: '#2C2C2C', haveBadge: true, name: "Mes cours", icon: 'school', screen: 'MyCourcesScreen' },// Cours
-        { id: 3, color: '#2C2C2C', haveBadge: true, name: "Emploi de temps", icon: 'calendar', screen: 'MyTimeTableScreen' }, // Emploi du temps
+        { id: 2, color: theme.primaryText, haveBadge: true, name: "Mes cours", icon: 'school', screen: 'MyCourcesScreen' },// Cours
+        { id: 3, color: theme.primaryText, haveBadge: true, name: "Emploi de temps", icon: 'calendar', screen: 'MyTimeTableScreen' }, // Emploi du temps
         { id: 4, color: "green", haveBadge: true, name: "Les Devoirs", icon: 'checkbox-marked-outline', screen: 'MyAssignmentScreen' }, // Présence
         { id: 5, color: 'green', haveBadge: true, name: "Appel et suivi", icon: 'clipboard-list', screen: 'CourcesListeScreen' }, // Inscription aux matières
-        { id: 6, color: "#2C2C2C", haveBadge: true, name: "Cahier de texte", icon: 'pencil', screen: 'NotebookScreen' }, // Devoirs
-        { id: 7, color: '#2C2C2C', haveBadge: false, name: "Saisie des notes", icon: 'book-open-variant', screen: 'GradeEntryScreen' }, // Carnet de notes
+        { id: 7, color: theme.primaryText, haveBadge: false, name: "Saisie des notes", icon: 'book-open-variant', screen: 'GradeEntryScreen' }, // Carnet de notes
+        { id: 8, color: theme.primaryText, haveBadge: true, name: "Examens et appel", icon: 'library', screen: 'ExamsListeScreen' }, // Bibliothèque
+        { id: 6, color: "green", haveBadge: true, name: "Cahier de texte", icon: 'pencil', screen: 'NotebookScreen' }, // Devoirs
         { id: 8, color: "green", haveBadge: true, name: "Anciens bulletins", icon: 'library', screen: 'PastReportCardsScreen' }, // Bibliothèque
     ];
 
@@ -163,13 +163,37 @@ function DashBoardScreen(props: any): React.JSX.Element {
             onPress={() => {
                 console.log(selectedValue);
 
-                if (selectedValue && selectedValue.id) {
-                    navigation.navigate('DashboadElementStacks', {
-                        screen: item.screen,
-                        params: {
-                            children: selectedValue,
-                        },
-                    });
+                if (selectedValue) {
+                    // if (item.screen === "GradeEntryScreen") {
+
+                    //     navigation.navigate('DashboadElementStacks', {
+                    //         screen: "MyCourcesScreen",
+                    //         params: {
+                    //             classRoom: classRoom.find((item: any) => item.id === selectedValue),
+                    //             nexScreen: "GradeEntryScreen"
+                    //         },
+                    //     });
+                    // } else
+
+                    if (item.screen === "CourcesListeScreen") {
+
+                        navigation.navigate('DashboadElementStacks', {
+                            screen: "CourcesListeScreen",
+                            params: {
+                                classRoom: classRoom.find((item: any) => item.id === selectedValue),
+                                nexScreen: "MyAbsencesScreen"
+                            },
+                        });
+                    }
+                    else {
+
+                        navigation.navigate('DashboadElementStacks', {
+                            screen: item.screen,
+                            params: {
+                                classRoom: classRoom.find((item: any) => item.id === selectedValue),
+                            },
+                        });
+                    }
                 } else {
                     showCustomMessage("Information", I18n.t("Dashboard.NoChildSelectedMessage"), "warning", "bottom")
                 }

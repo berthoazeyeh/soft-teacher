@@ -9,6 +9,10 @@ const dynamicStyles = (theme: any) => {
             flex: 1,
             backgroundColor: theme.primaryBackground,
         },
+        content: {
+            padding: 10,
+            flex: 1,
+        },
         modalContent: {
             justifyContent: 'flex-end',
             alignItems: 'center',
@@ -39,6 +43,11 @@ const dynamicStyles = (theme: any) => {
             textAlign: "center",
             fontSize: 17
 
+        },
+        header: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            overflow: 'hidden',
         },
         viewBar: {
             width: 40,

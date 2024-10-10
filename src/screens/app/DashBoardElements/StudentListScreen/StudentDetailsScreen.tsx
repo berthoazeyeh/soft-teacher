@@ -19,7 +19,7 @@ import { EducationScreen, GuardiansScreen, StudentProfilScreen, TabNavigator } f
 
 function StudentDetailsScreen(props: any): React.JSX.Element {
     const { navigation, route } = props
-    const { children } = route.params
+    const { classRoom, student } = route.params
     const theme = useTheme()
     const [isLoading, setIsLoading] = useState(false)
     const [showSearch, setShowSearch] = useState(false)
@@ -47,7 +47,7 @@ function StudentDetailsScreen(props: any): React.JSX.Element {
         </TouchableOpacity>
         <Divider />
         <TabNavigator>
-            <StudentProfilScreen />
+            <StudentProfilScreen student={student} />
             <EducationScreen />
             <GuardiansScreen />
         </TabNavigator>

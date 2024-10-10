@@ -57,7 +57,7 @@ const Header = ({ title, onLogoutPressed, theme, visible, setVisible, navigation
                 <Divider />
                 <TouchableOpacity style={styles(theme).menuItem}
                     onPress={() => {
-                        navigation.navigate("SettingsScreen")
+                        navigation.navigate("SettingsScreenStacks")
                         setVisible(false)
                     }}
                 >

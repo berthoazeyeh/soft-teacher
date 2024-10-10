@@ -103,7 +103,7 @@ export async function RechargeMobileWalletEnd(url, { arg }) {
         method: 'POST',
         body: formData
     }).then((res) => {
-        // console.log("mauvaise reponse", res);
+        console.log("mauvaise reponse", res);
         if (res.ok) {
             return res.json()
         } else {
@@ -184,20 +184,27 @@ export async function VerifyOtp(url) {
 export async function postDataDoc(url, { arg }) {
     console.log("request URL", url);
     console.log("request arg", arg);
-
     const formdata = new FormData();
+    const header = new Headers();
+    header.append('Content-Type', "multipart/form-data")
+    // 'Accept': 'application/json'
+    header.append('Accept', "application/json")
+    header.append('api-key', "Y5998ZQH6V40G1AM48EJP329SN6DMUR1")
+    header.append('token', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6ImFkbWluQHNvZnRlZHVjYXQub3JnIiwidWlkIjoyfQ.4xzNf2eP5zZE5kCq-V65N5wJQZTPJEUtGljXCvOapsE")
 
     formdata.append("document", arg?.document);
-    formdata.append("assignment_id", arg?.assignment_id);
-    formdata.append("student_id", arg?.student_id);
-    formdata.append("submission_date", arg?.submission_date);
+    formdata.append("faculty_id", arg?.faculty_id);
+    formdata.append("room_id", arg?.room_id);
+    formdata.append("subject_id", arg?.subject_id);
     formdata.append("description", arg?.description);
-    formdata.append("note", arg?.note);
+    formdata.append("submission_date", getCorrectDateFormat(arg?.submission_date));
+    formdata.append("assignment_type", arg?.assignment_type);
+    formdata.append("name", arg?.name);
 
 
     console.log("request formdata", formdata);
     return fetch(url, {
-        headers: headers,
+        headers: header,
         method: 'POST',
         body: formdata
     }).then((res) => {
@@ -210,7 +217,7 @@ export async function postDataDoc(url, { arg }) {
     })
 }
 
-function getCorrectDateFormat(chaine) {
+export function getCorrectDateFormat(chaine) {
 
     const date = new Date(chaine);
 

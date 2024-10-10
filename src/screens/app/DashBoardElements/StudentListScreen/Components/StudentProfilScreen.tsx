@@ -7,7 +7,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { I18n } from "i18n";
 
 function StudentProfilScreen(props: any): React.JSX.Element {
-    const { children } = props
+    const { student } = props
     const theme = useTheme()
     const list = I18n.t("Dashboard.studentProfile.studentInfo")
     type GenderKey = 'm' | 'f';
@@ -18,37 +18,37 @@ function StudentProfilScreen(props: any): React.JSX.Element {
     const data = [
         {
             key: "birth_date",
-            value: children?.birth_date,
+            value: student?.birth_date,
             labels: list[0],
             icon: "calendar"
         },
         {
             key: "blood_group",
-            value: "AB-" || "",
+            value: student?.blood_group || "--",
             labels: list[1],
             icon: "blood-bag"
         },
         {
             key: "gender",
-            value: sexe['m' as GenderKey],
+            value: sexe[student?.gender as GenderKey],
             labels: list[2],
             icon: "gender-male"
         },
         {
             key: "email",
-            value: "dev.t61.tech@gmail.com",
+            value: student?.email,
             labels: list[3],
             icon: "email"
         },
         {
             key: "phone",
-            value: "67874366",
+            value: student?.phone || "--",
             labels: list[4],
             icon: "phone"
         },
         {
             key: "nationality",
-            value: "Cameroun",
+            value: student?.nationality,
             labels: list[5],
             icon: "earth"
         },
@@ -72,19 +72,21 @@ function StudentProfilScreen(props: any): React.JSX.Element {
         </View>
     }
     const renderHeader = () => {
-
+        let name = ""
+        if (student.middle_name) name = name + student.middle_name + " "
+        if (student.last_name) name = name + student.last_name
         return <>
             <View style={styles(theme).headerContent}>
                 <View style={styles(theme).imageContainer}>
 
                     <Image
-                        source={profils}
+                        source={{ uri: student?.avatar }}
                         style={styles(theme).image}
                     />
                 </View>
                 <View style={styles(theme).headerContentText}>
-                    <Text style={styles(theme).title}>{"Liam "}</Text>
-                    <Text style={styles(theme).name}>{"Olivia Williams"}</Text>
+                    <Text style={styles(theme).title}>{student.first_name}</Text>
+                    <Text style={styles(theme).name}>{name}</Text>
 
                 </View>
             </View>
@@ -149,7 +151,7 @@ const styles = (theme: any) => StyleSheet.create({
         justifyContent: "space-evenly",
     },
     headerContent: {
-        paddingHorizontal: 20,
+        paddingHorizontal: 0,
         paddingVertical: 10,
         width: "100%",
         flexDirection: "row",
@@ -188,7 +190,7 @@ const styles = (theme: any) => StyleSheet.create({
         flex: 1,
         flexDirection: "column",
         justifyContent: "space-evenly",
-        height: 150
+        height: 150,
     },
 
 });

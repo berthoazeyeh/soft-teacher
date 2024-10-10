@@ -3,6 +3,7 @@ import React from 'react'
 import { HomeScreen } from 'screens'
 import HomeBottomTabNavigation from './bottom';
 import DashboadElementStacks from './dashboadElement';
+import SettingsScreenStacks from './settings';
 
 
 
@@ -12,9 +13,9 @@ export type AuthStackList = {
     FleetAnalyticsDetails: undefined;
     ProfileSettings: undefined;
     MapSettings: undefined;
+    SettingsScreenStacks: undefined;
     LanguageSettings: undefined;
     PrivacySettings: undefined;
-    AlertView: undefined;
     ReportsView: undefined;
     ReportsInfo: undefined;
     AllTrips: undefined;
@@ -41,6 +42,11 @@ const AppStacks = () => {
                 options={{ headerShown: false }}
                 name="DashboadElementStacks"
                 component={DashboadElementStacks}
+            />
+            <AuthStack.Screen
+                options={{ headerShown: false }}
+                name="SettingsScreenStacks"
+                component={SettingsScreenStacks}
             />
 
 

@@ -1,11 +1,11 @@
 import { useEffect, useState, } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { I18n } from 'i18n';
-import { Header, VehicleItem } from './components';
+import { Header, TaskItemTimeTable, VehicleItem } from './components';
 import { clearUserStored, selectLanguageValue, useCurrentUser, useTheme } from 'store';
 import dynamicStyles from './style';
 import { Image } from 'react-native';
-import { ImageE1, Theme } from 'utils';
+import { groupByDay, ImageE1, showCustomMessage, Theme } from 'utils';
 import { Divider, ProgressBar } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch, useSelector } from 'react-redux';
@@ -29,16 +29,14 @@ function HomeScreen(props: any): React.JSX.Element {
     const styles = dynamicStyles(theme)
     const user = useCurrentUser();
     const dispatch = useDispatch()
-    const [student, setStudent] = useState<any[]>([
-        { id: 1, name: "Terminal D1", cours: ["Methemetique", "Informatque"], },
-        { id: 2, name: "3 eme M2", cours: ["Informatque"], },
+    const [classRoom, setClassRoom] = useState<any[]>([
     ])
     const [allStudent, setAllStudent] = useState<Eleve[]>([])
-    const [studentAttendence, setStudentAttendence] = useState<any[]>([])
-    const [studentNote, setStudentNote] = useState<any[]>([])
+    const [timeTables, setTimeTables] = useState<any[]>([])
+    const [attendance, setAttendance] = useState<any[]>([])
     const [submitedAssignment, setSubmitedAssignment] = useState<any[]>([])
     const [vehicles, setVehicles] = useState<ArrayLike<any>>([])
-    const [selectedStudent, setSelectedStudent] = useState<Eleve>()
+    const [selectedClasse, setSelectedClasse] = useState<Eleve>()
     const [refresh, setRefresh] = useState(false)
     const [isLoadingVehicule, setIsLoadingVehicule] = useState(true)
     const [isLoadingSubmitedAssignment, setIsLoadingSubmitedAssignment] = useState(true)
@@ -50,6 +48,7 @@ function HomeScreen(props: any): React.JSX.Element {
     const [isPrimaryDevice, setIsPrimaryDevice] = useState(false)
     const [visible, setVisible] = useState(false)
     const [scrollPercentage, setScrollPercentage] = useState(0);
+    const [classRoomIndex, setClassRoomIndex] = useState(1);
     const language = useSelector(selectLanguageValue);
 
 
@@ -59,29 +58,125 @@ function HomeScreen(props: any): React.JSX.Element {
     const onMenuPressed = (val: boolean) => {
         setVisible(val)
     }
-    const { data, error, isLoading } = useSWR(`${LOCAL_URL}/api/parent-search/${user?.id}`,
+    const { data, error, isLoading } = useSWR(`${LOCAL_URL}/api/rooms/faculty/${user?.id}`,
         getData,
         {
-            refreshInterval: 1000000,
+            refreshInterval: 100000,
             refreshWhenHidden: true,
         },
     );
-    const { trigger: getStudentTimeTable } = useSWRMutation(`${LOCAL_URL}/api/admission/student/timelines/${selectedStudent?.id}`, getData)
-    const { trigger: getParentStudent } = useSWRMutation(`${LOCAL_URL}/api/parent-search/${user?.id}`, getData)
-    const { trigger: getStudentCoursesID } = useSWRMutation(`${LOCAL_URL}/api/op.admission/search?domain=[('student_id','=',${selectedStudent?.id})]`, getData)
-    const { trigger: getStudentLastNote } = useSWRMutation(`${LOCAL_URL}/api/op.result.line/search?domain=[('student_id','=',${selectedStudent?.id})]`, getData)
-    const { trigger: getStudentAttendences } = useSWRMutation(`${LOCAL_URL}/api/attendance-sheets`, getData)
-    const { trigger: getStudentAttendencesOne } = useSWRMutation(`${LOCAL_URL}/api/attendance-sheets/by-student?student-id=${selectedStudent?.id}`, getData)
+    const days: any = {
+        1: 'monday', 2: 'tuesday', 3: 'wednesday', 4: 'thursday', 5: 'friday', 6: 'saturday', 0: 'sunday'
+    };
+    const { trigger: getTeacherClassRoome } = useSWRMutation(`${LOCAL_URL}/api/rooms/faculty/${user?.id}`, getData)
+    const { trigger: getTeacherTimeTable } = useSWRMutation(`${LOCAL_URL}/api/timesheet/faculty/${user?.id}/${classRoom.length > 0 && classRoom[classRoomIndex].id}`, getData)
+    const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/timesheet/faculty/${user?.id}/${classRoom.length > 0 && classRoom[classRoomIndex].id}/${days[moment().format("d")]}`, getData)
 
+
+    // const { trigger: getStudentCoursesID } = useSWRMutation(`${LOCAL_URL}/api/op.admission/search?domain=[('student_id','=',${selectedStudent?.id})]`, getData)
+    // const { trigger: getStudentLastNote } = useSWRMutation(`${LOCAL_URL}/api/op.result.line/search?domain=[('student_id','=',${selectedStudent?.id})]`, getData)
+    // const { trigger: getStudentAttendences } = useSWRMutation(`${LOCAL_URL}/api/attendance-sheets`, getData)
+    // const { trigger: getStudentAttendencesOne } = useSWRMutation(`${LOCAL_URL}/api/attendance-sheets/by-student?student-id=${selectedStudent?.id}`, getData)
+
+    const incrementClassRoom = () => {
+        if (classRoomIndex >= classRoom?.length - 1) {
+            return
+        }
+        setClassRoomIndex((prevDate: any) => classRoomIndex + 1);
+    };
+
+    const decrementClassRoom = () => {
+        if (classRoomIndex <= 0) {
+            return
+        }
+        setClassRoomIndex((prevDate: any) => classRoomIndex - 1);
+    };
 
     moment.locale(language);
 
-    useEffect(() => {
+    const getTeacherClassRoom = async () => {
+        const classe = await getTeacherClassRoome();
+        if (classe?.success) {
+            const assigms: any[] = classe?.success ? classe?.data : []
+            setClassRoom(assigms);
+            console.log("getTeacherClassRoom------size-------", assigms.length);
+            setClassRoomIndex(0);
+        } else {
+        }
+    };
+    const getTeacherTimeTables = async () => {
+        if (classRoom.length <= 0) {
+            setIsLoadingTimetable(false);
+            return;
+        }
+        setTimeTables([]);
+        try {
+            setIsLoadingTimetable(true);
+            const res = await getTeacherTimeTable();
+            if (res?.success) {
+                const timetable: any[] = res?.success ? res?.data : []
+                const timeTablesFormated = Object.entries(groupByDay(timetable));
+                setTimeTables(timeTablesFormated);
+                console.log("getTeacherTimeTables------size-------", timeTablesFormated.length);
+            } else {
+                showCustomMessage("Information", res.message, "warning", "bottom")
+            }
+        } catch (err: any) {
+            showCustomMessage("Information", 'Une erreur s\'est produite :' + err.message, "warning", "bottom")
+            console.error('Une erreur s\'est produite :', err);
+        } finally {
+            setIsLoadingTimetable(false);
+            setRefresh(false);
+        }
 
+    };
+
+    const getTeacherTimeTablesAttendence = async () => {
+        if (classRoom.length <= 0) {
+            setIsLoadingAttendances(false);
+            return;
+        }
+        setAttendance([]);
+        try {
+            setIsLoadingAttendances(true);
+            const res = await getTeacherSubjectInClassRoome();
+            if (res?.success) {
+                const timetable: any[] = res?.success ? res?.data : []
+                const fogot: any[] = timetable.filter(item => !item.attendance_sheet)
+
+                setAttendance(fogot);
+                console.log(fogot);
+
+            } else {
+                showCustomMessage("Information", res.message, "warning", "bottom")
+            }
+        } catch (err: any) {
+            showCustomMessage("Information", 'Une erreur s\'est produite :' + err.message, "warning", "bottom")
+            console.error('Une erreur s\'est produite :', err);
+        } finally {
+            setIsLoadingAttendances(false);
+        }
+
+    };
+    useEffect(() => {
+        getTeacherClassRoom();
         setTimeout(() => {
             setRefresh(false);
         }, 3000);
-    }, [selectedStudent, refresh])
+    }, [selectedClasse, refresh])
+
+
+    useEffect(() => {
+        getTeacherTimeTables();
+        getTeacherTimeTablesAttendence();
+    }, [classRoomIndex, refresh])
+
+
+    useEffect(() => {
+        if (data?.success) {
+            setClassRoom(data?.data);
+        }
+    }, [data])
 
 
     const renderHeader = () => (
@@ -95,7 +190,6 @@ function HomeScreen(props: any): React.JSX.Element {
             <TouchableOpacity
                 onPress={() => {
                     const list = allStudent.map(student => student.id)
-
                     navigation.navigate("AddChildrenScreen", { listId: list })
                 }}
                 style={styles.TitleContainer}>
@@ -105,24 +199,53 @@ function HomeScreen(props: any): React.JSX.Element {
         </View>
     );
 
-    const handleNavigationPressed = (screen: string) => {
+    const handleNavigationPressed = (screen: string, other?: any) => {
+
+        if (other) {
+            navigation.navigate('DashboadElementStacks', {
+                screen: screen,
+                params: {
+                    classRoom: classRoom[classRoomIndex],
+                    ...other,
+                },
+            });
+            return;
+        }
         navigation.navigate('DashboadElementStacks', {
             screen: screen,
             params: {
-                children: selectedStudent,
+                classRoom: classRoom[classRoomIndex],
             },
         });
     }
-    const renderWorkHeader = (text: string, screen: string) => (
+    const renderWorkHeader = (text: string, screen: string, other?: any) => (
         <View
             style={styles.logo}>
             <TouchableOpacity style={styles.TitleContainer}
-                onPress={() => handleNavigationPressed(screen)}>
+                onPress={() => handleNavigationPressed(screen, other)}>
                 <Text style={styles.fieldText}>{text}</Text>
             </TouchableOpacity>
             <Divider />
+            <View style={styles.headerTimeConatiner}>
+                <TouchableOpacity disabled={classRoomIndex <= 0} onPress={decrementClassRoom}>
+                    <MaterialCommunityIcons name='chevron-left-circle' size={25} color={classRoomIndex <= 0 ? theme.gray : theme.primaryText} />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.classRoomContainer}
+                    onPress={() => handleNavigationPressed(screen, other)}>
+                    <Text style={styles.classRoomText}>{classRoom && classRoom.length > 0 && classRoom[classRoomIndex].name}</Text>
+                    <MaterialCommunityIcons name='chevron-down' size={25} color={theme.primary} />
+                </TouchableOpacity>
+
+                <TouchableOpacity disabled={classRoomIndex >= classRoom?.length - 1} onPress={incrementClassRoom}>
+                    <MaterialCommunityIcons name='chevron-right-circle' size={25} color={classRoomIndex >= classRoom?.length - 1 ? theme.gray : theme.primaryText} />
+                </TouchableOpacity>
+            </View>
         </View>
     );
+
+
+
     const renderMoreLinkHeader = (text: string) => (
         <View
             style={styles.logo}>
@@ -135,41 +258,80 @@ function HomeScreen(props: any): React.JSX.Element {
 
 
 
-
-
-
-    const renderAttendances = () => (
+    const renderTimeTable = () => (
         <View style={styles.logo}>
             <FlatList
-                data={studentAttendence}
+                data={timeTables}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item, index }) => <TaskItemTimeTable item={item} theme={theme} key={index} />}
+                scrollEnabled={false}
+                nestedScrollEnabled={false}
+                style={{ backgroundColor: theme.primaryBackground, marginHorizontal: 10, borderWidth: 1, borderColor: theme.gray3, elevation: 2, paddingBottom: 10 }}
+                ListHeaderComponent={() => renderWorkHeader(I18n.t('Home.renderTimetableHeader'), "MyTimeTableScreen")}
+                ListEmptyComponent={() => renderEmptyVehiclesElement(I18n.t('Home.renderEmptyTimetable'), isLoadingTimetable)} />
+            <TouchableOpacity
+                style={{ position: "absolute", right: 5, top: -10, backgroundColor: theme.gray4, borderRadius: 20, padding: 5 }}
+                onPress={() => handleNavigationPressed("MyTimeTableScreen")}>
+                <MaterialCommunityIcons name='arrow-top-right' size={20} color={"white"} />
+            </TouchableOpacity>
+            {1 >= 2 && renderSeeMoreSub("MyTimeTableScreen")}
+
+        </View>
+    );
+    const renderFogotAttendences = () => (
+        <View style={styles.logo}>
+            <FlatList
+                data={attendance}
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={
-                    ({ item, index }) =>
-                        <View style={{ paddingHorizontal: 10, paddingVertical: 10, gap: 5 }}>
-                            <Text style={{ alignItems: "center", alignContent: "center", ...Theme.fontStyle.montserrat.bold, color: theme.gray4 }}>
-                                <MaterialCommunityIcons name='chair-school' size={30} color={item.isPresent ? theme.gray4 : "red"} />
-                                {item.isPresent ? I18n.t('Home.attendanceJustifiedAbsence') : I18n.t('Home.attendanceUnjustifiedAbsence')}
-                            </Text >
-                            <Text style={{ ...Theme.fontStyle.montserrat.regular, color: item.isPresent ? theme.primaryText : "red" }}>{item.date}</Text>
-                        </View>
+                    ({ item }) =>
+                        <TouchableOpacity style={{ paddingHorizontal: 10, paddingVertical: 10, gap: 5 }}
+                            onPress={() => {
+                                navigation.navigate('DashboadElementStacks', {
+                                    screen: "MyAbsencesScreen",
+                                    params: {
+                                        classRoom: classRoom[classRoomIndex],
+                                        subject: item
+                                    },
+                                });
+                            }}
+
+                        >
+                            <View style={{ justifyContent: "space-between", flexDirection: "row" }}>
+                                <View style={{ justifyContent: "space-between", flexDirection: "column" }} >
+                                    <Text style={{ alignItems: "center", alignContent: "center", ...Theme.fontStyle.montserrat.bold, color: theme.gray4 }}>
+                                        {item?.subject_id?.name}
+                                    </Text >
+                                    <Text style={{ ...Theme.fontStyle.montserrat.regular, color: item.isPresent ? theme.primaryText : "red" }}>
+                                        {moment(item?.end_datetime).format("dddd DD  HH:mm")}
+                                    </Text>
+
+                                </View>
+                                <Text style={{ alignItems: "center", textAlign: "center", alignContent: "center", ...Theme.fontStyle.montserrat.bold, color: theme.secondaryText, backgroundColor: theme.primary, paddingHorizontal: 10, paddingVertical: 5, }}>
+                                    {item?.classroom_id?.name}
+                                </Text >
+                            </View>
+                            <Divider />
+                        </TouchableOpacity>
                 }
                 scrollEnabled={false}
                 nestedScrollEnabled={false}
                 style={{ backgroundColor: theme.primaryBackground, marginHorizontal: 10, borderWidth: 1, borderColor: theme.gray3, elevation: 2, paddingBottom: 10 }}
-                ListHeaderComponent={() => renderWorkHeader("Emploi du temps", "AttendanceScreen")}
-                ListEmptyComponent={() => renderEmptyVehiclesElement(I18n.t('Home.renderEmptyAttendance'), isLoadingAttendances)} />
+                ListHeaderComponent={() => renderWorkHeader("Appels non faits", "CourcesListeScreen", { nexScreen: "MyAbsencesScreen" })}
+                ListEmptyComponent={() => renderEmptyVehiclesElement(I18n.t('Home.renderEmptyGradeBook'), isLoadingAttendances)} />
             <TouchableOpacity
                 style={{ position: "absolute", right: 5, top: -10, backgroundColor: theme.gray4, borderRadius: 20, padding: 5 }}
-                onPress={() => handleNavigationPressed("AttendanceScreen")}>
+                onPress={() => handleNavigationPressed("CourcesListeScreen", { nexScreen: "MyAbsencesScreen" })}>
                 <MaterialCommunityIcons name='arrow-top-right' size={20} color={"white"} />
             </TouchableOpacity>
-            {studentAttendence.length >= 2 && renderSeeMoreSub("AttendanceScreen")}
+            {attendance.length >= 2 && renderSeeMoreSub("CourcesListeScreen", { nexScreen: "MyAbsencesScreen" })}
+
         </View>
     );
     const renderGardeBook = () => (
         <View style={styles.logo}>
             <FlatList
-                data={studentNote}
+                data={submitedAssignment}
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={
                     ({ item }) =>
@@ -200,10 +362,13 @@ function HomeScreen(props: any): React.JSX.Element {
                 onPress={() => handleNavigationPressed("GradeBookScreen")}>
                 <MaterialCommunityIcons name='arrow-top-right' size={20} color={"white"} />
             </TouchableOpacity>
-            {studentNote.length >= 2 && renderSeeMoreSub("GradeBookScreen")}
+            {/* {studentNote.length >= 2 && renderSeeMoreSub("GradeBookScreen")} */}
 
         </View>
     );
+
+
+
     const renderAssignmentNote = () => (
         <View style={styles.logo}>
             <FlatList
@@ -238,7 +403,7 @@ function HomeScreen(props: any): React.JSX.Element {
                 onPress={() => handleNavigationPressed("AssignmentsScreen")}>
                 <MaterialCommunityIcons name='arrow-top-right' size={20} color={"white"} />
             </TouchableOpacity>
-            {studentNote.length >= 2 && renderSeeMoreSub("AssignmentsScreen")}
+            {submitedAssignment.length >= 2 && renderSeeMoreSub("AssignmentsScreen")}
         </View>
     );
 
@@ -312,12 +477,12 @@ function HomeScreen(props: any): React.JSX.Element {
             </TouchableOpacity>
         </View>
     }
-    const renderSeeMoreSub = (sreen: string) => {
+    const renderSeeMoreSub = (sreen: string, other?: any) => {
         return <View style={{}}>
             <TouchableOpacity
                 style={{ padding: 10, borderRadius: 10, marginBottom: 10 }}
                 onPress={() => {
-                    handleNavigationPressed(sreen)
+                    handleNavigationPressed(sreen, other)
                 }}
             >
                 <Text style={{ color: "blue", textAlign: "center", fontSize: 18, fontWeight: "bold" }}>
@@ -341,7 +506,6 @@ function HomeScreen(props: any): React.JSX.Element {
             }} setVisible={onMenuPressed} />
             <ProgressBar progress={scrollPercentage} color={theme.primary} />
             <ScrollView
-                // onScroll={handleScroll}
                 scrollEventThrottle={16}
                 refreshControl={
                     <RefreshControl
@@ -355,23 +519,25 @@ function HomeScreen(props: any): React.JSX.Element {
                     scrollEnabled={false}
                     nestedScrollEnabled={false}
                     ListHeaderComponent={renderHeader}
-                    data={student}
+                    data={classRoom}
                     renderItem={({ item, index }) => <VehicleItem
                         item={item}
                         index={index}
                         I18n={I18n}
                         handlePresseLiveTrakingButton={() => handlePresseLiveTrakingButton(item)}
                         navigation={navigation}
-                        isSelected={item?.id === selectedStudent?.id}
-                        setSelectedStudent={setSelectedStudent}
+                        isSelected={item?.id === selectedClasse?.id}
+                        setSelectedStudent={selectedClasse}
                     />}
                     keyExtractor={item => (item.id).toString()}
-                    ListFooterComponent={() => student.length >= 2 ? renderSeeMore("StudentListScreen") : null}
+                    ListFooterComponent={() => classRoom.length >= 2 ? renderSeeMore("StudentListScreen") : null}
                     ListEmptyComponent={renderEmptyStudentElement}
                 />
 
                 <MyDivider theme={theme} />
-                {renderAttendances()}
+                {renderTimeTable()}
+                <MyDivider theme={theme} />
+                {renderFogotAttendences()}
                 <MyDivider theme={theme} />
                 {renderGardeBook()}
                 <MyDivider theme={theme} />
