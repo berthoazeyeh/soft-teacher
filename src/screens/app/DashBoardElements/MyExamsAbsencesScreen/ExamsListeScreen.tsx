@@ -27,8 +27,9 @@ function ExamsListeScreen(props: any): React.JSX.Element {
     const user = useCurrentUser();
     const language = useSelector(selectLanguageValue);
 
-    moment.locale("en");
-    const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/timesheet/faculty/${user?.id}/${classRoom.id}/${moment(selectedDate).format("dddd")}`, getData)
+    // moment.locale("en");
+    const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/exams/from_date/${classRoom?.id}?date_exam=${moment(selectedDate).format("YYYY/MM/DD").toString()}`, getData)
+    // const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/timesheet/faculty/${user?.id}/${classRoom.id}/${moment(selectedDate).format("dddd")}`, getData)
     // moment.locale(language);
     // console.log(nexScreen);
 
@@ -41,13 +42,13 @@ function ExamsListeScreen(props: any): React.JSX.Element {
             if (res?.success) {
                 const timetable: any[] = res?.success ? res?.data : []
                 setSubject(timetable);
-                console.log(res);
 
             } else {
-                showCustomMessage("Information", res.message, "warning", "bottom")
+                console.log(res);
+                showCustomMessage("Information", res?.message, "warning", "bottom")
             }
         } catch (err: any) {
-            showCustomMessage("Information", 'Une erreur s\'est produite :' + err.message, "warning", "bottom")
+            showCustomMessage("Information", 'Une erreur s\'est produite :' + err?.message, "warning", "bottom")
             console.error('Une erreur s\'est produite :', err);
         } finally {
             setIsLoading(false);
@@ -123,19 +124,19 @@ function ExamsListeScreen(props: any): React.JSX.Element {
                 <View >
                     <TouchableOpacity
                         onPress={() => {
-                            navigation.navigate(nexScreen, { classRoom: classRoom, subject: item })
+                            navigation.navigate("MyExamsAbsencesScreen", { classRoom: classRoom, exams: item })
                         }}
                         style={{ flexDirection: "row", alignItems: "center", gap: 20, paddingHorizontal: 20, width: "100%" }}>
                         <View style={{ justifyContent: "space-around", gap: 30 }}>
-                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{moment(item?.start_datetime).format("HH:mm")}</Text>
-                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{moment(item?.end_datetime).format("HH:mm")}</Text>
+                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{moment(item?.start_time).format("HH:mm")}</Text>
+                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{moment(item?.end_time).format("HH:mm")}</Text>
                         </View >
 
                         <View style={{ width: 10, backgroundColor: getRandomColor(), height: "100%", }} />
 
                         <View style={{ justifyContent: "space-around", flex: 1, }}>
-                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 25, color: theme.primaryText, }}>{item?.subject_id?.name}</Text>
-                            <Text>{classRoom.name}</Text>
+                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 25, color: theme.primaryText, }}>{item?.name}</Text>
+                            <Text>{item?.session_id?.map((item: any) => item?.name + "; ")}</Text>
                             {item.attendance_sheet &&
                                 <MaterialCommunityIcons name='check-circle' size={25} color={theme.primary} />
                             }

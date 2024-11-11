@@ -109,7 +109,6 @@ const dynamicStyles = (theme, isSelected) => {
             ...Theme.fontStyle.montserrat.bold,
             color: "black",
             overflow: "hidden"
-
         },
         name: {
             fontSize: 16,

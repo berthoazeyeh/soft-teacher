@@ -115,7 +115,7 @@ function AssignmemtRenderStudentListScreen(props: any): React.JSX.Element {
                     <Text style={styles.emptyDataText}>{I18n.t("Home.loading")}</Text>
                 </>}
             {!isLoading &&
-                <Text style={styles.emptyDataText}>{"Aucun eleve n'as rendu le devoir ."}</Text>}
+                <Text style={styles.emptyDataText}>{"Aucun élève n'a rendu le devoir ."}</Text>}
         </View>
     );
 

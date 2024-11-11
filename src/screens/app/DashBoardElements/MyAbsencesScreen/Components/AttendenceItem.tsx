@@ -212,7 +212,9 @@ function splitAttendanceData(data: any) {
 
     return { firstList, secondList };
 }
-function getColorStyles(key: string, value: boolean, theme: any) {
+
+
+export function getColorStyles(key: string, value: boolean, theme: any) {
     let backgroundColor = '';
     let textColor = '';
 

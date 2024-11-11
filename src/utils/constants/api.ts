@@ -68,6 +68,32 @@ export function groupByDay(events: any) {
 
     return groupedEvents;
 }
+export function formatDate(date: string) {
+    const now = moment();
+    const inputDate = moment(date);
+
+    // Vérifie si c'est aujourd'hui
+    if (inputDate.isSame(now, 'day')) {
+        // Si la différence est inférieure à 1 minute, retourne "À l'instant"
+        if (now.diff(inputDate, 'minutes') < 1) {
+            return "À l'instant";
+        }
+        // Sinon, retourne l'heure
+        return inputDate.format('HH:mm');
+    }
+
+    // Vérifie si c'est hier
+    if (inputDate.isSame(now.subtract(1, 'day'), 'day')) {
+        return 'Hier';
+    }
+
+    // Sinon, retourne la date au format DD/MM/YYYY
+    return inputDate.format('DD/MM/YYYY');
+}
+export function removeHtmlTags(str: string) {
+    return str.replace(/<[^>]*>/g, ''); // Remplace les balises HTML par une chaîne vide
+}
+
 export function getRandomColor() {
     const colors = [
         '#FF5733', // Rouge orangé

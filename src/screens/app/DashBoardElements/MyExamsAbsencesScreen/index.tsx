@@ -5,12 +5,9 @@ import dynamicStyles from "./styles";
 import { getRandomColor, profils, showCustomMessage, Theme } from "utils";
 import { FlatList } from "react-native";
 import moment from "moment";
-import { Image } from "react-native";
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Checkbox, Searchbar } from "react-native-paper";
 import { Animated } from "react-native";
-import Modal from 'react-native-modal';
-import { ScrollView } from "react-native-gesture-handler";
 import useSWRMutation from "swr/mutation";
 import { getData, LOCAL_URL, postData } from "apis";
 import AttendanceItem from "./Components/AttendenceItem";
@@ -19,7 +16,7 @@ import { RefreshControl } from "react-native";
 
 function MyExamsAbsencesScreen(props: any): React.JSX.Element {
     const { navigation, route } = props
-    const { classRoom, subject } = route.params
+    const { classRoom, exams } = route.params
     const theme = useTheme()
     const [isLoading, setIsLoading] = useState(false)
     const [updatingUser, setUpdatingUser] = useState(false)
@@ -31,7 +28,6 @@ function MyExamsAbsencesScreen(props: any): React.JSX.Element {
     const [filteredData, setFilteredData] = useState<any[]>([])
     const [attendanceList, setAttendanceList] = useState<any[]>([])
     const [refresh, setRefresh] = useState(false);
-    const [modalVisible, setModalVisible] = useState(false);
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -46,31 +42,30 @@ function MyExamsAbsencesScreen(props: any): React.JSX.Element {
                 <MaterialCommunityIcons name='account-search' size={30} color={theme.primaryText} />
             </TouchableOpacity>,
         });
-    }, []);
+    }, [filteredData]);
 
 
     moment.locale("en");
-    const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/attendances/session/room/${subject?.id}/${classRoom?.id}`, getData)
+    // const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/attendances/session/room/24/59`, getData)
+    const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/attendees/exam/${exams?.id}/${classRoom?.id}`, getData)
+    const { trigger: setAttendencesForStudent } = useSWRMutation(`${LOCAL_URL}/api/change-attendee/student/exam/${exams?.id}`, postData)
 
-    const { trigger: setAttendencesForStudent } = useSWRMutation(`${LOCAL_URL}/api/crud/attendance-line/session/${subject?.id}/${classRoom?.id}`, postData)
 
-
-    const postAttendencesForStudent = async (key: any, value: any, student: any, onccesPostAttendences?: () => void,) => {
+    const postAttendencesForStudent = async (value: any, student: any, onccesPostAttendences?: () => void,) => {
 
         setUpdatingUser(true)
         const data = {
-            [key]: true,
+            status: value,
             student_id: student?.id,
-            remark: "--"
         }
         try {
+            // @ts-ignore
             const assigma = await setAttendencesForStudent(data)
             if (!assigma?.success) {
                 showCustomMessage("Information", assigma?.message, "warning", "bottom")
                 return;
             }
-            setModalVisible(false);
-            showCustomMessage(student?.name, "State updated to " + key, "success", "top")
+            showCustomMessage(student?.name, "State updated to " + value, "success", "top")
 
         } catch (error: any) {
             showCustomMessage("Information", 'Une erreur s\'est produite :' + error?.message, "warning", "bottom")
@@ -113,11 +108,7 @@ function MyExamsAbsencesScreen(props: any): React.JSX.Element {
 
 
 
-    const toggleModal = () => {
-        setModalVisible(!modalVisible);
-        setUpdatingUser(false);
 
-    };
 
 
     const headerHeight = useRef(new Animated.Value(60)).current;  // Assuming 60 is your header height
@@ -223,7 +214,6 @@ function MyExamsAbsencesScreen(props: any): React.JSX.Element {
                     <AttendanceItem
                         theme={theme}
                         setStudent={setSelectedStudent}
-                        setModalVisible={setModalVisible}
                         setSelectedStudent={onPressAddElement}
                         postAttendencesForStudent={postAttendencesForStudent}
                         item={item}
@@ -235,50 +225,9 @@ function MyExamsAbsencesScreen(props: any): React.JSX.Element {
                 ListEmptyComponent={renderEmptyElement}
             />
         </View>
-        <Modal
-            onBackButtonPress={() => setModalVisible(false)}
-            isVisible={modalVisible}
-            style={styles.modalContent}
-            backdropColor={isDarkMode() ? theme.underlayColor : 'black'}
-        >
-            <View style={styles.modalView}>
-                <View style={[styles.modalContent]}>
-                    <Text style={styles.titleText}>{selectedStudent?.name}</Text>
-                    <View style={{ flex: 1, width: "100%" }}>
-                        <ScrollView >
 
-                            {dataAttend?.map(([key, value], index) =>
-                                <TouchableOpacity key={index} style={styles.checkboxContainer}
-                                    onPress={() => {
-                                        postAttendencesForStudent(key, value, selectedStudent)
-                                    }}
-                                >
-                                    <Checkbox
-                                        status={value ? 'checked' : 'unchecked'}
-                                        onPress={() => postAttendencesForStudent(key, value, selectedStudent)}
-                                    />
-                                    <Text style={styles.itemTitleText}>{capitalizeFirstLetter(key)}</Text>
-                                </TouchableOpacity>)}
-
-                        </ScrollView>
-
-                    </View>
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", width: "100%" }}>
-                        <View>
-                            {updatingUser && <ActivityIndicator size={"large"} style={{ marginHorizontal: 20 }} />}
-                        </View>
-                        <TouchableOpacity onPress={toggleModal} style={styles.closeButton}>
-                            <Text style={styles.closeButtonText}>Fermer</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </View>
-        </Modal>
     </View>;
-    function capitalizeFirstLetter(text: any) {
-        if (!text) return '';
-        return text.charAt(0).toUpperCase() + text.slice(1);
-    }
+
 
 }
 

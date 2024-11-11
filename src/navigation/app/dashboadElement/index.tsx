@@ -37,7 +37,7 @@ const elements: Item[] = [
     { name: "AssignmemtRenderStudentListScreen", screen: AssignmemtRenderStudentListScreen, haveHeader: false },
     { name: "SeeAndMarkStudentAsignmemtScreen", screen: SeeAndMarkStudentAsignmemtScreen, haveHeader: false },
     { name: "ExamsListeScreen", screen: ExamsListeScreen, haveHeader: false },
-    { name: "MyExamsAbsencesScreen", screen: MyExamsAbsencesScreen, haveHeader: false },
+    { name: "MyExamsAbsencesScreen", screen: MyExamsAbsencesScreen, haveHeader: true },
 ];
 
 const DashboadElementStack = createStackNavigator<AuthStackList>()

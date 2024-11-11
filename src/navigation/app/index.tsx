@@ -4,6 +4,7 @@ import { HomeScreen } from 'screens'
 import HomeBottomTabNavigation from './bottom';
 import DashboadElementStacks from './dashboadElement';
 import SettingsScreenStacks from './settings';
+import DiscussStacks from './discuss';
 
 
 
@@ -11,7 +12,7 @@ export type AuthStackList = {
     HomeBottomTabNavigation: undefined;
     DashboadElementStacks: undefined;
     FleetAnalyticsDetails: undefined;
-    ProfileSettings: undefined;
+    DiscussStacks: undefined;
     MapSettings: undefined;
     SettingsScreenStacks: undefined;
     LanguageSettings: undefined;
@@ -47,6 +48,11 @@ const AppStacks = () => {
                 options={{ headerShown: false }}
                 name="SettingsScreenStacks"
                 component={SettingsScreenStacks}
+            />
+            <AuthStack.Screen
+                options={{ headerShown: false }}
+                name="DiscussStacks"
+                component={DiscussStacks}
             />
 
 

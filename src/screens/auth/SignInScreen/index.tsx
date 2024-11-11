@@ -10,7 +10,7 @@ import { I18n } from 'i18n';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import useSWR from "swr";
 import { Region } from "react-native-maps";
-import {  CustomerLoader } from "components";
+import { CustomerLoader } from "components";
 import { getData, LOCAL_URL, postData } from "apis";
 import useSWRMutation from 'swr/mutation'
 import * as z from 'zod';
@@ -287,7 +287,7 @@ function SignInScreen(props: any): React.JSX.Element {
                     }
                     form.handleSubmit(handleSubmittedFormuler)();
                 }}>
-                    <Text style={styles.buttonText}> {I18n.t('Register.signing')}                                       placeholderTextColor={theme.placeholderTextColor}
+                    <Text style={styles.buttonText}> {I18n.t('Register.signing')}
                     </Text>
                 </TouchableOpacity>
                 <CustomerLoader loading={loading} theme={theme} I18n={I18n} color={theme.primary} />

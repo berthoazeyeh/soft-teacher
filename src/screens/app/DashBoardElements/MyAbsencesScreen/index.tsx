@@ -2,12 +2,12 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator, Easing } from "react-native";
 import { isDarkMode, useTheme } from "store";
 import dynamicStyles from "./styles";
-import { getRandomColor, profils, showCustomMessage, Theme } from "utils";
+import { getRandomColor, logo, profils, showCustomMessage, Theme } from "utils";
 import { FlatList } from "react-native";
 import moment from "moment";
 import { Image } from "react-native";
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { Checkbox, Searchbar } from "react-native-paper";
+import { Banner, Button, Checkbox, Divider, Searchbar } from "react-native-paper";
 import { Animated } from "react-native";
 import Modal from 'react-native-modal';
 import { ScrollView } from "react-native-gesture-handler";
@@ -16,15 +16,22 @@ import { getData, LOCAL_URL, postData } from "apis";
 import AttendanceScreen from "../AttendanceScreen";
 import AttendanceItem from "./Components/AttendenceItem";
 import { RefreshControl } from "react-native";
+import { MyAnimatedBanner } from "components";
+import { UserBlock } from "./Components";
 
 
 function MyAbsencesScreen(props: any): React.JSX.Element {
     const { navigation, route } = props
     const { classRoom, subject } = route.params
     const theme = useTheme()
+    const [lastAttendence, setLastAttendence] = useState<any[]>([])
+    const [lastAttendenceElements, setLastAttendenceElements] = useState<any>(null)
     const [isLoading, setIsLoading] = useState(false)
+    const [isLoadingLastAttend, setIsLoadingLastAttend] = useState(false)
+    const [visibleBanner, setVisibleBanner] = useState(false)
     const [updatingUser, setUpdatingUser] = useState(false)
     const [showSearch, setShowSearch] = useState(false)
+    const [showModal, setShowModal] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
     const [selectedStudent, setSelectedStudent] = useState<any>(null)
     const styles = dynamicStyles(theme)
@@ -33,6 +40,7 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
     const [attendanceList, setAttendanceList] = useState<any[]>([])
     const [refresh, setRefresh] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
+
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -47,15 +55,65 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
                 <MaterialCommunityIcons name='account-search' size={30} color={theme.primaryText} />
             </TouchableOpacity>,
         });
-    }, []);
+    }, [attendanceList, filteredData]);
 
 
     moment.locale("en");
     const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/attendances/session/room/${subject?.id}/${classRoom?.id}`, getData)
-
     const { trigger: setAttendencesForStudent } = useSWRMutation(`${LOCAL_URL}/api/crud/attendance-line/session/${subject?.id}/${classRoom?.id}`, postData)
+    const { trigger: getTeacherTimeTableInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/attendance/room/${classRoom?.id}/from_date?date=${moment(subject?.start_datetime).format("YYYY/MM/DD").toString()}`, getData)
+    const { trigger: setLastAttendencesAsCurrent } = useSWRMutation(`${LOCAL_URL}/api/crud/attendances-lines/session/${subject?.id}/${classRoom?.id}/${lastAttendenceElements?.attendance_id}`, postData)
 
 
+    const getTeacherTimeTableInClassRoom = async () => {
+        try {
+            setIsLoading(true);
+            const res = await getTeacherTimeTableInClassRoome();
+            // console.log(res?.data);
+            if (res?.success) {
+                const timetable: any[] = res?.success ? res?.data : []
+                console.log(res);
+                setLastAttendence(timetable);
+                setLastAttendenceElements(res);
+                setVisibleBanner(true)
+            } else {
+                console.log(res);
+                showCustomMessage("Informationdddddddddd", res?.message, "warning", "bottom")
+            }
+        } catch (err: any) {
+            showCustomMessage("Informationddddddddddddd", 'Une erreur s\'est produite :' + err?.message, "warning", "bottom")
+            console.error('Une erreur s\'est produite :', err);
+        } finally {
+            setIsLoading(false);
+            setRefresh(false);
+
+        }
+
+    };
+    const postLastAttendencesAsNew = async () => {
+
+        setIsLoadingLastAttend(true)
+        const data = {
+        }
+        try {
+            const assigma = await setLastAttendencesAsCurrent(data)
+            if (!assigma?.success) {
+                console.log(assigma);
+
+                showCustomMessage("Information", assigma?.message, "warning", "bottom")
+                return;
+            }
+            setShowModal(false);
+            showCustomMessage('Success', "State updated to ", "success", "center")
+
+        } catch (error: any) {
+            showCustomMessage("Information", 'Une erreur s\'est produite :' + error?.message, "warning", "bottom")
+
+        } finally {
+            getTeacherTimeTables(false)
+            setIsLoadingLastAttend(false)
+        }
+    };
     const postAttendencesForStudent = async (key: any, value: any, student: any, onccesPostAttendences?: () => void,) => {
 
         setUpdatingUser(true)
@@ -109,14 +167,17 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
 
     useEffect(() => {
         getTeacherTimeTables(true)
+        getTeacherTimeTableInClassRoom()
     }, [refresh])
 
 
-
-
     const toggleModal = () => {
-        setModalVisible(!modalVisible);
-        setUpdatingUser(false);
+        setModalVisible(false);
+
+    };
+    const toggleModal2 = () => {
+        setShowModal(true);
+        setVisibleBanner(false)
 
     };
 
@@ -176,7 +237,22 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
                 <Text style={styles.emptyDataText}>{"Aucun cours present."}</Text>}
         </View>
     );
+
+
+
+
     return <View style={styles.container}>
+        <MyAnimatedBanner
+            visibleBanner={visibleBanner}
+            setVisibleBanner={setVisibleBanner}
+            isLocalImages={true}
+            iconUrl={logo}
+            cancelLabel="Annuler"
+            confirmAction={toggleModal2}
+            modifyLabel="Considérer et modifier"
+            message={`L'appel a été fait dans cette classe pendant la période de -- à ${moment(lastAttendenceElements?.end_date).format("HH:mm")} par Mr/Mme. ${lastAttendenceElements?.faculty?.name}. Voulez-vous le considérer et le modifier ?`}
+
+        />
         {showSearch && <Animated.View style={[styles.header, { height: headerHeight }]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
                 <Searchbar
@@ -228,9 +304,7 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
                         setSelectedStudent={onPressAddElement}
                         postAttendencesForStudent={postAttendencesForStudent}
                         item={item}
-
                     />
-
                 }
                 keyExtractor={(item, index) => index.toString()}
                 ListEmptyComponent={renderEmptyElement}
@@ -238,6 +312,8 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
         </View>
         <Modal
             onBackButtonPress={() => setModalVisible(false)}
+            onBackdropPress={() => setModalVisible(false)}
+            onSwipeCancel={() => setModalVisible(false)}
             isVisible={modalVisible}
             style={styles.modalContent}
             backdropColor={isDarkMode() ? theme.underlayColor : 'black'}
@@ -273,6 +349,68 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
                         </TouchableOpacity>
                     </View>
                 </View>
+            </View>
+        </Modal>
+        <Modal
+            onBackButtonPress={() => setShowModal(false)}
+            onBackdropPress={() => setShowModal(false)}
+            // swipeDirection={'down'}
+
+            isVisible={showModal}
+            style={styles.modalContent}
+            backdropColor={isDarkMode() ? theme.underlayColor : 'black'}>
+            <View style={styles.modalView1}>
+                <View style={{ alignItems: "center" }}>
+
+                    <View style={styles.viewBar} />
+                    <Text style={styles.titleBottonSheet}>Fiche d'appel : 08h-10h</Text>
+                    <Divider style={{ width: "50%" }} />
+                    <Text style={styles.modalcontainerText}>{"En validant, vous avez la posibilite de remodifier cette fiche."}</Text>
+                </View>
+                <TouchableOpacity
+                    style={{ marginRight: 10, position: "absolute", right: 0, top: 9 }}
+                    onPress={() => {
+                        setShowModal(false)
+                    }}
+                >
+                    <MaterialCommunityIcons name="close-circle" size={30} color="red" />
+                </TouchableOpacity>
+                <ScrollView >
+                    <View style={styles.contentContainer}>
+                        {isLoadingLastAttend &&
+                            <View style={styles.emptyData}>
+                                <ActivityIndicator color={theme.primary} size={"large"} />
+                                <Text style={styles.emptyDataText}>{"chargement..."}</Text>
+                            </View>}
+                        {(lastAttendence.length <= 0 && !isLoadingLastAttend) &&
+                            <View style={styles.emptyData}>
+                                <Text style={styles.emptyDataText}>{"Erreur rencontrée lors du chargement de la fiche d'appel."}</Text>
+                            </View>}
+                        {lastAttendence?.map((user, index) => (
+                            <UserBlock
+                                key={index}
+                                name={user.name}
+                                photoUrl={user.avatar}
+                                isPresent={user.attendance_line}
+                            />
+                        ))}
+                    </View>
+                </ScrollView>
+                <Button
+                    mode="contained-tonal"
+                    disabled={isLoadingLastAttend}
+                    style={{ backgroundColor: isLoadingLastAttend ? theme.gray : theme.primary, paddingHorizontal: 30, marginBottom: 10, marginHorizontal: 10, }}
+                    labelStyle={{ color: theme.secondaryText }}
+                    onPress={async () => {
+                        postLastAttendencesAsNew()
+                    }}
+                    icon={isLoadingLastAttend ? undefined : "check-underline"}>
+                    {isLoadingLastAttend ?
+                        <ActivityIndicator color={theme.secondaryText} />
+                        : "Valider et modifier"
+                    }
+
+                </Button>
             </View>
         </Modal>
     </View>;

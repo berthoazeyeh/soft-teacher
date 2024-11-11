@@ -6,15 +6,14 @@ interface AttendanceItemProps {
     theme: any;
     setSelectedStudent: (student: any, data: any[]) => void; // If you have a specific type for student, you can define it instead of `any`
     setStudent: (student: any,) => void; // If you have a specific type for student, you can define it instead of `any`
-    postAttendencesForStudent: (key: any, value: any, student: any, onccesPostAttendences?: () => void) => void; // If you have a specific type for student, you can define it instead of `any`
-    setModalVisible: (visible: boolean) => void;
+    postAttendencesForStudent: (value: any, student: any, onccesPostAttendences?: () => void) => void; // If you have a specific type for student, you can define it instead of `any`
 }
 
-const AttendanceItem = ({ item, theme, setSelectedStudent, setModalVisible, postAttendencesForStudent, setStudent }: AttendanceItemProps) => {
+const AttendanceItem = ({ item, theme, setSelectedStudent, postAttendencesForStudent, setStudent }: AttendanceItemProps) => {
     const styles = createStyles(theme);
     const [selectedIndex, setSelectedIndex] = useState(0)
     const [isLoading, setIsLoading] = useState(false)
-    const { firstList, secondList } = splitAttendanceData(item?.attendance_line);
+
     return (
         <TouchableOpacity
             onPress={() => {
@@ -23,120 +22,113 @@ const AttendanceItem = ({ item, theme, setSelectedStudent, setModalVisible, post
             }}
             style={styles.itemContainer}>
             <View style={styles.imageContainer}>
-                <Image source={{ uri: item.avatar }} style={[styles.image, { borderColor: item.attendance_line ? getColorBorder(item.attendance_line, theme).backgroundColor : theme.gray }]} />
+                <Image source={{ uri: item.avatar }}
+                    style={[styles.image, { borderColor: item.attendance_line ? getColorBorder(item.attendance_line, theme).backgroundColor : theme.gray }]} />
             </View>
 
             <View style={styles.detailsContainer}>
                 <Text style={styles.nameText}>{item.name}</Text>
 
                 <View style={styles.statusContainer}>
-                    {item.attendance_line ? (
-                        <>{
-                            firstList.map(([key, value], index) => <TouchableOpacity
-                                key={index}
-                                style={{
-                                    ...styles.statusButton,
-                                    backgroundColor: getColorStyles(key, value, theme).backgroundColor,
-                                }}
-                                onPress={() => {
-                                    setStudent(item);
+                    {item?.attendee && <>
+                        <TouchableOpacity style={[styles.statusButton, { backgroundColor: item?.attendee?.status === "present" ? theme.primary : theme.secondaryText }]}
+                            onPress={() => {
+                                setStudent(item);
+                                setSelectedIndex(0)
+                                setIsLoading(true)
+                                postAttendencesForStudent(
+                                    'present',
+                                    item,
+                                    () => {
+                                        setIsLoading(false)
 
-                                    setSelectedIndex(index)
-                                    setIsLoading(true)
-                                    postAttendencesForStudent(
-                                        key,
-                                        true,
-                                        item,
-                                        () => {
-                                            setIsLoading(false)
-
-                                        })
-                                }}
-                            >
-
-                                {selectedIndex === index && isLoading &&
-                                    <ActivityIndicator style={{ marginHorizontal: 20 }} />
-                                }
-                                {(!isLoading || selectedIndex != index) &&
-
-                                    <Text style={{
-                                        ...styles.statusText,
-                                        color: getColorStyles(key, value, theme).textColor,
-                                    }}>{capitalizeFirstLetter(key)}</Text>}
-
-                            </TouchableOpacity>)
-                        }
-
-                        </>
-                    ) : (
-                        <>
-                            <TouchableOpacity style={styles.statusButton}
-                                onPress={() => {
-                                    setStudent(item);
-                                    setSelectedIndex(0)
-                                    setIsLoading(true)
-                                    postAttendencesForStudent(
-                                        'present',
-                                        true,
-                                        item,
-                                        () => {
-                                            setIsLoading(false)
-
-                                        })
-                                }}>
-                                {selectedIndex === 0 && isLoading &&
-                                    <ActivityIndicator style={{ marginHorizontal: 20 }} />
-                                }
-                                {(!isLoading || selectedIndex != 0) &&
-
-                                    <Text style={styles.statusText}>{"Present"}</Text>
-                                }
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.statusButton}
-                                onPress={() => {
-                                    setStudent(item);
-
-                                    setSelectedIndex(1)
-                                    setIsLoading(true)
-                                    postAttendencesForStudent(
-                                        'absent',
-                                        true,
-                                        item,
-                                        () => {
-                                            setIsLoading(false)
-
-                                        })
-                                }}
-                            >
-                                {selectedIndex === 1 && isLoading &&
-                                    <ActivityIndicator style={{ marginHorizontal: 20 }} />
-                                }
-                                {(!isLoading || selectedIndex != 1) &&
-
-                                    <Text style={styles.statusText}>{"Absent"}</Text>
-                                }
-                            </TouchableOpacity>
-                        </>
-                    )}
-                    <TouchableOpacity
-                        onPress={() => {
-                            if (item.attendance_line) {
-                                setSelectedStudent(item, Object.entries(item.attendance_line).slice(0, Object.entries(item.attendance_line).length - 1));
-                            } else {
-                                setSelectedStudent(item, Object.entries({ "absent": false, "excused": false, "late": false, "present": false }));
+                                    })
+                            }}>
+                            {selectedIndex === 0 && isLoading &&
+                                <ActivityIndicator style={{ marginHorizontal: 20 }} />
                             }
-                            setModalVisible(true);
-                        }}>
-                        <MaterialCommunityIcons name='plus-box' size={35} color={theme.gray4} />
-                    </TouchableOpacity>
+                            {(!isLoading || selectedIndex != 0) &&
+
+                                <Text style={[styles.statusText, { color: item?.attendee?.status === "present" ? theme.secondaryText : theme.primaryText }]}>{"Present"}</Text>
+                            }
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[styles.statusButton, { backgroundColor: item?.attendee?.status === "absent" ? "red" : theme.secondaryText }]}
+                            onPress={() => {
+                                setStudent(item);
+
+                                setSelectedIndex(1)
+                                setIsLoading(true)
+                                postAttendencesForStudent(
+                                    'absent',
+                                    item,
+                                    () => {
+                                        setIsLoading(false)
+
+                                    })
+                            }}
+                        >
+                            {selectedIndex === 1 && isLoading &&
+                                <ActivityIndicator style={{ marginHorizontal: 20 }} />
+                            }
+                            {(!isLoading || selectedIndex != 1) &&
+
+                                <Text style={[styles.statusText, { color: item?.attendee?.status === "absent" ? theme.secondaryText : theme.primaryText }]}>{"Absent"}</Text>
+                            }
+                        </TouchableOpacity>
+                    </>}
+                    {!item?.attendee && <>
+                        <TouchableOpacity style={[styles.statusButton]}
+                            onPress={() => {
+                                setStudent(item);
+                                setSelectedIndex(0)
+                                setIsLoading(true)
+                                postAttendencesForStudent(
+                                    'present',
+                                    item,
+                                    () => {
+                                        setIsLoading(false)
+
+                                    })
+                            }}>
+                            {selectedIndex === 0 && isLoading &&
+                                <ActivityIndicator style={{ marginHorizontal: 20 }} />
+                            }
+                            {(!isLoading || selectedIndex != 0) &&
+
+                                <Text style={[styles.statusText]}>{"Present"}</Text>
+                            }
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[styles.statusButton]}
+                            onPress={() => {
+                                setStudent(item);
+
+                                setSelectedIndex(1)
+                                setIsLoading(true)
+                                postAttendencesForStudent(
+                                    'absent',
+                                    item,
+                                    () => {
+                                        setIsLoading(false)
+
+                                    })
+                            }}
+                        >
+                            {selectedIndex === 1 && isLoading &&
+                                <ActivityIndicator style={{ marginHorizontal: 20 }} />
+                            }
+                            {(!isLoading || selectedIndex != 1) &&
+
+                                <Text style={styles.statusText}>{"Absent"}</Text>
+                            }
+                        </TouchableOpacity>
+                    </>
+                    }
+
                 </View>
             </View>
         </TouchableOpacity >
     );
-    function capitalizeFirstLetter(text: any) {
-        if (!text) return '';
-        return text.charAt(0).toUpperCase() + text.slice(1);
-    }
+
 
 };
 
@@ -196,6 +188,12 @@ const createStyles = (theme: any) => StyleSheet.create({
     },
 });
 function splitAttendanceData(data: any) {
+    if (!data) {
+        return {
+            firstList: [],
+            secondList: []
+        }
+    }
     const entries = Object.entries(data); // Convertit l'objet en tableau de paires [clé, valeur]
 
     // Trouver l'élément avec `true`

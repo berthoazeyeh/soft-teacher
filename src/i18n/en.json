@@ -1,102 +1,119 @@
 {
     "please_wait": "Please wait...",
-    "changeLanguage": "Change language ?",
+    "changeLanguage": "Change language?",
     "male": "Male",
     "female": "Female",
-    "logout": "Log-out",
-    "settings": "Settings",
+    "logout": "Logout",
     "more": "More",
-    "more_link": "Show more",
+    "settings": "Settings",
+    "more_link": "See more",
     "Login": {
         "username": "Email",
         "password": "Password",
-        "login": "Login",
+        "login": "Log in",
         "languageEnglish": "English",
         "languageFrench": "French",
-        "dob_too_recent": "Date of birth must be at least 4 years ago.",
+        "dob_too_recent": "The date of birth must be at least 4 years ago.",
         "validation_username_too_short": "The username must be at least 5 characters long.",
         "validation_dob_too_short": "The date of birth must be at least 5 characters long.",
-        "validation_relation_too_short": "The relation must be at least 5 characters long.",
+        "validation_relation_too_short": "The relationship must be at least 5 characters long.",
         "validation_phoneNumber_too_short": "The phone number must be at least 9 characters long.",
         "validation_email_invalid": "The email address is invalid.",
-        "validation_blood_too_short": "Please select a valid blood type",
         "validation_password_too_short": "The password must be at least 8 characters long.",
         "validation_password_uppercase": "The password must contain at least one uppercase letter.",
         "validation_password_lowercase": "The password must contain at least one lowercase letter.",
         "validation_password_number": "The password must contain at least one number.",
-        "validation_name_too_short": "Name must be at least 5 characters long",
-        "validation_name_required": "Name is required",
-        "validation_lastname_too_short": "Last name must be at least 5 characters long",
-        "validation_lastname_required": "Last name is required",
-        "validation_blood_required": "Blood type is required",
-        "validation_dob_required": "Date of birth is required",
-        "validation_classe_required": "Class is required"
+        "validation_name_too_short": "The name must be at least 5 characters long.",
+        "validation_name_required": "Name is required.",
+        "validation_lastname_too_short": "The last name must be at least 5 characters long.",
+        "validation_lastname_required": "Last name is required.",
+        "validation_blood_too_short": "Please select a valid blood type.",
+        "validation_blood_required": "Blood type is required.",
+        "validation_dob_required": "Date of birth is required.",
+        "validation_classe_required": "Class is required."
     },
     "Home": {
-        "title": "Teachers Home",
-        "notVehicleFound": "No Vehicle details found!",
-        "notstudentFound": "No Student details found!",
-        "studentDetails": "Student Details",
-        "vehicleDetails": "Vehicle Details",
-        "trackLive": "Track Live",
-        "studentName": "Student Name: ",
+        "title": "Teacher's Home",
+        "notVehicleFound": "No vehicle details found!",
+        "notstudentFound": "No student details found!",
+        "studentDetails": "Student Information",
+        "vehicleDetails": "Vehicle Information",
+        "trackLive": "Live Tracking",
+        "studentName": "Student's Name: ",
         "studentID": "Student ID: ",
         "pickup": "Pickup: ",
         "drop": "Drop: ",
-        "renderWorkHeader": "Work to do in the coming days",
-        "renderEmptyAssignment": "No tasks to do in the coming days",
+        "renderWorkHeader": "Upcoming Homework",
+        "renderEmptyAssignment": "No upcoming homework. Please create some assignments.",
         "renderTimetableHeader": "Timetable",
-        "renderEmptyTimetable": "No timetable found for this student",
-        "renderAttendanceHeader": "School life",
-        "attendanceJustifiedAbsence": "Justified absence",
-        "attendanceUnjustifiedAbsence": "Unjustified absence",
-        "renderGradeBookHeader": "Latest grades",
-        "renderEmptyGradeBook": "No grades found",
-        "renderAssignmentNoteHeader": "Latest assignment grades",
-        "renderEmptyAssignmentNote": "No grades found",
-        "renderExamsHeader": "Latest evaluations",
-        "renderEmptyExams": "No evaluations found!",
-        "viewCourses": "View courses",
-        "viewPermissions": "View permissions",
-        "viewClasses": "View classes",
-        "otherImportantLinks": "Other important links",
-        "loading": "Loading..."
+        "renderEmptyTimetable": "No timetable found for this student.",
+        "renderAttendanceHeader": "School Attendance",
+        "attendanceJustifiedAbsence": "Justified Absence",
+        "attendanceUnjustifiedAbsence": "Unjustified Absence",
+        "renderGradeBookHeader": "Latest Grades",
+        "renderEmptyGradeBook": "No grades found.",
+        "renderAssignmentNoteHeader": "Latest Assignment Grades",
+        "renderEmptyAssignmentNote": "No assignment grades found.",
+        "renderExamsHeader": "Latest Exams",
+        "renderEmptyExams": "No exams found!",
+        "viewCourses": "View Courses",
+        "viewPermissions": "View Permissions",
+        "viewClasses": "View Classes",
+        "otherImportantLinks": "Other Important Links",
+        "loading": "Loading...",
+        "renderEmptyAttendance": "No absences recorded for this child."
     },
     "Dashboard": {
         "title": "Dashboard",
         "ChooseChild": "Choose a child here",
         "NoChildSelectedTitle": "Information",
-        "NoChildSelectedMessage": "No child is selected \nPlease select one",
-        "Warning": "warning",
-        "Bottom": "bottom",
-        "LogOut": "log out",
-        "StudentProfilScreen": {},
+        "NoChildSelectedMessage": "No child selected.\nPlease select one.",
+        "Warning": "Warning",
+        "Bottom": "Bottom",
+        "LogOut": "Log out",
         "ElementList": [
             "Student Profile",
             "Subject Registration",
-            "GradeBook",
+            "Grade Book",
             "Library",
-            "Assignments",
+            "Homework",
             "Exams",
             "Timetable",
             "Attendance",
             "Online Meetings",
-            "Alumni Job",
+            "Alumni Employment",
             "Admission Registration",
             "Quiz",
-            "Quiz Result",
-            "Quiz Result",
+            "Quiz Results",
+            "Quiz Results",
             "Certificate",
-            "Progression",
+            "Progress",
             "Meetings",
             "Courses",
             "Permission"
         ],
+        "AssignmentsScreen": {
+            "courses": "Classroom",
+            "for_the": "For ",
+            "title": "Submit my child's homework",
+            "scanHomework": "Scan Homework",
+            "downloadFromDevice": "Download from my device",
+            "dateLabel": "For",
+            "statusDone": "Done",
+            "statusNotDone": "Not Done",
+            "descriptionLabel": "Description: ",
+            "dueDateLabel": "Due: ",
+            "viewDocumentsButton": "View documents",
+            "submitHomeworkButton": "Submit homework",
+            "alreadySubmittedHeader": "The homework has already been submitted.",
+            "statusLabel": "Status: ",
+            "noteLabel": "Note: "
+        },
         "studentProfile": {
             "title": "Student Profile",
             "studentInfo": [
                 "Date of Birth",
-                "Blood Group",
+                "Blood Type",
                 "Gender",
                 "Email Address",
                 "Phone Number",
@@ -105,13 +122,49 @@
             ]
         }
     },
-    "Notification": {
-        "title": "Recents Notifications"
+    "AddAssignmentScreen": {
+        "createNewAssignment": "Create a new class assignment",
+        "chooseCourse": "Choose the course",
+        "chooseExerciseType": "Choose the type of exercise",
+        "assignmentTitle": "Assignment Title",
+        "assignmentDescription": "Assignment Description (100 to 250 words)",
+        "chooseEndDate": "Choose the end date",
+        "uploadDocuments": "Upload Documents",
+        "publishAssignment": "Publish the Assignment",
+        "allFieldsRequired": "All fields are required",
+        "info": "Information",
+        "uploadOrScanDocs": "Upload or scan the documents related to the assignment",
+        "scanAssignment": "Scan the assignment",
+        "uploadFromDevice": "Download from my device",
+        "loadingError": "An error occurred:",
+        "successMessage": "Success",
+        "error_type": {
+            "required": "Exercise type is required.",
+            "min": "The type must be a positive number."
+        },
+        "error_subject": {
+            "required": "The subject is required.",
+            "min": "The subject must be a positive number."
+        },
+        "error_title": {
+            "required": "The title is required.",
+            "min": "The title must be at least 5 characters long."
+        },
+        "error_description": {
+            "required": "The description is required.",
+            "min": "The description must be at least 5 characters long."
+        },
+        "error_date": {
+            "required": "The date is required.",
+            "valid": "The date must be valid."
+        },
+        "error_document": {
+            "required": "The document list is required.",
+            "nonempty": "The list must contain at least one item."
+        }
     },
-    "Welcome": {
-        "auth_next": "Next",
-        "languageEnglish": "English",
-        "languageFrench": "French"
+    "Notification": {
+        "title": "Recent Notifications"
     },
     "SettingsScreen": {
         "screenTitle": "Settings",
@@ -122,9 +175,9 @@
         "darkModeSwitch": "Dark Mode",
         "privacySettings": {
             "notificationPrimaryLabel": "Notifications",
-            "notificationSecondaryLabel": "Toggle to enable / disable",
+            "notificationSecondaryLabel": "Click to Enable/Disable",
             "toastMessages": [
-                "Notifications settings saved",
+                "Notification settings saved",
                 "Failed to save settings"
             ]
         },
@@ -135,12 +188,12 @@
             "newPasswordPlaceholder": "New Password",
             "confirmPasswordPlaceholder": "Confirm Password",
             "toastMessages": [
-                "Password Required",
-                "Password and confirmation doesn't match",
-                "Check network connectivity.",
-                "Failed to update. Please try again later.",
-                "Profile Updated!",
-                "Please login again with the new credentials."
+                "Password is required",
+                "Passwords do not match",
+                "Check network connection.",
+                "Update failed, please try again.",
+                "Profile updated!",
+                "Please log in again with the new credentials."
             ]
         },
         "languageSettings": {
@@ -148,5 +201,8 @@
                 "Language updated to"
             ]
         }
+    },
+    "DiscussScreen": {
+        "title": "My Discussions"
     }
 }

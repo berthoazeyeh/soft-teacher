@@ -25,7 +25,6 @@ function GradeEntryScreen(props: any): React.JSX.Element {
     const [isLoading, setIsLoading] = useState(false)
     const [isLoadingSession, setIsLoadingSession] = useState(false)
     const [isLoadingExam, setIsLoadingExam] = useState(false)
-    const [showSearch, setShowSearch] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
     const [mark, setMark] = useState("")
     const [selectedStudent, setSelectedStudent] = useState<any>(null)
@@ -37,9 +36,9 @@ function GradeEntryScreen(props: any): React.JSX.Element {
     const [sessions, setSessions] = useState<any[]>([])
     const [oneSession, setOneSession] = useState<any>(null)
 
-
     const { trigger: getTeacherExamsSessions } = useSWRMutation(`${LOCAL_URL}/api/exams-sessions/${classRoom?.id}`, getData);
-    const { trigger: setNoteForStudent } = useSWRMutation(`${LOCAL_URL}/api/change-marks/student/exam/${examsData?.id}`, postData)
+    const { trigger: setNoteForStudent } = useSWRMutation(`${LOCAL_URL}/api/change-notes/student/exam/${selectedExam}`, postData)
+
 
     const postNoteForStudent = async () => {
         const data = {
@@ -56,8 +55,8 @@ function GradeEntryScreen(props: any): React.JSX.Element {
                 showCustomMessage("Information", assigma.message, "warning", "bottom")
                 return;
             }
+            getTeacherExamsStudentSync()
             setModalVisible(false);
-            getTeacherExamsSession()
             showCustomMessage("Success", "Note Atribuer avec success", "success", "center")
 
         } catch (error: any) {
@@ -87,8 +86,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
     }, [selectedExam]);
 
     useEffect(() => {
-        if (examsData)
-            onChangeSearch(searchQuery);
+        onChangeSearch(searchQuery);
     }, [examsData]);
 
 
@@ -117,10 +115,10 @@ function GradeEntryScreen(props: any): React.JSX.Element {
             setIsLoadingExam(true);
             const res = await getData(`${LOCAL_URL}/api/exam-session/${selectedSession}`);
             if (res?.success) {
-                const timetable: any[] = res?.success ? res?.data : []
+                const timetable: any = res?.success ? res?.data : null
+                // console.log("///////////////////", timetable);
                 setOneSession(timetable);
             } else {
-                console.log(res);
                 showCustomMessage("Information", res?.message, "warning", "bottom")
             }
         } catch (err: any) {
@@ -132,13 +130,36 @@ function GradeEntryScreen(props: any): React.JSX.Element {
 
     };
     const getTeacherExamsStudent = async () => {
+        setExamsData(null)
+
         try {
             setIsLoading(true);
-            const res = await getData(`${LOCAL_URL}/api/exam/${selectedExam}`);
+            const res = await getData(
+                `${LOCAL_URL}/api/notes-attendees/exam/${selectedExam}/${sessions?.find((item: any) => item.id === selectedSession)?.course_id}`);
             if (res?.success) {
-                const timetable: any = res?.success ? res?.data : null
-                setExamsData(timetable);
-                console.log("getTeacherExams------size-------", timetable);
+                // console.log(res?.data);
+
+                setExamsData(res?.data);
+            } else {
+                console.log(res);
+                showCustomMessage("Information", res?.message, "warning", "bottom")
+            }
+        } catch (err: any) {
+            showCustomMessage("Information", 'Une erreur s\'est produite :' + err?.message, "warning", "bottom")
+            console.error('Une erreur s\'est produite :', err);
+        } finally {
+            setIsLoading(false);
+        }
+
+    };
+    const getTeacherExamsStudentSync = async () => {
+
+        try {
+            setIsLoading(true);
+            const res = await getData(
+                `${LOCAL_URL}/api/notes-attendees/exam/${selectedExam}/${sessions?.find((item: any) => item.id === selectedSession)?.course_id}`);
+            if (res?.success) {
+                setExamsData(res?.data);
             } else {
                 console.log(res);
                 showCustomMessage("Information", res?.message, "warning", "bottom")
@@ -177,11 +198,17 @@ function GradeEntryScreen(props: any): React.JSX.Element {
 
 
     const onChangeSearch = (query: string) => {
+
         setSearchQuery(query);
-        const filtered = examsData?.students.filter((item: any) =>
-            item?.student_id?.name.toLowerCase().includes(query.toLowerCase())
+        const filtered = examsData?.filter((item: any) =>
+            item?.name.toLowerCase().includes(query.toLowerCase())
         );
-        setFilteredData(filtered);
+        const sortedData = filtered?.sort((a: any, b: any) => {
+            if (a.exam_marks) return 1;
+            if (b.exam_marks) return -1;
+            return 0;
+        });
+        setFilteredData(sortedData);
     };
 
 
@@ -294,13 +321,12 @@ function GradeEntryScreen(props: any): React.JSX.Element {
 
                         style={{ flexDirection: "row", marginBottom: 10, gap: 20, paddingHorizontal: 0, borderBottomWidth: 1, borderBottomColor: theme.gray, paddingBottom: 10, }}>
 
-
                         <View style={{ justifyContent: "space-between", flex: 1, gap: 5, alignContent: "center", }}>
-                            <Text selectable={true} style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{item?.student_id?.name}</Text>
+                            <Text selectable={true} style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{item?.name}</Text>
 
                             <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
                                 {
-                                    item.status === "present" &&
+                                    item.attendee && item.attendee.status === "present" &&
                                     <View
                                         style={{ borderWidth: 1, borderColor: theme.gray, paddingHorizontal: 5, paddingVertical: 3, alignItems: "center", borderRadius: 5, backgroundColor: theme.primary }}
                                     >
@@ -309,11 +335,20 @@ function GradeEntryScreen(props: any): React.JSX.Element {
 
                                 }
                                 {
-                                    item.status === "absent" &&
+                                    item.attendee && item.attendee.status === "absent" &&
                                     <View
                                         style={{ borderWidth: 1, borderColor: theme.gray, paddingHorizontal: 5, paddingVertical: 3, alignItems: "center", borderRadius: 5, backgroundColor: "red" }}
                                     >
                                         <Text style={{ color: theme.secondaryText, fontSize: 16 }}>{"Absent"}</Text>
+                                    </View>
+
+                                }
+                                {
+                                    !item.attendee &&
+                                    <View
+                                        style={{ borderWidth: 1, borderColor: theme.gray, paddingHorizontal: 5, paddingVertical: 3, alignItems: "center", borderRadius: 5, }}
+                                    >
+                                        <Text style={{ color: theme.primaryText, fontSize: 16 }}>{"Appel non fait"}</Text>
                                     </View>
 
                                 }
@@ -344,10 +379,10 @@ function GradeEntryScreen(props: any): React.JSX.Element {
                                         setModalVisible(true)
                                         setIsLoading(false)
                                         setSelectedStudent(item)
-                                        setMark(item.marks?.toString() + ".0")
+                                        setMark(item?.exam_marks ? item?.exam_marks?.[0]?.marks + ".0" : "0.0")
                                     }}
                                 >
-                                    <Text style={styles.value}>{item?.marks}.0</Text>
+                                    <Text style={styles.value}>{item?.exam_marks ? item?.exam_marks?.[0]?.marks + ".0" : "0.0"}</Text>
                                 </TouchableOpacity>
                                 <MaterialCommunityIcons name={"dots-vertical"} size={25} color={theme.primaryText} />
                             </View>
@@ -372,8 +407,11 @@ function GradeEntryScreen(props: any): React.JSX.Element {
                         <View style={styles.viewBar} />
                         <Text style={styles.titleBottonSheet}>Saisie de note</Text>
                         <Divider style={{ width: "50%" }} />
-                        <Text style={styles.modalcontainerText}>{selectedStudent?.student_id?.name}</Text>
-                        <Text style={styles.modalcontainerText1}>{examsData?.session_id?.name} & {examsData?.subject_id.name}</Text>
+                        <Text style={styles.modalcontainerText}>{selectedStudent?.name}</Text>
+                        <Text style={styles.modalcontainerText1}>
+                            {oneSession?.name}
+                            {'  '}&{"  "}
+                            {oneSession?.exam_ids?.find((item: any) => item.id === selectedExam)?.subject_id?.name}</Text>
                         <View style={styles.InputContainers} >
                             <TextInput
                                 placeholder="Note"
@@ -387,7 +425,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
                                 numberOfLines={1}
                                 maxLength={4}
                             />
-                            <Text style={styles.noteTitle}>/{examsData?.total_marks} </Text>
+                            <Text style={styles.noteTitle}>/{oneSession?.exam_ids?.find((item: any) => item.id === selectedExam)?.total_marks} </Text>
                         </View>
                         {/* <View style={styles.InputContainers} >
 

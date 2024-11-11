@@ -24,6 +24,10 @@ const dynamicStyles = (theme: any) => {
             marginBottom: -5,
             flex: 1,
         },
+        modalContent1: {
+            alignItems: 'center',
+            flex: 1,
+        },
         modalView: {
             backgroundColor: theme.primaryBackground,
             paddingVertical: 10,
@@ -33,34 +37,55 @@ const dynamicStyles = (theme: any) => {
             height: height * 0.5,
             paddingHorizontal: 10,
         },
+        modalView1: {
+            backgroundColor: theme.primaryBackground,
+            paddingVertical: 10,
+            borderTopLeftRadius: 15,
+            borderTopRightRadius: 15,
+            width: width,
+            height: height * 0.9,
+            paddingHorizontal: 10,
+        },
         scrollViewContent: {
             height: "40%",
             // flex: 1,
             flexGrow: 1, // Permet au ScrollView de prendre toute la hauteur
         },
         contentContainer: {
+            marginTop: 5,
             flex: 1,
             alignItems: 'center',
-            //marginHorizontal:15,
+            borderTopWidth: 1,
+            borderTopColor: theme.gray,
+            paddingVertical: 10,
+            marginHorizontal: 1,
 
         },
+
         titleBottonSheet: {
             color: theme.primaryText,
             ...Theme.fontStyle.montserrat.bold,
             letterSpacing: 1,
-            marginBottom: 15,
+            marginBottom: 5,
             paddingHorizontal: 20,
-            flex: 1,
+            // flex: 1,
             textAlign: "center",
             fontSize: 17
 
+        },
+        modalcontainerText: {
+            fontSize: 16,
+            color: theme.primary,
+            textAlign: "center",
+            ...Theme.fontStyle.montserrat.italic,
+            paddingTop: 10, paddingHorizontal: 0,
         },
         viewBar: {
             width: 40,
             borderBottomWidth: StyleSheet.hairlineWidth * 4,
             borderBottomColor: theme.primaryText,
             borderRadius: 5,
-            marginBottom: 20,
+            marginBottom: 10,
 
         },
         emptyDataText: {

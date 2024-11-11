@@ -181,6 +181,37 @@ export async function VerifyOtp(url) {
         }
     })
 }
+
+
+export async function postMessageDoc(url, { arg }) {
+    console.log("request URL", url);
+    console.log("request arg", arg);
+    const formdata = new FormData();
+    const header = new Headers();
+    header.append('Content-Type', "multipart/form-data")
+    header.append('Accept', "application/json")
+    header.append('api-key', "Y5998ZQH6V40G1AM48EJP329SN6DMUR1")
+    header.append('token', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6ImFkbWluQHNvZnRlZHVjYXQub3JnIiwidWlkIjoyfQ.4xzNf2eP5zZE5kCq-V65N5wJQZTPJEUtGljXCvOapsE")
+
+    formdata.append("user_id", arg?.user_id);
+    formdata.append("message", arg?.message);
+    if (arg?.file) formdata.append("file", arg?.file);
+
+
+
+    console.log("request formdata", formdata);
+    return fetch(url, {
+        headers: header,
+        method: 'POST',
+        body: formdata
+    }).then((res) => {
+        if (res.ok) {
+            return res.json()
+        } else {
+            console.log("mauvaise reponse", res);
+        }
+    })
+}
 export async function postDataDoc(url, { arg }) {
     console.log("request URL", url);
     console.log("request arg", arg);

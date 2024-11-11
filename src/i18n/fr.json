@@ -33,7 +33,7 @@
         "validation_classe_required": "La classe est requise"
     },
     "Home": {
-        "title": "Acceuil Enseignant",
+        "title": "Accueil Enseignant",
         "notVehicleFound": "Aucun détail de véhicule trouvé !",
         "notstudentFound": "Aucun détail d'élève trouvé !",
         "studentDetails": "Informations des élèves",
@@ -201,5 +201,8 @@
                 "Langue mise à jour vers"
             ]
         }
+    },
+    "DiscussScreen": {
+        "title": "Mes Discussion"
     }
 }
