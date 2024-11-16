@@ -162,6 +162,7 @@ function HomeScreen(props: any): React.JSX.Element {
                 // console.log(finalData[0]);
                 setAttendance((prevState) => [...prevState, ...finalData]);
             } else {
+                console.log('Une erreur s\'est produite :', res);
                 showCustomMessage("Information", res.message, "warning", "bottom")
             }
         } catch (err: any) {
@@ -232,7 +233,7 @@ function HomeScreen(props: any): React.JSX.Element {
             <TouchableOpacity
 
                 style={styles.TitleContainer}>
-                <Text style={styles.fieldText}>{"Mes salles de classe "}({classRoom?.length})</Text>
+                <Text style={styles.fieldText}>{I18n.t('Home.myClassrooms')} ({classRoom?.length})</Text>
             </TouchableOpacity>
             <Divider />
         </View>
@@ -354,7 +355,7 @@ function HomeScreen(props: any): React.JSX.Element {
                                     </Text>
                                 </View>
                                 <Text style={{ alignItems: "center", textAlign: "center", alignContent: "center", ...Theme.fontStyle.montserrat.bold, color: theme.secondaryText, backgroundColor: theme.primary, paddingHorizontal: 10, paddingVertical: 5, }}>
-                                    {"Cours"}
+                                    {I18n.t('Home.course')}
                                 </Text >
                             </View>}
                             {item.isExams && <View style={{ justifyContent: "space-between", flexDirection: "row" }}>
@@ -377,8 +378,8 @@ function HomeScreen(props: any): React.JSX.Element {
                 scrollEnabled={false}
                 nestedScrollEnabled={false}
                 style={{ backgroundColor: theme.primaryBackground, marginHorizontal: 10, borderWidth: 1, borderColor: theme.gray3, elevation: 2, paddingBottom: 10 }}
-                ListHeaderComponent={() => renderWorkHeader("Appels non faits" + ` (${(attendance?.length)})`, "CourcesListeScreen", { nexScreen: "MyAbsencesScreen" })}
-                ListEmptyComponent={() => renderEmptyVehiclesElement(I18n.t('Home.renderEmptyGradeBook'), isLoadingAttendances)} />
+                ListHeaderComponent={() => renderWorkHeader(I18n.t('Home.unmarkedAttendance') + ` (${(attendance?.length)})`, "CourcesListeScreen", { nexScreen: "MyAbsencesScreen" })}
+                ListEmptyComponent={() => renderEmptyVehiclesElement(I18n.t('Home.renderEmptyunmarkedAttendance'), isLoadingAttendances)} />
             <TouchableOpacity
                 style={{ position: "absolute", right: 5, top: -10, backgroundColor: theme.gray4, borderRadius: 20, padding: 5 }}
                 onPress={() => handleNavigationPressed("CourcesListeScreen", { nexScreen: "MyAbsencesScreen" })}>
@@ -426,7 +427,7 @@ function HomeScreen(props: any): React.JSX.Element {
                 scrollEnabled={false}
                 nestedScrollEnabled={false}
                 style={{ backgroundColor: theme.primaryBackground, marginHorizontal: 10, borderWidth: 1, borderColor: theme.gray3, elevation: 2, paddingBottom: 10 }}
-                ListHeaderComponent={() => renderWorkHeader("Saisie des notes", "GradeEntryScreen")}
+                ListHeaderComponent={() => renderWorkHeader(I18n.t('Home.gradeEntry'), "GradeEntryScreen")}
                 ListEmptyComponent={() => renderEmptyVehiclesElement(I18n.t('Home.renderEmptyGradeBook'), isLoadingExams)} />
             <TouchableOpacity
                 style={{ position: "absolute", right: 5, top: -10, backgroundColor: theme.gray4, borderRadius: 20, padding: 5 }}
@@ -513,7 +514,7 @@ function HomeScreen(props: any): React.JSX.Element {
                 <Text style={styles.emptyDataText}>{I18n.t("Home.notstudentFound")}</Text>}
         </View>
     );
-    const renderEmptyVehiclesElement = (message: any, isLoading: boolean) => (
+    const renderEmptyVehiclesElement: any = (message: any, isLoading: boolean) => (
         <View style={styles.emptyData}>
             {isLoading && <>
                 <ActivityIndicator color={theme.primary} size={25} />

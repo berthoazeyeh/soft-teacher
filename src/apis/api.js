@@ -111,6 +111,30 @@ export async function RechargeMobileWalletEnd(url, { arg }) {
         }
     })
 }
+export async function PostFormData(url, { arg }) {
+    console.log("request URL", url);
+    console.log("request arg", arg);
+
+    const formData = new FormData();
+    for (const key in arg) {
+        formData.append(key, arg[key]);
+    }
+
+    return fetch(url, {
+        headers: headers,
+        method: 'POST',
+        body: formData
+    }).then((res) => {
+        if (res.ok) {
+            return res.json()
+        } else {
+            console.log("mauvaise reponse", res);
+            throw new Error({ message: "une erreur s'est produite veillez", status: res.status, statusText: res.statusText });
+
+            console.log("mauvaise reponse", res);
+        }
+    })
+}
 export async function MobileRechargeBalence(url, { arg }) {
     console.log("request URL", url);
     console.log("request arg", arg);

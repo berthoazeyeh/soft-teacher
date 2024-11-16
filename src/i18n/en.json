@@ -61,7 +61,17 @@
         "viewClasses": "View Classes",
         "otherImportantLinks": "Other Important Links",
         "loading": "Loading...",
-        "renderEmptyAttendance": "No absences recorded for this child."
+        "renderEmptyAttendance": "No absences recorded for this child.",
+        "myClassrooms": "My Classrooms",
+        "unmarkedAttendance": "Unmarked Attendance",
+        "course": "Course",
+        "exam": "Exam",
+        "gradeEntry": "Grade Entry",
+        "myAssignments": "My Assignments",
+        "agenda": "Agenda",
+        "more_link": "See More",
+        "recentEvaluations": "Recent Evaluations",
+        "renderEmptyunmarkedAttendance": "No unmarked Attendance found!"
     },
     "Dashboard": {
         "title": "Dashboard",
@@ -71,6 +81,17 @@
         "Warning": "Warning",
         "Bottom": "Bottom",
         "LogOut": "Log out",
+        "Elems": {
+            "studentList": "Student List",
+            "myCourses": "My Courses",
+            "timeTable": "Timetable",
+            "assignments": "Assignments",
+            "attendanceTracking": "Attendance Tracking",
+            "gradeEntry": "Grade Entry",
+            "examsAndAttendance": "Exams and Attendance",
+            "notebook": "Notebook",
+            "pastReportCards": "Past Report Cards"
+        },
         "ElementList": [
             "Student Profile",
             "Subject Registration",

@@ -139,15 +139,15 @@ function DashBoardScreen(props: any): React.JSX.Element {
         setData(data1.slice(startIndex, endIndex));
     };
     const data1: Item[] = [
-        { id: 1, color: "green", haveBadge: false, name: "Liste d'eleve", icon: 'account-group', screen: "StudentListScreen" }, // Profil étudiant
-        { id: 2, color: theme.primaryText, haveBadge: true, name: "Mes cours", icon: 'school', screen: 'MyCourcesScreen' },// Cours
-        { id: 3, color: theme.primaryText, haveBadge: true, name: "Emploi de temps", icon: 'calendar', screen: 'MyTimeTableScreen' }, // Emploi du temps
-        { id: 4, color: "green", haveBadge: true, name: "Les Devoirs", icon: 'checkbox-marked-outline', screen: 'MyAssignmentScreen' }, // Présence
-        { id: 5, color: 'green', haveBadge: true, name: "Appel et suivi", icon: 'clipboard-list', screen: 'CourcesListeScreen' }, // Inscription aux matières
-        { id: 7, color: theme.primaryText, haveBadge: false, name: "Saisie des notes", icon: 'book-open-variant', screen: 'GradeEntryScreen' }, // Carnet de notes
-        { id: 8, color: theme.primaryText, haveBadge: true, name: "Examens et appel", icon: 'library', screen: 'ExamsListeScreen' }, // Bibliothèque
-        { id: 6, color: "green", haveBadge: true, name: "Cahier de texte", icon: 'pencil', screen: 'NotebookScreen' }, // Devoirs
-        { id: 8, color: "green", haveBadge: true, name: "Anciens bulletins", icon: 'library', screen: 'PastReportCardsScreen' }, // Bibliothèque
+        { id: 1, color: "green", haveBadge: false, name: I18n.t("Dashboard.Elems.studentList"), icon: 'account-group', screen: "StudentListScreen" },
+        { id: 2, color: theme.primaryText, haveBadge: true, name: I18n.t("Dashboard.Elems.myCourses"), icon: 'school', screen: 'MyCourcesScreen' },
+        { id: 3, color: theme.primaryText, haveBadge: true, name: I18n.t("Dashboard.Elems.timeTable"), icon: 'calendar', screen: 'MyTimeTableScreen' },
+        { id: 4, color: "green", haveBadge: true, name: I18n.t("Dashboard.Elems.assignments"), icon: 'checkbox-marked-outline', screen: 'MyAssignmentScreen' },
+        { id: 5, color: 'green', haveBadge: true, name: I18n.t("Dashboard.Elems.attendanceTracking"), icon: 'clipboard-list', screen: 'CourcesListeScreen' },
+        { id: 6, color: theme.primaryText, haveBadge: false, name: I18n.t("Dashboard.Elems.gradeEntry"), icon: 'book-open-variant', screen: 'GradeEntryScreen' },
+        { id: 7, color: theme.primaryText, haveBadge: true, name: I18n.t("Dashboard.Elems.examsAndAttendance"), icon: 'library', screen: 'ExamsListeScreen' },
+        { id: 8, color: "green", haveBadge: true, name: I18n.t("Dashboard.Elems.notebook"), icon: 'pencil', screen: 'NotebookScreen' },
+        { id: 9, color: "green", haveBadge: true, name: I18n.t("Dashboard.Elems.pastReportCards"), icon: 'library', screen: 'PastReportCardsScreen' }
     ];
 
     const handlePagePress = (pageNum: number) => {
@@ -267,7 +267,7 @@ function DashBoardScreen(props: any): React.JSX.Element {
 
     return (
         <View style={styles.container}>
-            <Header title={"Tableau de Bord"} visible={visible} theme={theme} onLogoutPressed={onLogoutPressed} setVisible={onMenuPressed} />
+            <Header title={I18n.t("Dashboard.title")} visible={visible} theme={theme} onLogoutPressed={onLogoutPressed} setVisible={onMenuPressed} />
             <FlatList
                 data={data}
                 showsVerticalScrollIndicator={false}

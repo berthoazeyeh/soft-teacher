@@ -6,12 +6,13 @@ import { updateUserStored, useCurrentUser, useTheme } from 'store';
 import { DEFAULT_IMG, showCustomMessage, Theme } from 'utils';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { I18n } from 'i18n';
-import { LOCAL_URL, putData } from 'apis';
+import { getData, LOCAL_URL, postData, PostFormData, putData, RechargeMobileWalletEnd } from 'apis';
 import { CustomerLoader } from 'components';
 import { useDispatch } from 'react-redux';
 import * as z from 'zod';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import useSWRMutation from 'swr/mutation';
 
 const schema = z.object({
     name: z.string()
@@ -31,6 +32,7 @@ const schema1 = z.object({
         .regex(/[a-z]/, { message: I18n.t('Login.validation_password_lowercase') })
         .regex(/\d/, { message: I18n.t('Login.validation_password_number') })
 });
+
 type Parent = {
     email: string,
     id: number,
@@ -44,8 +46,12 @@ type Parent = {
 
 const ProfileScreen = (props: any) => {
     const { navigation } = props;
+    const user = useCurrentUser()
+    console.log(user);
 
+    const { trigger: changeTeacherPassword } = useSWRMutation(`${LOCAL_URL}/api/change/password/${user?.user_id}`, PostFormData)
 
+    // required_fields = ['old_password', 'new_password']
     const form = useForm({
         resolver: zodResolver(schema),
         mode: "onChange",
@@ -62,7 +68,6 @@ const ProfileScreen = (props: any) => {
     const [holdPassword, setHoldPassword] = useState("");
     const dispatch = useDispatch();
 
-    const user = useCurrentUser()
     const [securePasswordEntry, setSecurePasswordEntry] = useState(true);
 
     const [userData, setUserData] = useState<Parent>(user);
@@ -82,17 +87,47 @@ const ProfileScreen = (props: any) => {
     };
     const handleEditPassWordToggle = () => {
         if (updatePassword) {
+
             setLoading(false)
 
             if (!form1.formState.isValid) {
+                console.log("''''''''");
 
-                form1.handleSubmit(() => { })();
+                form1.handleSubmit(handleSubmittedPassWordFormuler)();
+                return;
+            } else {
+                form1.handleSubmit(handleSubmittedPassWordFormuler)();
                 return;
             }
         }
         setIsEditing(!updatePassword)
         setUpdatePassword(!updatePassword);
     };
+
+    const handleSubmittedPassWordFormuler = async (data: any) => {
+        console.log(data);
+        try {
+
+            setLoading(true);
+            const response = await changeTeacherPassword({ old_password: holdPassword, new_password: newPassword });
+            console.log(response);
+            if (response.success) {
+                showCustomMessage("Success", "Mot de passe modifié avec succès.", "success", "center")
+                setIsEditing(!updatePassword)
+                setUpdatePassword(!updatePassword);
+                setHoldPassword("")
+                setNewPassword("")
+            } else {
+                showCustomMessage("Information", response?.message, "warning", "bottom")
+            }
+
+        } catch (error: any) {
+            showCustomMessage("Information", "Une erreur s'est produite." + error?.message, "warning", "bottom")
+        } finally {
+            setLoading(false);
+        }
+    }
+
     const handleSubmittedFormuler = async () => {
 
         setLoading(true);
@@ -185,6 +220,7 @@ const ProfileScreen = (props: any) => {
                                         left={<TextInput.Icon icon="phone-dial-outline" />}
                                         style={styles.input}
                                         placeholder='Votre numero de telephone'
+                                        keyboardType="phone-pad"
                                         value={userData.phone}
                                         onChangeText={(text) => {
                                             handleChange('phone', text)
@@ -213,7 +249,9 @@ const ProfileScreen = (props: any) => {
                                                 left={<TextInput.Icon icon="lock" />}
                                                 style={styles.input}
                                                 value={holdPassword}
-                                                maxLength={16}
+                                                maxLength={20}
+                                                autoCapitalize="none"
+
                                                 placeholder='Hold password'
                                                 onChangeText={(text) => {
                                                     setHoldPassword(text)
@@ -241,7 +279,8 @@ const ProfileScreen = (props: any) => {
                                             left={<TextInput.Icon icon="lock" />}
                                             style={styles.input}
                                             value={newPassword}
-                                            maxLength={16}
+                                            maxLength={20}
+                                            autoCapitalize="none"
                                             placeholder='New password'
                                             onChangeText={(text) => {
                                                 setNewPassword(text)
@@ -284,7 +323,8 @@ const style = (theme: any) => StyleSheet.create({
         paddingHorizontal: 30,
         paddingVertical: 10,
         borderRadius: 10,
-        marginVertical: 10,
+        marginVertical: 3,
+        marginTop: 30,
         backgroundColor: theme.gray3
     },
     profilePic: {
@@ -342,7 +382,7 @@ const style = (theme: any) => StyleSheet.create({
         margin: 2,
         color: 'red',
         ...Theme.fontStyle.montserrat.italic,
-        fontSize: 10,
+        fontSize: 12,
         marginLeft: 10,
     },
 });

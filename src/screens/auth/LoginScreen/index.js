@@ -18,13 +18,13 @@ import { DATABASE, LOCAL_URL, postData } from "apis";
 
 const schema = z.object({
     email: z.string()
-        .min(5, I18n.t('Login.validation_email_invalid'))
-        .regex(/^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/, { message: I18n.t('Login.validation_email_invalid') }),
+        .min(5, I18n.t('Login.validation_email_invalid')),
+    // .regex(/^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/, { message: I18n.t('Login.validation_email_invalid') }),
     password: z.string()
-        .min(8, { message: I18n.t('Login.validation_password_too_short') })
-        .regex(/[A-Z]/, { message: I18n.t('Login.validation_password_uppercase') })
-        .regex(/[a-z]/, { message: I18n.t('Login.validation_password_lowercase') })
-        .regex(/\d/, { message: I18n.t('Login.validation_password_number') })
+        .min(5, { message: I18n.t('Login.validation_password_too_short') })
+    // .regex(/[A-Z]/, { message: I18n.t('Login.validation_password_uppercase') })
+    // .regex(/[a-z]/, { message: I18n.t('Login.validation_password_lowercase') })
+    // .regex(/\d/, { message: I18n.t('Login.validation_password_number') })
 });
 
 const LoginScreen = (props) => {

@@ -47,7 +47,7 @@ export const VehicleItem = ({ item, I18n, index, navigation }: any): React.JSX.E
             </View>
             <View style={{ gap: 5, flex: 1, alignItems: "center" }}>
                 <View style={styles.containerWrap}>
-                    <Text style={{ color: theme.primaryText, ...Theme.fontStyle.montserrat.semiBold }}>Cours:</Text>
+                    <Text style={{ color: theme.primaryText, ...Theme.fontStyle.montserrat.semiBold }}>{I18n.t("Home.course")}:</Text>
                     {item?.subjects?.slice(0, 3)?.map((item: any, index: number) => <View key={index} style={styles.item}>
                         <Text style={{ color: theme.primaryText, ...Theme.fontStyle.montserrat.semiBold, fontSize: 10 }}>{item.name} </Text>
                     </View>

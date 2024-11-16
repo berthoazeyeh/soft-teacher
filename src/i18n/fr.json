@@ -61,7 +61,17 @@
         "viewClasses": "Voir les classes",
         "otherImportantLinks": "Autres liens importants",
         "loading": "Chargement...",
-        "renderEmptyAttendance": "Aucune absence enregistrée pour cet enfant"
+        "renderEmptyAttendance": "Aucune absence enregistrée pour cet enfant",
+        "myClassrooms": "Mes salles de classe",
+        "unmarkedAttendance": "Appels non faits",
+        "course": "Cours",
+        "exam": "Examen",
+        "gradeEntry": "Saisie des notes",
+        "myAssignments": "Mes travaux à réaliser",
+        "agenda": "Agenda",
+        "more_link": "Voir plus",
+        "recentEvaluations": "Évaluations récentes",
+        "renderEmptyunmarkedAttendance": "Aucun appel non fait trouvé !"
     },
     "Dashboard": {
         "title": "Tableau de bord",
@@ -71,6 +81,17 @@
         "Warning": "warning",
         "Bottom": "bottom",
         "LogOut": "log out",
+        "Elems": {
+            "studentList": "Liste d'élèves",
+            "myCourses": "Mes cours",
+            "timeTable": "Emploi du temps",
+            "assignments": "Les devoirs",
+            "attendanceTracking": "Appel et suivi",
+            "gradeEntry": "Saisie des notes",
+            "examsAndAttendance": "Examens et appel",
+            "notebook": "Cahier de texte",
+            "pastReportCards": "Anciens bulletins"
+        },
         "ElementList": [
             "Profil étudiant",
             "Inscription aux matières",
