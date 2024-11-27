@@ -248,7 +248,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
             setIsLoading(true);
             const res = await getStudentWithOneSubExam();
             if (res?.success) {
-                console.log(".....", res?.data);
+                // console.log(".....", res?.data);
                 setExamsData(res?.data);
             } else {
                 console.log(".....", res);
