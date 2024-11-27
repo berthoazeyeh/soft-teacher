@@ -1,5 +1,5 @@
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native"
-import dynamicStyles from "../style";
+import dynamicStyles from "../styles";
 import { useTheme } from "store";
 import { bus, getRandomColor, profils, Theme } from "utils";
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -7,9 +7,9 @@ import { I18n } from 'i18n';
 import { Divider } from "react-native-paper";
 import moment from "moment";
 
-export const VehicleItem = ({ item, I18n, index, navigation }: any): React.JSX.Element => {
+export const ClasseItem = ({ item, I18n, index, navigation, isSelected }: any): React.JSX.Element => {
     const theme = useTheme()
-    const styles = dynamicStyles(theme, item.isSecondary)
+    const styles = dynamicStyles(theme, isSelected)
 
     const handleGotoLive = (item: any) => {
         navigation.navigate("DashBoardScreen", {

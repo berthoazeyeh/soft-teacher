@@ -7,6 +7,8 @@
     "more": "Plus",
     "settings": "Paramètres",
     "more_link": "Voir plus",
+    "validation.note_min_error": "La valeur doit être supérieure ou égale à {value}.",
+    "validation.note_max_error": "La valeur doit être inférieure ou égale à {value}.",
     "Login": {
         "username": "Email",
         "password": "Mot de passe",
@@ -14,6 +16,7 @@
         "languageEnglish": "Anglais",
         "languageFrench": "Français",
         "dob_too_recent": "La date de naissance doit être d'au moins 4 ans.",
+        "validation_passwords_do_not_match": "Les mots de passe ne correspondent pas.",
         "validation_username_too_short": "Le nom d'utilisateur doit contenir au moins 5 caractères.",
         "validation_dob_too_short": "La date de naissance doit contenir au moins 5 caractères.",
         "validation_relation_too_short": "La relation doit contenir au moins 5 caractères.",
@@ -225,5 +228,12 @@
     },
     "DiscussScreen": {
         "title": "Mes Discussion"
+    },
+    "validation": {
+        "note_min_error": "La note ne doit pas être inférieure à {{value}}.",
+        "note_max_error": "La note ne doit pas être supérieure à {{value}}.",
+        "start_date_error": "La date de début ne peut pas être inférieure à aujourd'hui.",
+        "end_date_error_today": "La date de fin ne peut pas être inférieure à aujourd'hui.",
+        "end_date_error_start": "La date de fin doit être au moins 2 jours après la date de début."
     }
 }

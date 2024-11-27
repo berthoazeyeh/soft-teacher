@@ -1,6 +1,6 @@
 import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
-import { HomeScreen } from 'screens'
+import { ClassRoomListScreen, HomeScreen } from 'screens'
 import HomeBottomTabNavigation from './bottom';
 import DashboadElementStacks from './dashboadElement';
 import SettingsScreenStacks from './settings';
@@ -21,7 +21,7 @@ export type AuthStackList = {
     ReportsInfo: undefined;
     AllTrips: undefined;
     RoutesMap: undefined;
-    AoiMaps: undefined;
+    ClassRoomListScreen: undefined;
     LiveScreen: { uniqueId: string, name: string, status: string, vehicleType: string }; // Ajoutez les paramètres ici
 };
 const AuthStack = createStackNavigator<AuthStackList>()
@@ -53,6 +53,11 @@ const AppStacks = () => {
                 options={{ headerShown: false }}
                 name="DiscussStacks"
                 component={DiscussStacks}
+            />
+            <AuthStack.Screen
+                options={{ headerShown: true }}
+                name="ClassRoomListScreen"
+                component={ClassRoomListScreen}
             />
 
 

@@ -33,9 +33,14 @@ function MyCourcesScreen(props: any): React.JSX.Element {
             setIsLoading(true);
             const classe = await getTeacherSubjectInClassRoome();
             if (classe?.success) {
-                const assigms: any[] = classe?.success ? classe?.data : []
-                setSubject(assigms);
-                console.log("getTeacherClassRoom------size-------", assigms.length);
+                const data: any[] = classe?.success ? classe?.data : []
+                if (classRoom.isSecondary && classRoom?.subjects?.length > 0) {
+                    setSubject(classRoom?.subjects);
+                } else {
+                    setSubject(data ?? []);
+
+                }
+                console.log("getTeacherClassRoom------size-------", data.length);
 
             } else {
                 showCustomMessage("Information", classe.message, "warning", "bottom")

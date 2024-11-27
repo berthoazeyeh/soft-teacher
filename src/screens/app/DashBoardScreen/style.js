@@ -19,7 +19,8 @@ const dynamicStyles = (theme) => {
             width: "89%",
 
         },
-        pickerItemStyle: { color: "black", ...Theme.fontStyle.montserrat.semiBold },
+        pickerItemStyle: { color: "black", ...Theme.fontStyle.montserrat.bold },
+        pickerItemStyle1: { color: "#4B7895", ...Theme.fontStyle.montserrat.bold, },
         column: {
             justifyContent: 'space-between',
         },

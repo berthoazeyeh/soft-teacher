@@ -11,11 +11,11 @@ const dynamicStyles = (theme: any) => {
         headerContainer: {
             backgroundColor: theme.secondary,
             paddingBottom: 10,
-            paddingHorizontal: 10,
+            // paddingHorizontal: 10,
             elevation: 4,
-            borderWidth: 1.5,
+            // borderWidth: 1.5,
             justifyContent: 'space-between',
-            borderColor: '#434343'
+            // borderColor: '#434343'
         },
         value: {
             fontSize: 16,
@@ -31,13 +31,12 @@ const dynamicStyles = (theme: any) => {
             flex: 1,
         },
         picker: {
-            height: 50,
-            width: "90%",
-
+            height: 40,
+            flex: 1,
         },
         profil: {
-            padding: 5,
-            marginLeft: 15,
+            padding: 3,
+            marginLeft: 10,
             backgroundColor: theme.gray3,
             borderRadius: 10,
             // marginHorizontal: 10,
@@ -60,7 +59,29 @@ const dynamicStyles = (theme: any) => {
             alignItems: 'center',
             overflow: 'hidden', // Prevents content from showing outside bounds
         },
+        buttonLabel: {
+            color: theme.secondaryText,
+            fontSize: 20,
+            ...Theme.fontStyle.montserrat.semiBold,
+        },
+        loginText: {
+            color: theme.secondaryText,
+            fontSize: 16,
+            letterSpacing: 1.7,
+            ...Theme.fontStyle.montserrat.bold,
 
+        },
+        error: {
+            color: "red",
+            fontSize: 12,
+            marginBottom: 10,
+        },
+        textdanger1: {
+            margin: 2,
+            color: 'red',
+            ...Theme.fontStyle.montserrat.italic,
+            fontSize: 10
+        },
         linearGradient: {
             justifyContent: 'center',
             alignItems: 'center',
@@ -69,11 +90,14 @@ const dynamicStyles = (theme: any) => {
         titleContainer: {
             flexDirection: "row",
             alignItems: "center",
+            paddingHorizontal: 10,
             justifyContent: "space-between",
+            backgroundColor: theme.primaryBackground,
+
 
         },
         text: {
-            color: 'white',
+            color: theme.primaryText,
             paddingVertical: 10,
             fontSize: 18,
             ...Theme.fontStyle.montserrat.bold,
@@ -121,6 +145,21 @@ const dynamicStyles = (theme: any) => {
             borderRadius: 10,
             padding: 2,
             width: '50%',
+        },
+        inputContainerC: {
+            marginTop: 10,
+            borderRadius: 10,
+            padding: 2,
+            width: '100%',
+            paddingHorizontal: 10
+        },
+        fabStyle: {
+            bottom: 16,
+            right: 16,
+            backgroundColor: theme.primary,
+            position: 'absolute',
+
+            color: theme.secondaryText
         },
         inputContainerP: {
             flexDirection: 'row',
@@ -203,6 +242,20 @@ const dynamicStyles = (theme: any) => {
             //marginHorizontal:15,
 
         },
+        item: {
+            paddingRight: 5,
+            paddingVertical: 3,
+            marginVertical: 3,
+            fontSize: 16,
+            borderRadius: 25,
+        },
+        containerWrap: {
+            marginBottom: 7,
+            flexDirection: 'row',
+            // flexWrap: 'wrap',
+            paddingHorizontal: 10,
+            alignItems: "center"
+        },
         modalcontainerText: {
             fontSize: 18,
             color: theme.primary,
@@ -231,6 +284,18 @@ const dynamicStyles = (theme: any) => {
             color: theme.primaryText,
             backgroundColor: theme.gray,
             ...Theme.fontStyle.montserrat.bold
+        },
+        input1: {
+            borderWidth: 1,
+            borderColor: '#ccc',
+            padding: 10,
+            borderRadius: 5,
+            fontSize: 16,
+            ...Theme.fontStyle.montserrat.bold,
+            marginTop: 5,
+            width: '100%',
+
+
         },
         InputContainers: {
             width: '100%',

@@ -34,7 +34,7 @@ function DashBoardScreen(props: any): React.JSX.Element {
     const [classRoom, setClassRoom] = useState<any[]>([])
     const [refresh, setRefresh] = useState(false)
     const isFocused = useIsFocused();
-
+    const [secondaryClassRoom, setSecondaryClassRoom] = useState<any[]>([])
     let ElementList = I18n.t("Dashboard.ElementList");
     const { data: rooms, error, isLoading } = useSWR(`${LOCAL_URL}/api/rooms/faculty/${user?.id}`,
         getData,
@@ -48,14 +48,25 @@ function DashBoardScreen(props: any): React.JSX.Element {
     useEffect(() => {
         HandleGetStudent()
     }, [refresh])
+    // console.log(classRoom);
 
     const HandleGetStudent = async () => {
-        if (user?.id) {
-            const student = await getTeacherClassRoome();
-            if (student && student.data) {
-                setClassRoom(student.data)
+        try {
+
+            if (user?.id) {
+                const classr = await getTeacherClassRoome();
+                if (classr?.success && classr.data) {
+                    const second: any[] = classr?.data?.diffuser_rooms;
+                    const second1 = second.map(room => {
+                        return { ...room, isSecondary: true }
+                    });
+                    setClassRoom([...classr?.data?.rooms, ...second1]);
+                    setSecondaryClassRoom(classr?.data?.diffuser_rooms)
+                }
+                setRefresh(false);
             }
-            setRefresh(false);
+        } catch (error) {
+
         }
     }
 
@@ -70,7 +81,12 @@ function DashBoardScreen(props: any): React.JSX.Element {
 
             if (rooms?.success)
                 if (rooms && rooms.data) {
-                    setClassRoom(rooms.data)
+                    const second: any[] = rooms?.data?.diffuser_rooms;
+                    const second1 = second.map(room => {
+                        return { ...room, isSecondary: true }
+                    });
+                    setClassRoom([...rooms?.data?.rooms, ...second1]);
+                    setSecondaryClassRoom(rooms?.data?.diffuser_rooms)
                 }
         }
     }, [isFocused, rooms]);
@@ -111,8 +127,8 @@ function DashBoardScreen(props: any): React.JSX.Element {
                     style={styles.pickerItemStyle}
                     label={"Choisir une salle de classe"}
                     value={"studentI.id"} />
-                {classRoom.map(studentI => <Picker.Item
-                    style={styles.pickerItemStyle}
+                {classRoom && classRoom?.map(studentI => <Picker.Item
+                    style={studentI.isSecondary ? styles.pickerItemStyle1 : styles.pickerItemStyle}
                     key={studentI}
                     label={studentI.name}
                     value={studentI?.id} />)}

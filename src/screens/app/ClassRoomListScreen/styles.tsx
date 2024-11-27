@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 import Theme from "theme"
 
-const dynamicStyles = (theme, isSelected) => {
+const dynamicStyles = (theme: any, isSelected: any) => {
     return StyleSheet.create({
         container: {
             flex: 1,
@@ -54,6 +54,12 @@ const dynamicStyles = (theme, isSelected) => {
             alignContent: "center",
             alignItems: "center",
             backgroundColor: isSelected ? "#4B7895" : theme.primaryText,
+        },
+        header: {
+            backgroundColor: 'skyblue',
+            justifyContent: 'center',
+            alignItems: 'center',
+            overflow: 'hidden', // Prevents content from showing outside bounds
         },
         itemContainer: {
             zIndex: 1,
@@ -141,11 +147,6 @@ const dynamicStyles = (theme, isSelected) => {
             flexDirection: "row",
             justifyContent: "space-between",
             paddingBottom: 5
-        },
-        header: {
-            backgroundColor: 'skyblue',
-            justifyContent: 'center',
-            alignItems: 'center',
         },
         etiquettesItemText: {
             ...Theme.fontStyle.montserrat.semiBold,

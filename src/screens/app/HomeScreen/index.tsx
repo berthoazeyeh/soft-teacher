@@ -1,12 +1,12 @@
-import { useEffect, useState, } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useRef, useState, } from 'react';
+import { ActivityIndicator, Animated, FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { I18n } from 'i18n';
 import { Header, TaskItemTimeTable, VehicleItem } from './components';
 import { clearUserStored, selectLanguageValue, useCurrentUser, useTheme } from 'store';
 import dynamicStyles from './style';
 import { Image } from 'react-native';
 import { groupByDay, ImageE1, showCustomMessage, Theme } from 'utils';
-import { Divider, ProgressBar } from 'react-native-paper';
+import { Divider, ProgressBar, Searchbar } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch, useSelector } from 'react-redux';
 import { getData, LOCAL_URL } from 'apis';
@@ -15,6 +15,7 @@ import { Eleve } from 'models';
 import moment from 'moment';
 import useSWRMutation from 'swr/mutation';
 import 'moment/locale/fr';
+import { Easing } from 'react-native';
 
 interface Evaluation {
     date: string,
@@ -29,11 +30,13 @@ function HomeScreen(props: any): React.JSX.Element {
     const styles = dynamicStyles(theme)
     const user = useCurrentUser();
     const dispatch = useDispatch()
-    const [classRoom, setClassRoom] = useState<any[]>([
-    ])
+    const [classRoom, setClassRoom] = useState<any[]>([])
+    const [searchQuery, setSearchQuery] = useState("")
+    const [secondaryClassRoom, setSecondaryClassRoom] = useState<any[]>([])
     const [teacherExams, setTeacherExams] = useState<any[]>([])
     const [timeTables, setTimeTables] = useState<any[]>([])
     const [attendance, setAttendance] = useState<any[]>([])
+    const [filteredData, setFilteredData] = useState<any[]>([])
     const [submitedAssignment, setSubmitedAssignment] = useState<any[]>([])
     const [selectedClasse, setSelectedClasse] = useState<Eleve>()
     const [refresh, setRefresh] = useState(false)
@@ -44,8 +47,8 @@ function HomeScreen(props: any): React.JSX.Element {
     const [visible, setVisible] = useState(false)
     const [scrollPercentage, setScrollPercentage] = useState(0);
     const [classRoomIndex, setClassRoomIndex] = useState(1);
+    const [showSearch, setShowSearch] = useState(false);
     const language = useSelector(selectLanguageValue);
-
 
 
 
@@ -88,10 +91,12 @@ function HomeScreen(props: any): React.JSX.Element {
     const getTeacherClassRoom = async () => {
         const classe = await getTeacherClassRoome();
         if (classe?.success) {
-            const assigms: any[] = classe?.success ? classe?.data : []
-            setClassRoom(assigms);
-            console.log("getTeacherClassRoom------size-------", assigms.length);
+            const assigms: any = classe?.success ? classe?.data : {}
+            setClassRoom(assigms?.rooms);
+            setSecondaryClassRoom(assigms?.diffuser_rooms)
+            console.log("getTeacherClassRoom------size-------", assigms);
             setClassRoomIndex(0);
+
         } else {
         }
     };
@@ -199,11 +204,15 @@ function HomeScreen(props: any): React.JSX.Element {
 
     };
     useEffect(() => {
-        getTeacherClassRoom();
-        setTimeout(() => {
-            setRefresh(false);
-        }, 3000);
-    }, [selectedClasse, refresh])
+        if (refresh) {
+            getTeacherClassRoom();
+            setTimeout(() => {
+                setRefresh(false);
+            }, 3000);
+        }
+    }, [refresh])
+
+
 
 
     useEffect(() => {
@@ -212,14 +221,29 @@ function HomeScreen(props: any): React.JSX.Element {
         getTeacherTimeTablesAttendence();
         getTeacherExamsInClassRoom();
         getTeacherExamsInClassRoomBydate()
+        // hideHeader()
+
     }, [classRoomIndex, refresh])
 
 
     useEffect(() => {
+
         if (data?.success) {
-            setClassRoom(data?.data);
+            setClassRoom(data?.data?.rooms);
+            setSecondaryClassRoom(data?.data?.diffuser_rooms)
         }
     }, [data])
+    useEffect(() => {
+        onChangeSearch(searchQuery)
+    }, [data, classRoom])
+
+    const onChangeSearch = (query: string) => {
+        const filtered = [...classRoom, ...(secondaryClassRoom.map(room => { return { ...room, isSecondary: true } }))]?.filter((item: any) =>
+            item?.name.toLowerCase().includes(query.toLowerCase())
+        );
+        setFilteredData(filtered);
+        setSearchQuery(query);
+    };
 
 
     const renderHeader = () => (
@@ -231,11 +255,45 @@ function HomeScreen(props: any): React.JSX.Element {
                     resizeMode: "cover", flex: 1, width: "100%", height: 200
                 }} />
             <TouchableOpacity
-
                 style={styles.TitleContainer}>
                 <Text style={styles.fieldText}>{I18n.t('Home.myClassrooms')} ({classRoom?.length})</Text>
+                <TouchableOpacity
+                    style={{ marginRight: 10, padding: 2, }}
+                    onPress={() => {
+                        setShowSearch(true);
+                    }}
+                >
+                    <MaterialCommunityIcons name='toy-brick-search-outline' size={30} color={theme.primary} />
+                </TouchableOpacity>
             </TouchableOpacity>
             <Divider />
+            {showSearch && <View style={[styles.header, { height: 60 }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
+                    <Searchbar
+                        placeholder="Search"
+                        onChangeText={(d) => {
+                            onChangeSearch(d)
+
+                        }}
+                        value={searchQuery}
+                        right={() =>
+                            <TouchableOpacity
+                                style={{ marginRight: 10 }}
+                                onPress={() => {
+                                    setShowSearch(false);
+                                    onChangeSearch('')
+                                }}>
+                                <MaterialCommunityIcons name="close-circle" size={25} color="black" />
+                            </TouchableOpacity>}
+                        style={{
+                            height: 50,
+                            borderRadius: 15,
+                            flex: 1,
+                            backgroundColor: '#f0f0f0',
+                        }}
+                    />
+                </View>
+            </View>}
         </View>
     );
 
@@ -509,7 +567,7 @@ function HomeScreen(props: any): React.JSX.Element {
             {isLoading &&
                 <ActivityIndicator color={theme.primary} size={25} />}
             {error &&
-                <Text style={styles.emptyDataText}>{error.message}</Text>}
+                <Text style={styles.emptyDataText}>{error?.message}</Text>}
             {!error &&
                 <Text style={styles.emptyDataText}>{I18n.t("Home.notstudentFound")}</Text>}
         </View>
@@ -591,7 +649,7 @@ function HomeScreen(props: any): React.JSX.Element {
                     scrollEnabled={false}
                     nestedScrollEnabled={false}
                     ListHeaderComponent={renderHeader}
-                    data={classRoom}
+                    data={filteredData.slice(0, 3)}
                     renderItem={({ item, index }) => <VehicleItem
                         item={item}
                         index={index}
@@ -602,7 +660,17 @@ function HomeScreen(props: any): React.JSX.Element {
                         setSelectedStudent={selectedClasse}
                     />}
                     keyExtractor={item => (item.id).toString()}
-                    // ListFooterComponent={() => classRoom.length >= 2 ? renderSeeMore("StudentListScreen") : null}
+                    ListFooterComponent={() => classRoom.length >= 2 ? <TouchableOpacity
+                        style={[styles.TitleContainer, { alignSelf: "center" }]}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                navigation.navigate("ClassRoomListScreen")
+                            }}>
+                            <Text style={[styles.fieldText, { color: theme.primary }]}>
+                                {" Tout Voir"} ({[...classRoom, ...secondaryClassRoom].length - [...classRoom, ...secondaryClassRoom].slice(0, 3).length})
+                            </Text>
+                        </TouchableOpacity>
+                    </TouchableOpacity> : null}
                     ListEmptyComponent={renderEmptyStudentElement}
                 />
 

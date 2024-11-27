@@ -2,7 +2,7 @@ import React, { useLayoutEffect, useState } from 'react';
 import { View, Text, Button, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { AnimatedFAB, FAB, TextInput } from 'react-native-paper';
-import { updateUserStored, useCurrentUser, useTheme } from 'store';
+import { clearUserStored, updateUserStored, useCurrentUser, useTheme } from 'store';
 import { DEFAULT_IMG, showCustomMessage, Theme } from 'utils';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { I18n } from 'i18n';
@@ -30,7 +30,16 @@ const schema1 = z.object({
         .min(8, { message: I18n.t('Login.validation_password_too_short') })
         .regex(/[A-Z]/, { message: I18n.t('Login.validation_password_uppercase') })
         .regex(/[a-z]/, { message: I18n.t('Login.validation_password_lowercase') })
+        .regex(/\d/, { message: I18n.t('Login.validation_password_number') }),
+    ConfirmNewPassword: z.string()
+        .min(8, { message: I18n.t('Login.validation_password_too_short') })
+        .regex(/[A-Z]/, { message: I18n.t('Login.validation_password_uppercase') })
+        .regex(/[a-z]/, { message: I18n.t('Login.validation_password_lowercase') })
         .regex(/\d/, { message: I18n.t('Login.validation_password_number') })
+
+}).refine((data) => data.newPassword === data.ConfirmNewPassword, {
+    message: I18n.t('Login.validation_passwords_do_not_match'),
+    path: ['ConfirmNewPassword'], // Chemin du champ à associer à cette erreur
 });
 
 type Parent = {
@@ -113,10 +122,18 @@ const ProfileScreen = (props: any) => {
             console.log(response);
             if (response.success) {
                 showCustomMessage("Success", "Mot de passe modifié avec succès.", "success", "center")
+
                 setIsEditing(!updatePassword)
                 setUpdatePassword(!updatePassword);
                 setHoldPassword("")
                 setNewPassword("")
+
+                dispatch(clearUserStored(null))
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'AuthStacks' }],
+                })
+                console.log("log out");
             } else {
                 showCustomMessage("Information", response?.message, "warning", "bottom")
             }
@@ -183,10 +200,7 @@ const ProfileScreen = (props: any) => {
                         </Text>
                     </View>
 
-                    <TouchableOpacity onPress={handleEditToggle}
-                        style={styles.updatePass}>
-                        <Text style={styles.editButton}>{isEditing ? "Enregistrer" : 'Editer votre profile'}</Text>
-                    </TouchableOpacity>
+
                     {isEditing && <Controller
                         control={form.control}
                         name="name"
@@ -230,11 +244,11 @@ const ProfileScreen = (props: any) => {
                                 {fieldState.invalid && <Text style={styles.textdanger1}>{fieldState?.error?.message}</Text>}
                             </View>
                         }} />}
-
-                    <TouchableOpacity onPress={handleEditPassWordToggle}
+                    <TouchableOpacity onPress={handleEditToggle}
                         style={styles.updatePass}>
-                        <Text style={styles.editButton}>{updatePassword ? "Enregistrer" : 'Editer le mot de passe'}</Text>
+                        <Text style={styles.editButton}>{isEditing ? "Enregistrer" : 'Editer votre profile'}</Text>
                     </TouchableOpacity>
+
                     {updatePassword &&
                         <>
                             <Controller
@@ -243,18 +257,17 @@ const ProfileScreen = (props: any) => {
                                 render={({ field, fieldState }) => {
                                     return <View>
                                         <View style={styles.field}>
-                                            <Text style={styles.label}>Hold password</Text>
+                                            <Text style={styles.label}>Old password</Text>
                                             <TextInput
                                                 contentStyle={styles.inputContent}
                                                 left={<TextInput.Icon icon="lock" />}
                                                 style={styles.input}
-                                                value={holdPassword}
+                                                value={field.value || ''}
                                                 maxLength={20}
                                                 autoCapitalize="none"
 
-                                                placeholder='Hold password'
+                                                placeholder='Old password'
                                                 onChangeText={(text) => {
-                                                    setHoldPassword(text)
                                                     field.onChange(text)
                                                 }}
                                                 secureTextEntry={securePasswordEntry}
@@ -278,12 +291,38 @@ const ProfileScreen = (props: any) => {
                                             contentStyle={styles.inputContent}
                                             left={<TextInput.Icon icon="lock" />}
                                             style={styles.input}
-                                            value={newPassword}
+                                            value={field.value || ''}
                                             maxLength={20}
                                             autoCapitalize="none"
                                             placeholder='New password'
                                             onChangeText={(text) => {
-                                                setNewPassword(text)
+                                                field.onChange(text)
+                                            }}
+                                            secureTextEntry={securePasswordEntry}
+                                            right={<TextInput.Icon
+                                                onPress={() => setSecurePasswordEntry(!securePasswordEntry)}
+                                                icon={securePasswordEntry ? 'eye-off' : 'eye'}
+
+                                            />} />
+                                        {fieldState.invalid && <Text style={styles.textdanger1}>{fieldState?.error?.message}</Text>}
+
+                                    </View>
+                                }} />
+                            <Controller
+                                control={form1.control}
+                                name="ConfirmNewPassword"
+                                render={({ field, fieldState }) => {
+                                    return <View style={styles.field}>
+                                        <Text style={styles.label}>Confirm new password</Text>
+                                        <TextInput
+                                            contentStyle={styles.inputContent}
+                                            left={<TextInput.Icon icon="lock" />}
+                                            style={styles.input}
+                                            value={field.value || ''}
+                                            maxLength={20}
+                                            autoCapitalize="none"
+                                            placeholder='Confirm new password'
+                                            onChangeText={(text) => {
                                                 field.onChange(text)
                                             }}
                                             secureTextEntry={securePasswordEntry}
@@ -298,6 +337,10 @@ const ProfileScreen = (props: any) => {
                                 }} />
                         </>
                     }
+                    <TouchableOpacity onPress={handleEditPassWordToggle}
+                        style={styles.updatePass}>
+                        <Text style={styles.editButton}>{updatePassword ? "Enregistrer" : 'Editer le mot de passe'}</Text>
+                    </TouchableOpacity>
                 </View>
             </ScrollView>
             <CustomerLoader I18n={I18n} theme={theme} color={theme.primary} loading={loading} />
@@ -324,7 +367,7 @@ const style = (theme: any) => StyleSheet.create({
         paddingVertical: 10,
         borderRadius: 10,
         marginVertical: 3,
-        marginTop: 30,
+        marginBottom: 30,
         backgroundColor: theme.gray3
     },
     profilePic: {
@@ -382,7 +425,7 @@ const style = (theme: any) => StyleSheet.create({
         margin: 2,
         color: 'red',
         ...Theme.fontStyle.montserrat.italic,
-        fontSize: 12,
+        fontSize: 14,
         marginLeft: 10,
     },
 });

@@ -13,6 +13,7 @@
         "login": "Log in",
         "languageEnglish": "English",
         "languageFrench": "French",
+        "validation_passwords_do_not_match": "Passwords do not match.",
         "dob_too_recent": "The date of birth must be at least 4 years ago.",
         "validation_username_too_short": "The username must be at least 5 characters long.",
         "validation_dob_too_short": "The date of birth must be at least 5 characters long.",
@@ -225,5 +226,12 @@
     },
     "DiscussScreen": {
         "title": "My Discussions"
+    },
+    "validation": {
+        "note_min_error": "The note must not be less than {{value}}.",
+        "note_max_error": "The note must not exceed {{value}}.",
+        "start_date_error": "The start date cannot be earlier than today.",
+        "end_date_error_today": "The end date cannot be earlier than today.",
+        "end_date_error_start": "The end date must be at least 2 days after the start date."
     }
 }

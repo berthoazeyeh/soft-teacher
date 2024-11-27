@@ -367,6 +367,21 @@ export async function putData(url, { arg }) {
         }
     })
 }
+export async function deleteData(url, { arg }) {
+    console.log("request URL", url);
+    console.log("request arg", arg);
+
+    return fetch(url, {
+        headers: headers,
+        method: "DELETE",
+    }).then((res) => {
+        if (res.ok) {
+            return res.json()
+        } else {
+            console.log("mauvaise reponse", res);
+        }
+    })
+}
 export function putDataM(url, { arg }) {
     console.log("request URL", url);
     console.log("request arg", arg);

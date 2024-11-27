@@ -62,6 +62,7 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
     const styles = dynamicStyles(theme)
     const { trigger: getAssignmentTypes } = useSWRMutation(`${LOCAL_URL}/api/grading.assignment.type/search`, getData)
     const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/subjects/faculty/${user?.id}/${classRoom?.id}`, getData)
+    // console.log(classRoom);
 
 
     useEffect(() => {
@@ -74,7 +75,12 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
             const subject = await getTeacherSubjectInClassRoome();
             if (subject?.success) {
                 const data: any[] = subject?.success ? subject?.data : []
-                setSubjectList(data);
+                if (classRoom.isSecondary && classRoom?.subjects?.length > 0) {
+                    setSubjectList(classRoom?.subjects);
+                } else {
+                    setSubjectList(data ?? []);
+
+                }
             } else {
                 showCustomMessage(I18n.t('AddAssignmentScreen.info'), subject.message, "warning", "bottom")
             }
@@ -116,13 +122,15 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
             'room_id': classRoom.id,
             'subject_id': data.subject,
             'description': data.description,
-            'submission_date': data.date,
+            'submission_date': moment(data.date).format("YYYY-MM-DD HH:mm:ss"),
             'assignment_type': data.type,
             'document': data.document[0],
 
         }
         try {
             const response = await createNewAssignment(assignmentData);
+            console.log(response);
+
             if (response?.success) {
                 showCustomMessage("Succes", response.message, 'success', "center");
                 const data = response.data;
