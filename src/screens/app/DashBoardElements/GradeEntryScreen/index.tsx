@@ -18,6 +18,7 @@ import { Alert } from "react-native";
 import NotesItem from "./components/NotesItem";
 import { dataStucture } from "./AddNewOrUpdateExams";
 import { hideHeader, showHeader } from "./utils";
+import { I18n } from 'i18n';
 
 
 function GradeEntryScreen(props: any): React.JSX.Element {
@@ -44,7 +45,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
     const [examsList, setExamsList] = useState<any[]>([])
     const [modalVisible, setModalVisible] = useState(false);
     const headerHeight = useRef(new Animated.Value(60)).current;
-
+    const GradeEntryText: any = I18n.t("Dashboard.GradeEntry");
 
 
     const [examsData, setExamsData] = useState<any>(null)
@@ -78,12 +79,12 @@ function GradeEntryScreen(props: any): React.JSX.Element {
             }
             getTeacherExamsStudentSync()
             setModalVisible(false);
-            showCustomMessage("Success", "Note Atribuer avec success", "success", "center")
+            showCustomMessage("Success", GradeEntryText.message_success, "success", "center")
 
         } catch (error: any) {
             setIsLoading(false)
 
-            showCustomMessage("Information", 'Une erreur s\'est produite :' + error.message, "warning", "bottom")
+            showCustomMessage("Information", GradeEntryText.message_error + error.message, "warning", "bottom")
 
         } finally {
             setIsLoading(false)
@@ -97,9 +98,10 @@ function GradeEntryScreen(props: any): React.JSX.Element {
     }, []);
 
     useEffect(() => {
-        if (selectedSession)
+        if (selectedSession) {
             setSelectedExamType(list[0]);
-        getTeacherSubjectInClassRoom()
+            getTeacherSubjectInClassRoom()
+        }
     }, [selectedSession]);
 
     useEffect(() => {
@@ -174,7 +176,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
 
             }
         } catch (err: any) {
-            showCustomMessage("Information", 'Une erreur s\'est produite :' + err.message, "warning", "bottom")
+            showCustomMessage("Information", GradeEntryText.message_error + err.message, "warning", "bottom")
             console.error('Une erreur s\'est produite :', err);
         }
 
@@ -195,7 +197,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
                 showCustomMessage("Information", res?.message, "warning", "bottom")
             }
         } catch (err: any) {
-            showCustomMessage("Information", 'Une erreur s\'est produite :' + err?.message, "warning", "bottom")
+            showCustomMessage("Information", GradeEntryText.message_error + err?.message, "warning", "bottom")
             console.error('Une erreur s\'est produite :', err);
         } finally {
             setIsLoadingSession(false);
@@ -206,15 +208,22 @@ function GradeEntryScreen(props: any): React.JSX.Element {
 
         try {
             setIsLoadingExam(true);
-            const res = await getData(`${LOCAL_URL}/api/exams/session/${selectedSession}`);
+            // const res = await getData(`${LOCAL_URL}/api/exams/session/${selectedSession}`);
+            const res = await getData(`${LOCAL_URL}/api/exams/subject/session/${selectedSubject}/${selectedSession}`);
             if (res?.success) {
-                const timetable: any = res?.success ? res?.data : []
-                setExamsList(timetable);
+                const data: any = res?.success ? res?.data : []
+                if (data.length > 0) {
+                    setSelectedExam(data[0].id)
+                    if (list.length > 0) {
+                        setSelectedExamType(list[0])
+                    }
+                }
+                setExamsList(data);
             } else {
                 showCustomMessage("Information", res?.message, "warning", "bottom")
             }
         } catch (err: any) {
-            showCustomMessage("Information", 'Une erreur s\'est produite :' + err?.message, "warning", "bottom")
+            showCustomMessage("Information", GradeEntryText.message_error + err?.message, "warning", "bottom")
             console.error('Une erreur s\'est produite :', err);
         } finally {
             setIsLoadingExam(false);
@@ -235,7 +244,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
                 showCustomMessage("Information", res?.message, "warning", "bottom")
             }
         } catch (err: any) {
-            showCustomMessage("Information", 'Une erreur s\'est produite :' + err?.message, "warning", "bottom")
+            showCustomMessage("Information", GradeEntryText.message_error + err?.message, "warning", "bottom")
             console.error('Une erreur s\'est produite :', err);
         } finally {
             setIsLoading(false);
@@ -255,7 +264,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
                 showCustomMessage("Information", res?.message, "warning", "bottom")
             }
         } catch (err: any) {
-            showCustomMessage("Information", 'Une erreur s\'est produite :' + err?.message, "warning", "bottom")
+            showCustomMessage("Information", GradeEntryText.message_error + err?.message, "warning", "bottom")
             console.error('Une erreur s\'est produite :', err);
         } finally {
             setIsLoading(false);
@@ -274,7 +283,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
                 showCustomMessage("Information", res?.message, "warning", "bottom")
             }
         } catch (err: any) {
-            showCustomMessage("Information", 'Une erreur s\'est produite :' + err?.message, "warning", "bottom")
+            showCustomMessage("Information", GradeEntryText.message_error + err?.message, "warning", "bottom")
             console.error('Une erreur s\'est produite :', err);
         } finally {
             setIsLoading(false);
@@ -307,11 +316,17 @@ function GradeEntryScreen(props: any): React.JSX.Element {
         const filtered = examsData?.filter((item: any) =>
             item?.name.toLowerCase().includes(query.toLowerCase())
         );
-        const sortedData = filtered?.sort((a: any, b: any) => {
-            if (a.exam_marks) return 1;
-            if (b.exam_marks) return -1;
-            return 0;
-        });
+        let sortedData = filtered;
+        if (selectedSubExam) {
+            sortedData = filtered?.sort((a: any, b: any) => {
+                if (a.exam_marks?.is_exist) return 1;
+                if (b.exam_marks?.is_exist) return -1;
+                return 0;
+            });
+        } else {
+            sortedData?.sort((a: any, b: any) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+
+        }
         setFilteredData(sortedData);
     };
 
@@ -321,7 +336,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
             {isLoading &&
                 <ActivityIndicator color={theme.primary} size={25} />}
             {!isLoading &&
-                <Text style={styles.emptyDataText}>{"Aucun élève n'a particité cet examen."}</Text>}
+                <Text style={styles.emptyDataText}>{GradeEntryText.notstudentFound}</Text>}
         </View>
     );
 
@@ -399,7 +414,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
         >
             <View style={styles.titleContainer}>
                 <Text style={styles.text}>
-                    Saisie des notes
+                    {GradeEntryText?.header_title}
                 </Text>
                 <TouchableOpacity
                     style={{ marginRight: 10, padding: 7, backgroundColor: theme.primary, borderRadius: 30 }}
@@ -439,9 +454,9 @@ function GradeEntryScreen(props: any): React.JSX.Element {
                     <MaterialCommunityIcons name='close' size={15} color={'red'} />
                 </TouchableOpacity>}
             </View>
-            {!selectedSession && renderHeader(sessions, selectedSession, setSelectedSession, "Choisissez le Trimestre ou la session d'examan", isLoadingSession, false, false)}
-            {(!selectedSubject && selectedSession) && renderHeader(subject, selectedSubject, setSelectedSubject, "Choisissez le cours", isLoadingSubjects, false, false)}
-            {(!selectedExam && selectedSubject) && renderHeader(examsList, selectedExam, setSelectedExam, "Choisissez l'examan", isLoadingExam, true, false)}
+            {!selectedSession && renderHeader(sessions, selectedSession, setSelectedSession, GradeEntryText.choose_session, isLoadingSession, false, false)}
+            {(!selectedSubject && selectedSession) && renderHeader(subject, selectedSubject, setSelectedSubject, GradeEntryText.choose_course, isLoadingSubjects, false, false)}
+            {(!selectedExam && selectedSubject) && renderHeader(examsList, selectedExam, setSelectedExam, GradeEntryText.choose_exam, isLoadingExam, true, false)}
             <View style={{ backgroundColor: "white", marginHorizontal: 10, }}>
                 {(selectedExam && selectedSubject) && <ScrollView horizontal={true}>
                     <RadioButton.Group onValueChange={newValue => setSelectedExamType(newValue)} value={selectedExamType ?? list?.[0]} >
@@ -459,13 +474,13 @@ function GradeEntryScreen(props: any): React.JSX.Element {
 
                 </ScrollView>}
 
-                {(!selectedSubExam && selectedExam) && renderHeader(subExamList, selectedSubExam, setSelectedSubExam, "Choisissez le partiel", isLoadingExam, true, true)}
+                {(!selectedSubExam && selectedExam) && renderHeader(subExamList, selectedSubExam, setSelectedSubExam, GradeEntryText.choose_partial, isLoadingExam, true, true)}
             </View>
             {selectedSubExam && <View style={{ padding: 10, marginHorizontal: 10, alignItems: "center", gap: 7, backgroundColor: theme.secondaryText }}>
-                <MyCustomerTextAndValue theme={theme} text="Evaluation:" value={selectedSubExam?.name} />
+                <MyCustomerTextAndValue theme={theme} text={GradeEntryText.evaluation} value={selectedSubExam?.name} />
                 <View style={{ flexDirection: "row", justifyContent: "space-around", width: "100%" }}>
-                    <MyCustomerTextAndValue theme={theme} text="Poids:" value={selectedSubExam?.weight?.toString().slice(0, 4) + " %"} />
-                    <MyCustomerTextAndValue theme={theme} text="Note:" value={selectedSubExam?.total_marks ?? "/20"} />
+                    <MyCustomerTextAndValue theme={theme} text={GradeEntryText.weight} value={selectedSubExam?.weight?.toString().slice(0, 4) + " %"} />
+                    <MyCustomerTextAndValue theme={theme} text={GradeEntryText.note} value={selectedSubExam?.total_marks ?? "/20"} />
                 </View>
             </View>}
         </LinearGradient>
@@ -473,7 +488,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
         <Animated.View style={[styles.header, { height: headerHeight }]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
                 <Searchbar
-                    placeholder="Search"
+                    placeholder={GradeEntryText.search_placeholder}
                     onChangeText={onChangeSearch}
                     value={searchQuery}
                     right={() =>
@@ -541,16 +556,16 @@ function GradeEntryScreen(props: any): React.JSX.Element {
                 <ScrollView>
                     <View style={styles.contentContainer}>
                         <View style={styles.viewBar} />
-                        <Text style={styles.titleBottonSheet}>Saisie de note</Text>
+                        <Text style={styles.titleBottonSheet}>{GradeEntryText.header_title}</Text>
                         <Divider style={{ width: "50%" }} />
                         <Text style={styles.modalcontainerText}>{selectedStudent?.name}</Text>
                         <Text style={styles.modalcontainerText1}>
                             {/* {examsList?.name} */}
-                            {'  '}&{"  "}
+                            {selectedSubExam?.name} & {"  "}
                             {examsList?.find((item: any) => item.id === selectedExam)?.subject_id?.name}</Text>
                         <View style={styles.InputContainers} >
                             <TextInput
-                                placeholder="Note"
+                                placeholder={GradeEntryText.note1}
                                 value={mark}
                                 verticalAlign="middle"
                                 onChangeText={(text) => setMark(text)}
@@ -563,21 +578,6 @@ function GradeEntryScreen(props: any): React.JSX.Element {
                             />
                             <Text style={styles.noteTitle}>/{examsList?.find((item: any) => item.id === selectedExam)?.total_marks} </Text>
                         </View>
-                        {/* <View style={styles.InputContainers} >
-
-                            <TextInput
-                                placeholder="Ajouter un commentaire"
-                                value={mark}
-                                verticalAlign="middle"
-                                onChangeText={(text) => setMark(text)}
-                                style={[styles.input, { fontSize: 15 }]}
-                                textAlign="left"
-                                textAlignVertical="top"
-                                keyboardType="default"
-                                numberOfLines={1}
-                                maxLength={200}
-                            />
-                        </View> */}
                         <Button
                             mode="contained-tonal"
                             disabled={isLoading}
@@ -585,7 +585,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
                             labelStyle={{ color: theme.secondaryText }}
                             onPress={async () => {
                                 if (parseFloat(mark) > examsData?.total_marks) {
-                                    Alert.alert("Information", "Veuillez saisir une note correcte.");
+                                    Alert.alert("Information", GradeEntryText.correct_note_alert);
                                     return;
                                 }
                                 await postNoteForStudent()
@@ -593,7 +593,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
                             icon={isLoading ? undefined : "check-underline"}>
                             {isLoading ?
                                 <ActivityIndicator color={theme.secondaryText} />
-                                : "Valider"
+                                : GradeEntryText.validate_button
                             }
 
                         </Button>

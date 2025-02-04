@@ -10,6 +10,7 @@ import Collapsible from 'react-native-collapsible';
 import { deleteData, getData, LOCAL_URL } from 'apis';
 import { ActivityIndicator } from 'react-native';
 import useSWRMutation from 'swr/mutation';
+import { I18n } from 'i18n';
 
 // api/get-exam/id-exam
 
@@ -17,6 +18,7 @@ import useSWRMutation from 'swr/mutation';
 const HorizontalScrollMenu = (props: any): React.JSX.Element => {
     const { items, theme, index, navigation, setExam, exam, label } = props;
     const styles = createStyles(theme);
+    const GradeEntryText: any = I18n.t("Dashboard.GradeEntry");
 
     return (
         <View key={index?.toString()} style={styles.container}>
@@ -31,7 +33,7 @@ const HorizontalScrollMenu = (props: any): React.JSX.Element => {
                     navigation.navigate("CreateUpdateSubExams", { items: null, exam, label, canEdits: true })
                 }}
             >
-                <Text style={{ ...Theme.fontStyle.montserrat.italic, color: theme.primary, fontSize: 15 }}>+ Ajouter</Text>
+                <Text style={{ ...Theme.fontStyle.montserrat.italic, color: theme.primary, fontSize: 15 }}>{GradeEntryText.add_plus}</Text>
             </TouchableOpacity>
         </View>
     );
@@ -40,10 +42,9 @@ const HorizontalScrollMenu = (props: any): React.JSX.Element => {
 
 
 const DataTableItem = (props: any): React.JSX.Element => {
-    const [isLoading, setIsLoading] = useState(false);
     const { item, theme, navigation, keys, exam, label } = props;
     const styles = createStyles(theme);
-    const { trigger: getExam } = useSWRMutation(`${LOCAL_URL}/api/get-exam/${exam?.id}`, getData);
+    const GradeEntryText: any = I18n.t("Dashboard.GradeEntry");
 
 
     return (
@@ -62,7 +63,7 @@ const DataTableItem = (props: any): React.JSX.Element => {
                 </DataTable.Cell>
                 <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
                     <TextInput
-                        placeholder="poid"
+                        placeholder={GradeEntryText.weight1}
                         value={(item.weight).toString().slice(0, 5) + " %"}
                         verticalAlign="middle"
                         onChangeText={(text) => () => { }}

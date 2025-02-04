@@ -28,7 +28,7 @@ function CourcesListeScreen(props: any): React.JSX.Element {
     const language = useSelector(selectLanguageValue);
 
     moment.locale("en");
-    const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/timesheet/faculty/${user?.id}/${classRoom.id}/${moment(selectedDate).format("dddd")}`, getData)
+    const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/timesheet/faculty/${user?.id}/${classRoom.id}?day=${moment(selectedDate).format("YYYY-MM-DD")}`, getData)
     // moment.locale(language);
 
 

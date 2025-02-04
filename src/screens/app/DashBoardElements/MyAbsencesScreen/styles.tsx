@@ -9,7 +9,8 @@ const dynamicStyles = (theme: any) => {
             backgroundColor: theme.primaryBackground,
         },
         content: {
-            padding: 10,
+            paddingTop: 10,
+            paddingHorizontal: 10,
             flex: 1,
         },
         header: {

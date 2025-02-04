@@ -7,7 +7,7 @@ import { FlatList } from "react-native";
 import moment from "moment";
 import { Image } from "react-native";
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { Banner, Button, Checkbox, Divider, Searchbar } from "react-native-paper";
+import { Banner, Button, Checkbox, Divider, FAB, Menu, Searchbar } from "react-native-paper";
 import { Animated } from "react-native";
 import Modal from 'react-native-modal';
 import { ScrollView } from "react-native-gesture-handler";
@@ -16,8 +16,21 @@ import { getData, LOCAL_URL, postData } from "apis";
 import AttendanceScreen from "../AttendanceScreen";
 import AttendanceItem from "./Components/AttendenceItem";
 import { RefreshControl } from "react-native";
-import { MyAnimatedBanner } from "components";
+import { CustomerLoader, MyAnimatedBanner } from "components";
 import { UserBlock } from "./Components";
+import AttendanceMenuButton from "./Components/ActionMenuItem";
+
+import { I18n } from 'i18n';
+
+
+
+export interface AttendanceDataItem {
+    [key: string]: boolean | number | string;
+    student_id: number | string;
+    remark: string;
+    // status: Record<'present' | 'absent' | 'late', boolean>;
+}
+
 
 
 function MyAbsencesScreen(props: any): React.JSX.Element {
@@ -40,7 +53,39 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
     const [attendanceList, setAttendanceList] = useState<any[]>([])
     const [refresh, setRefresh] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
+    const [attendanceDataList, setAttendanceDataList] = useState<AttendanceDataItem[]>([]);
 
+
+    const addAttendanceDataItem = (newItem: AttendanceDataItem) => {
+        setAttendanceDataList((prevList) => {
+            // Cherche l'index de l'élément avec le même student_id
+            const index = prevList.findIndex(item => item.student_id === newItem.student_id);
+            if (index !== -1) {
+                // Remplace l'élément existant
+                const updatedList = [...prevList];
+                updatedList[index] = newItem;
+                return updatedList;
+            }
+            // Ajoute le nouvel élément si aucun doublon n'existe
+            return [...prevList, newItem];
+        });
+    };
+
+    const markAllAsPresent = () => {
+
+        setAttendanceDataList([]);
+        var attendanceDataListTMP: AttendanceDataItem[] = filteredData.map((item) => {
+            return { student_id: item.id, remark: 'R.A.S', present: true };
+        });
+        setAttendanceDataList(attendanceDataListTMP);
+    };
+    const markAllAsAbsent = () => {
+        setAttendanceDataList([]);
+        var attendanceDataListTMP: AttendanceDataItem[] = filteredData.map((item) => {
+            return { student_id: item.id, remark: 'R.A.S', absent: true };
+        });
+        setAttendanceDataList(attendanceDataListTMP);
+    };
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -61,8 +106,9 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
     moment.locale("en");
     const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/attendances/session/room/${subject?.id}/${classRoom?.id}`, getData)
     const { trigger: setAttendencesForStudent } = useSWRMutation(`${LOCAL_URL}/api/crud/attendance-line/session/${subject?.id}/${classRoom?.id}`, postData)
+    const { trigger: setAttendencesForGroupedStudent, isMutating: loading } = useSWRMutation(`${LOCAL_URL}/api/crud/attendance-lines/session/${subject?.id}/${classRoom?.id}`, postData)
     const { trigger: getTeacherTimeTableInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/attendance/room/${classRoom?.id}/from_date?date=${moment(subject?.start_datetime).format("YYYY/MM/DD").toString()}`, getData)
-    const { trigger: setLastAttendencesAsCurrent } = useSWRMutation(`${LOCAL_URL}/api/crud/attendances-lines/session/${subject?.id}/${classRoom?.id}/${lastAttendenceElements?.attendance_id}`, postData)
+    const { trigger: setLastAttendencesAsCurrent, } = useSWRMutation(`${LOCAL_URL}/api/crud/attendances-lines/session/${subject?.id}/${classRoom?.id}/${lastAttendenceElements?.attendance_id}`, postData)
 
 
     const getTeacherTimeTableInClassRoom = async () => {
@@ -76,6 +122,10 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
                 setLastAttendence(timetable);
                 setLastAttendenceElements(res);
                 setVisibleBanner(true)
+                const timer = setTimeout(() => {
+                    setVisibleBanner(false)
+                }, 5000);
+                return () => clearTimeout(timer);
             } else {
                 console.log(res);
                 showCustomMessage("Informationdddddddddd", res?.message, "warning", "bottom")
@@ -86,10 +136,10 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
         } finally {
             setIsLoading(false);
             setRefresh(false);
-
         }
-
     };
+
+
     const postLastAttendencesAsNew = async () => {
 
         setIsLoadingLastAttend(true)
@@ -120,11 +170,13 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
         const data = {
             [key]: true,
             student_id: student?.id,
-            remark: "--"
+            remark: "R.A.S"
         }
         try {
             const assigma = await setAttendencesForStudent(data)
             if (!assigma?.success) {
+                console.log(assigma);
+
                 showCustomMessage("Information", assigma?.message, "warning", "bottom")
                 return;
             }
@@ -138,6 +190,24 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
             getTeacherTimeTables(false)
             onccesPostAttendences && onccesPostAttendences()
             setUpdatingUser(false)
+        }
+    };
+    const postAttendencesForGroupedStudent = async () => {
+        try {
+            const assigma = await setAttendencesForGroupedStudent(attendanceDataList)
+            if (!assigma?.success) {
+                showCustomMessage("Information", assigma?.message, "warning", "bottom")
+                return;
+            }
+            setModalVisible(false);
+            setAttendanceDataList([]);
+
+            showCustomMessage("Information", "State updated to ", "success", "top")
+
+        } catch (error: any) {
+            showCustomMessage("Information", 'Une erreur s\'est produite :' + error?.message, "warning", "bottom")
+        } finally {
+            getTeacherTimeTables(false)
         }
     };
 
@@ -253,6 +323,26 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
             message={`L'appel a été fait dans cette classe pendant la période de -- à ${moment(lastAttendenceElements?.end_date).format("HH:mm")} par Mr/Mme. ${lastAttendenceElements?.faculty?.name}. Voulez-vous le considérer et le modifier ?`}
 
         />
+
+        <View style={{ flexDirection: "row", justifyContent: attendanceDataList.length > 0 ? "space-evenly" : "center" }}>
+            <AttendanceMenuButton
+                markAllPresent={markAllAsPresent}
+                markAllAbsent={markAllAsAbsent}
+            />
+            {attendanceDataList.length > 0 && <TouchableOpacity
+                onPress={() => {
+                    setAttendanceDataList([]);
+                }}
+                style={{ backgroundColor: "red", borderRadius: 20, justifyContent: "center", paddingHorizontal: 15, paddingVertical: 3 }}>
+                <Text style={{
+                    fontSize: 15,
+                    ...Theme.fontStyle.montserrat.regular,
+                    color: 'white',
+                    textAlign: "center"
+                }}>effacer</Text>
+
+            </TouchableOpacity>}
+        </View>
         {showSearch && <Animated.View style={[styles.header, { height: headerHeight }]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
                 <Searchbar
@@ -304,6 +394,10 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
                         setSelectedStudent={onPressAddElement}
                         postAttendencesForStudent={postAttendencesForStudent}
                         item={item}
+                        attendanceDataList={attendanceDataList}
+                        onAddNewAttendanceForStudent={(newData) => {
+                            addAttendanceDataItem(newData);
+                        }}
                     />
                 }
                 keyExtractor={(item, index) => index.toString()}
@@ -327,12 +421,27 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
                             {dataAttend?.map(([key, value], index) =>
                                 <TouchableOpacity key={index} style={styles.checkboxContainer}
                                     onPress={() => {
-                                        postAttendencesForStudent(key, value, selectedStudent)
+                                        addAttendanceDataItem({
+                                            [key as string]: true,
+                                            student_id: selectedStudent?.id,
+                                            remark: 'R.A.S',
+                                        })
+                                        setModalVisible(false)
+                                        // postAttendencesForStudent(key, value, selectedStudent)
                                     }}
                                 >
                                     <Checkbox
                                         status={value ? 'checked' : 'unchecked'}
-                                        onPress={() => postAttendencesForStudent(key, value, selectedStudent)}
+                                        onPress={() => {
+                                            addAttendanceDataItem({
+                                                [key as string]: true,
+                                                student_id: selectedStudent?.id,
+                                                remark: 'R.A.S',
+                                            })
+                                            setModalVisible(false)
+
+                                            // postAttendencesForStudent(key, value, selectedStudent) 
+                                        }}
                                     />
                                     <Text style={styles.itemTitleText}>{capitalizeFirstLetter(key)}</Text>
                                 </TouchableOpacity>)}
@@ -363,7 +472,7 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
                 <View style={{ alignItems: "center" }}>
 
                     <View style={styles.viewBar} />
-                    <Text style={styles.titleBottonSheet}>Fiche d'appel : 08h-10h</Text>
+                    <Text style={styles.titleBottonSheet}>Fiche d'appel :</Text>
                     <Divider style={{ width: "50%" }} />
                     <Text style={styles.modalcontainerText}>{"En validant, vous avez la posibilite de remodifier cette fiche."}</Text>
                 </View>
@@ -386,7 +495,7 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
                             <View style={styles.emptyData}>
                                 <Text style={styles.emptyDataText}>{"Erreur rencontrée lors du chargement de la fiche d'appel."}</Text>
                             </View>}
-                        {lastAttendence?.map((user, index) => (
+                        {lastAttendence.length > 0 && lastAttendence?.map((user, index) => (
                             <UserBlock
                                 key={index}
                                 name={user.name}
@@ -413,6 +522,22 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
                 </Button>
             </View>
         </Modal>
+        <FAB
+            label={`Soumettre ${attendanceDataList.length}/${filteredData.length}`}
+            onPress={() => postAttendencesForGroupedStudent()}
+            visible={attendanceDataList.length > 0}
+            color={theme.secondaryText}
+            style={{
+                padding: 0,
+                bottom: 25,
+                alignSelf: "center",
+                backgroundColor: theme.primary,
+                position: 'absolute',
+            }}
+
+        />
+        <CustomerLoader loading={loading} theme={theme} I18n={I18n} color={theme.primary} />
+
     </View>;
     function capitalizeFirstLetter(text: any) {
         if (!text) return '';

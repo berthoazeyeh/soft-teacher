@@ -5,16 +5,18 @@ export const logoutLocal = '@logout'
 export const SERVICE_KEY = 'CgYh5TbHicce4HDZzk11At2Z2k1DuxkR'
 export const base_url = "http://167.86.75.204:8024";
 // export const LOCAL_URL = "http://20.197.13.34:3003";
-export const LOCAL_URL = "https://soft.metuaa.com";
+export const LOCAL_URLDEV = "https://soft.metuaa.com";
+export const LOCAL_URL = "https://soft.erp.sekoo.org";
 export const DATABASE = "openeducat_erp";
 
 const headers = new Headers();
 // headers.append('api-key', "UEQ1VIR4WJ566LYKFFPEKZ56K3UV28CA")
 // headers.append('api-key', "B4FJK5E3JSZ0ECXJM1V7GER26QY9DCFN")
-headers.append('api-key', "Y5998ZQH6V40G1AM48EJP329SN6DMUR1")
-headers.append('token', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6ImFkbWluQHNvZnRlZHVjYXQub3JnIiwidWlkIjoyfQ.4xzNf2eP5zZE5kCq-V65N5wJQZTPJEUtGljXCvOapsE")
+// headers.append('api-key', "Y5998ZQH6V40G1AM48EJP329SN6DMUR1")
+// headers.append('token', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6ImFkbWluQHNvZnRlZHVjYXQub3JnIiwidWlkIjoyfQ.4xzNf2eP5zZE5kCq-V65N5wJQZTPJEUtGljXCvOapsE")
+headers.append('api-key', "L5KOIB9LVV49JIWUII1CQML82T4GZ41W")
+headers.append('token', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6ImFkbWluQHNvZnRlZHVjYXQub3JnIiwidWlkIjoyfQ.RtpA4L_vL8ATFGHrPO_lsXnmcOD43z7ehLT5XBgC1J8")
 // headers.append('token', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6ImFkbWluQHNvZnRlZHVjYXQub3JnIiwidWlkIjoyfQ.HSuMAtJoj8bqCdeNltZNEsEMN4oVjdw3tLGVzqTiAAY")
-
 
 
 export async function postData(url, { arg }) {
@@ -214,8 +216,10 @@ export async function postMessageDoc(url, { arg }) {
     const header = new Headers();
     header.append('Content-Type', "multipart/form-data")
     header.append('Accept', "application/json")
-    header.append('api-key', "Y5998ZQH6V40G1AM48EJP329SN6DMUR1")
-    header.append('token', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6ImFkbWluQHNvZnRlZHVjYXQub3JnIiwidWlkIjoyfQ.4xzNf2eP5zZE5kCq-V65N5wJQZTPJEUtGljXCvOapsE")
+    // header.append('api-key', "Y5998ZQH6V40G1AM48EJP329SN6DMUR1")
+    // header.append('token', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6ImFkbWluQHNvZnRlZHVjYXQub3JnIiwidWlkIjoyfQ.4xzNf2eP5zZE5kCq-V65N5wJQZTPJEUtGljXCvOapsE")
+    header.append('api-key', "L5KOIB9LVV49JIWUII1CQML82T4GZ41W")
+    header.append('token', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6ImFkbWluQHNvZnRlZHVjYXQub3JnIiwidWlkIjoyfQ.RtpA4L_vL8ATFGHrPO_lsXnmcOD43z7ehLT5XBgC1J8")
 
     formdata.append("user_id", arg?.user_id);
     formdata.append("message", arg?.message);
@@ -244,8 +248,11 @@ export async function postDataDoc(url, { arg }) {
     header.append('Content-Type', "multipart/form-data")
     // 'Accept': 'application/json'
     header.append('Accept', "application/json")
-    header.append('api-key', "Y5998ZQH6V40G1AM48EJP329SN6DMUR1")
-    header.append('token', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6ImFkbWluQHNvZnRlZHVjYXQub3JnIiwidWlkIjoyfQ.4xzNf2eP5zZE5kCq-V65N5wJQZTPJEUtGljXCvOapsE")
+    header.append('api-key', "L5KOIB9LVV49JIWUII1CQML82T4GZ41W")
+    header.append('token', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6ImFkbWluQHNvZnRlZHVjYXQub3JnIiwidWlkIjoyfQ.RtpA4L_vL8ATFGHrPO_lsXnmcOD43z7ehLT5XBgC1J8")
+
+    // header.append('api-key', "Y5998ZQH6V40G1AM48EJP329SN6DMUR1")
+    // header.append('token', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6ImFkbWluQHNvZnRlZHVjYXQub3JnIiwidWlkIjoyfQ.4xzNf2eP5zZE5kCq-V65N5wJQZTPJEUtGljXCvOapsE")
 
     formdata.append("document", arg?.document);
     formdata.append("faculty_id", arg?.faculty_id);

@@ -112,7 +112,7 @@ function ExamsListeScreen(props: any): React.JSX.Element {
 
         <FlatList
             data={subjects}
-            contentContainerStyle={styles.content}
+            // contentContainerStyle={styles.content}
             refreshControl={
                 <RefreshControl
                     refreshing={refresh}
@@ -126,16 +126,16 @@ function ExamsListeScreen(props: any): React.JSX.Element {
                         onPress={() => {
                             navigation.navigate("MyExamsAbsencesScreen", { classRoom: classRoom, exams: item })
                         }}
-                        style={{ flexDirection: "row", alignItems: "center", gap: 20, paddingHorizontal: 20, width: "100%" }}>
-                        <View style={{ justifyContent: "space-around", gap: 30 }}>
-                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{moment(item?.start_time).format("HH:mm")}</Text>
-                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{moment(item?.end_time).format("HH:mm")}</Text>
-                        </View >
+                        style={{ flexDirection: "row", alignItems: "center", gap: 20, paddingHorizontal: 10, width: "100%" }}>
+                        {/* <View style={{ justifyContent: "space-around", gap: 30 }}>
+                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{moment(item?.start_date).format("MMM YYYY")}</Text>
+                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{moment(item?.end_date).format("YYYY")}</Text>
+                        </View > */}
 
-                        <View style={{ width: 10, backgroundColor: getRandomColor(), height: "100%", }} />
+                        <View style={{ width: 7, backgroundColor: getRandomColor(), height: "100%", }} />
 
                         <View style={{ justifyContent: "space-around", flex: 1, }}>
-                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 25, color: theme.primaryText, }}>{item?.name}</Text>
+                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 23, color: theme.primaryText, }}>{item?.name}</Text>
                             <Text>{item?.session_id?.map((item: any) => item?.name + "; ")}</Text>
                             {item.attendance_sheet &&
                                 <MaterialCommunityIcons name='check-circle' size={25} color={theme.primary} />

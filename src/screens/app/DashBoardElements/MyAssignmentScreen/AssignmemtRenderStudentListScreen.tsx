@@ -12,6 +12,7 @@ import { FlatList } from "react-native-gesture-handler";
 import moment from "moment";
 import { getData, LOCAL_URL } from "apis";
 import { I18n } from 'i18n';
+import React from "react";
 
 
 

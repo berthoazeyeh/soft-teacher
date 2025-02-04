@@ -15,6 +15,7 @@ import useSWRMutation from "swr/mutation";
 import { getData, LOCAL_URL, postData, putData } from "apis";
 import HorizontalScrollMenu from "./components/HorizontalScrollMenu ";
 import { useFocusEffect } from "@react-navigation/native";
+
 const today = new Date();
 today.setHours(0, 0, 0, 0);
 
@@ -72,6 +73,7 @@ function AddNewOrUpdateExams(props: any): React.JSX.Element {
     const [globalError, setGlobalError] = useState<string | undefined>(undefined)
     const [totalPoint, setTotalPoint] = useState<number | undefined>(100)
     const user = useCurrentUser();
+    const GradeEntryText: any = I18n.t("Dashboard.GradeEntry");
 
     const form = useForm({
         resolver: zodResolver(schema),
@@ -123,14 +125,14 @@ function AddNewOrUpdateExams(props: any): React.JSX.Element {
             setExam(res.data);
             setCanEdit(false);
         } catch (error: any) {
-            showCustomMessage("Information", 'Une erreur s\'est produite :' + error?.message, "warning", "bottom")
+            showCustomMessage("Information", GradeEntryText.message_error + error?.message, "warning", "bottom")
         } finally {
             setIsLoading(false)
         }
     };
     useLayoutEffect(() => {
         navigation.setOptions({
-            title: 'Créer un Examen ou un partiel ',
+            title: GradeEntryText.newpartiel,
         });
 
     }, []);
@@ -226,12 +228,16 @@ function AddNewOrUpdateExams(props: any): React.JSX.Element {
     ];
 
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         try {
             // console.log(form);
             form.handleSubmit((d) => { })();
+            await form.trigger();
+
             formsSchema.parse(forms1); // Valide tous les formulaires
             if (!form.formState.isValid) {
+                await form.trigger();
+
                 console.log("----------------------", form.formState.isValid);
                 showCustomMessage("Information", "Tout les champs sont requis", "warning", "bottom")
                 form.handleSubmit((d) => { })();
@@ -333,8 +339,8 @@ function AddNewOrUpdateExams(props: any): React.JSX.Element {
     return <View style={styles.container}>
         <ScrollView>
             <View style={{ backgroundColor: "#FFFFFF", elevation: 2, }}>
-                <ItemRow lab1="Classe" lab2="Session" value1={classRoom.name} value2={session?.name} theme={theme} />
-                <ItemRow lab1="Cours concerné" value1={subject.name} theme={theme} />
+                <ItemRow lab1={GradeEntryText.class} lab2={GradeEntryText.session} value1={classRoom.name} value2={session?.name} theme={theme} />
+                <ItemRow lab1={GradeEntryText.related_course} value1={subject.name} theme={theme} />
                 <DateAndNotesPicker canEdit={canEdit} exam={exam} form={form} />
             </View>
 
@@ -352,7 +358,7 @@ function AddNewOrUpdateExams(props: any): React.JSX.Element {
                     mode="elevated"
                 >
                     {!isLoading &&
-                        <Text style={styles.loginText}>{"Enregistrer"}</Text>
+                        <Text style={styles.loginText}>{GradeEntryText.save}</Text>
                     }
                 </Button1>
             </View>
@@ -435,7 +441,7 @@ function AddNewOrUpdateExams(props: any): React.JSX.Element {
                                     marginHorizontal: 10,
                                 }}>
                                     <Text style={{ ...Theme.fontStyle.montserrat.semiBold, color: theme.primaryText, fontSize: 15, }}>
-                                        Poid de l'examen (%)
+                                        {GradeEntryText.exam_weight}
                                     </Text>
                                     <TextInput
                                         style={{
@@ -465,7 +471,7 @@ function AddNewOrUpdateExams(props: any): React.JSX.Element {
                                 }}>
                                     <Text
                                         style={{ ...Theme.fontStyle.montserrat.semiBold, color: theme.primaryText, fontSize: 14, }}>
-                                        Nbr de sous Examen</Text>
+                                        {GradeEntryText.num_sub_exams}</Text>
                                     <TextInput
                                         style={{
                                             borderWidth: 1,
@@ -481,7 +487,7 @@ function AddNewOrUpdateExams(props: any): React.JSX.Element {
                                         textAlign='center'
                                         value={item.nombre.toString()}
                                         onChangeText={(text) => handleInputChange1(index, "nombre", text)}
-                                        placeholder="Sous examen"
+                                        placeholder={GradeEntryText.sub_exam}
                                         multiline={false}
                                         numberOfLines={1}
                                     />
@@ -511,7 +517,7 @@ function AddNewOrUpdateExams(props: any): React.JSX.Element {
                                     keyboardType="numeric"
                                     value={field.value || ''}
                                     onChangeText={field.onChange}
-                                    placeholder=" Poid des DS et CC"
+                                    placeholder={GradeEntryText.ds_cc_weight}
                                 />
                                 {fieldState.invalid && <Text style={styles.textdanger1}>{fieldState?.error?.message}</Text>}
                             </View>
@@ -521,7 +527,7 @@ function AddNewOrUpdateExams(props: any): React.JSX.Element {
             {!exam &&
                 totalPoint && !globalError && totalPoint > 1 && (
                     <Text style={{ color: theme.primary, marginTop: 20, textAlign: "center" }}>
-                        Total poids: {totalPoint?.toString()}
+                        {GradeEntryText.total_weight}: {totalPoint?.toString()}
                     </Text>
                 )}
             {
@@ -547,7 +553,7 @@ function AddNewOrUpdateExams(props: any): React.JSX.Element {
                 >
 
                     {!isLoading &&
-                        <Text style={styles.loginText}>{"Enregistrer"}</Text>
+                        <Text style={styles.loginText}>{GradeEntryText.save}</Text>
                     }
                 </Button1>
             </View>}
