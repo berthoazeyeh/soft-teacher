@@ -5,6 +5,7 @@ import moment from 'moment';
 import { Theme } from 'utils';
 import { useTheme } from 'store';
 import { Controller } from 'react-hook-form';
+import { I18n } from 'i18n';
 
 
 
@@ -16,6 +17,8 @@ const DateAndNotesPickerSubExams = ({ canEdit, exam, form }: { canEdit: boolean,
     const [showEndPicker, setShowEndPicker] = useState(false);
     const theme = useTheme();
     const styles = style(theme);
+    const GradeEntryText: any = I18n.t("Dashboard.GradeEntry");
+
     return (
         <View style={styles.container}>
 
@@ -27,7 +30,7 @@ const DateAndNotesPickerSubExams = ({ canEdit, exam, form }: { canEdit: boolean,
 
                         <View style={styles.inputContainer}>
 
-                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, color: theme.primaryText, fontSize: 15, }}>Name of sub-exam :</Text>
+                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, color: theme.primaryText, fontSize: 15, }}>{GradeEntryText.sub_exam_name}</Text>
                             <TextInput
                                 style={styles.input}
                                 editable={canEdit}
@@ -48,11 +51,11 @@ const DateAndNotesPickerSubExams = ({ canEdit, exam, form }: { canEdit: boolean,
                         name="startDate"
                         render={({ field, fieldState }) => (
                             <View>
-                                <Text style={{ ...Theme.fontStyle.montserrat.semiBold, color: theme.primaryText, fontSize: 15, }}>Date de début:</Text>
+                                <Text style={{ ...Theme.fontStyle.montserrat.semiBold, color: theme.primaryText, fontSize: 15, }}>{GradeEntryText.label_start_date}</Text>
                                 <Button
 
                                     disabled={!canEdit}
-                                    title={field.value ? moment(field.value).format("LLLL") : 'Choisir'}
+                                    title={field.value ? moment(field.value).format("LLLL") : GradeEntryText.choose}
                                     onPress={() => setShowStartPicker(true)}
                                 />
                                 {fieldState.invalid && <Text style={styles.textdanger1}>{fieldState?.error?.message}</Text>}
@@ -82,11 +85,11 @@ const DateAndNotesPickerSubExams = ({ canEdit, exam, form }: { canEdit: boolean,
                         name="endDate"
                         render={({ field, fieldState }) => (
                             <View>
-                                <Text style={{ ...Theme.fontStyle.montserrat.semiBold, color: theme.primaryText, fontSize: 15, }}>Date de fin:</Text>
+                                <Text style={{ ...Theme.fontStyle.montserrat.semiBold, color: theme.primaryText, fontSize: 15, }}>{GradeEntryText.label_end_date}</Text>
                                 <Button
                                     disabled={!canEdit}
 
-                                    title={field.value ? moment(field.value).format("LLLL") : 'Choisir'}
+                                    title={field.value ? moment(field.value).format("LLLL") : GradeEntryText.choose}
                                     onPress={() => setShowEndPicker(true)}
                                 />
 
@@ -120,7 +123,7 @@ const DateAndNotesPickerSubExams = ({ canEdit, exam, form }: { canEdit: boolean,
 
                         <View style={styles.inputContainer}>
 
-                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, color: theme.primaryText, fontSize: 15, }}>Note totale:</Text>
+                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, color: theme.primaryText, fontSize: 15, }}>{GradeEntryText.label_total_note}</Text>
                             <TextInput
                                 style={styles.input}
                                 editable={canEdit}
@@ -129,7 +132,7 @@ const DateAndNotesPickerSubExams = ({ canEdit, exam, form }: { canEdit: boolean,
                                 keyboardType="numeric"
                                 value={field.value || ''}
                                 onChangeText={field.onChange}
-                                placeholder="Max Note"
+                                placeholder={GradeEntryText.placeholder_max_note}
 
                             />
                             {fieldState.invalid && <Text style={styles.textdanger1}>{fieldState?.error?.message}</Text>}
@@ -143,7 +146,7 @@ const DateAndNotesPickerSubExams = ({ canEdit, exam, form }: { canEdit: boolean,
 
                         <View style={styles.inputContainer}>
 
-                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, color: theme.primaryText, fontSize: 15, }}>Poid du nouveau sous-examen:</Text>
+                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, color: theme.primaryText, fontSize: 15, }}>{GradeEntryText.new_sub_exam_weigth}</Text>
                             <TextInput
                                 style={styles.input}
                                 editable={canEdit}
@@ -152,32 +155,12 @@ const DateAndNotesPickerSubExams = ({ canEdit, exam, form }: { canEdit: boolean,
                                 keyboardType="numeric"
                                 value={field.value || ''}
                                 onChangeText={field.onChange}
-                                placeholder="poid"
+                                placeholder={GradeEntryText.weight1}
 
                             />
                             {fieldState.invalid && <Text style={styles.textdanger1}>{fieldState?.error?.message}</Text>}
                         </View>
                     </>)} />
-
-            {/* <View style={styles.inputContainer}>
-                    <Text style={{ ...Theme.fontStyle.montserrat.semiBold, color: theme.primaryText, fontSize: 15, }}>Note minimale:</Text>
-                    <TextInput
-                        style={styles.input}
-                        editable={canEdit}
-                        maxLength={3}
-                        keyboardType="numeric"
-                        textAlign='center'
-                        value={minNote}
-                        onChangeText={setMinNote}
-                        placeholder="Min note"
-                        multiline={false}
-                        numberOfLines={1}
-
-
-                    />
-                </View> */}
-            {/* </View> */}
-
         </View>
     );
 };

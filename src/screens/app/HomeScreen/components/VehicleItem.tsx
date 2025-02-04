@@ -6,6 +6,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { I18n } from 'i18n';
 import { Divider } from "react-native-paper";
 import moment from "moment";
+import React from "react";
 
 export const VehicleItem = ({ item, I18n, index, navigation }: any): React.JSX.Element => {
     const theme = useTheme()

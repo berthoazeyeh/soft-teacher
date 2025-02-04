@@ -14,6 +14,7 @@ import { useTheme } from "store";
 import { Text } from "react-native";
 import { useLayoutEffect, useState } from "react";
 import { showCustomMessage, Theme } from "utils";
+
 const today = new Date();
 today.setHours(0, 0, 0, 0);
 
@@ -53,6 +54,7 @@ const CreateUpdateSubExams = (props: any): React.JSX.Element => {
     const { items, exam, label, canEdits } = route.params
     const [isLoading, setIsLoading] = useState(false);
     const [canEdit, setCanEdit] = useState(canEdits);
+    const GradeEntryText: any = I18n.t("Dashboard.GradeEntry");
 
     const form = useForm({
         resolver: zodResolver(schema),
@@ -69,14 +71,13 @@ const CreateUpdateSubExams = (props: any): React.JSX.Element => {
             endDate: (exam && exam?.end_date ? new Date(exam?.end_date) : undefined),
             weight: '',
             name: '',
-
         },
     });
     const theme = useTheme();
     const styles = dynamicStyles(theme)
     useLayoutEffect(() => {
         navigation.setOptions({
-            title: items ? 'Modifier le sous-examen' : "Créer un sous-examen",
+            title: items ? GradeEntryText.updateSubExam : GradeEntryText.createSubExam,
         });
     }, []);
     const { trigger: creacteNewSubExamen } = useSWRMutation(`${LOCAL_URL}/api/crud/sub-exam`, postData);
@@ -90,6 +91,7 @@ const CreateUpdateSubExams = (props: any): React.JSX.Element => {
             const dataForm1 = form.getValues();
             console.log(form.formState.validatingFields, "----------------------", form.formState.isValid, form.formState.errors);
             if (!form.formState.isValid) {
+                await form.trigger();
                 if (!isEmptyObject(form.formState.errors) || !items) {
                     showCustomMessage("Information", "Tout les champs sont requis", "warning", "bottom")
                     return
@@ -155,7 +157,7 @@ const CreateUpdateSubExams = (props: any): React.JSX.Element => {
                 mode="elevated"
             >
                 {!isLoading &&
-                    <Text style={styles.loginText}>{"Enregistrer"}</Text>
+                    <Text style={styles.loginText}>{GradeEntryText.save}</Text>
                 }
             </Button1>
         </View>}

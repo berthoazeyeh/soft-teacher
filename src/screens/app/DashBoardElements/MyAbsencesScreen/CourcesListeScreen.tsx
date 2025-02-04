@@ -27,10 +27,8 @@ function CourcesListeScreen(props: any): React.JSX.Element {
     const user = useCurrentUser();
     const language = useSelector(selectLanguageValue);
 
-    moment.locale("en");
-    const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/timesheet/faculty/${user?.id}/${classRoom.id}/${moment(selectedDate).format("dddd")}`, getData)
+    const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/timesheet/faculty/${user?.id}/${classRoom.id}?day=${moment(selectedDate).format("YYYY-MM-DD")}`, getData)
     // moment.locale(language);
-    // console.log(nexScreen);
 
 
     const getTeacherTimeTables = async () => {
@@ -41,7 +39,7 @@ function CourcesListeScreen(props: any): React.JSX.Element {
             if (res?.success) {
                 const timetable: any[] = res?.success ? res?.data : []
                 setSubject(timetable);
-                console.log(res);
+                console.log(timetable.length);
 
             } else {
                 showCustomMessage("Information", res.message, "warning", "bottom")
@@ -111,7 +109,7 @@ function CourcesListeScreen(props: any): React.JSX.Element {
 
         <FlatList
             data={subjects}
-            contentContainerStyle={styles.content}
+            // contentContainerStyle={styles.content}
             refreshControl={
                 <RefreshControl
                     refreshing={refresh}

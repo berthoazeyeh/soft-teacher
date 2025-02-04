@@ -10,6 +10,7 @@ import Collapsible from 'react-native-collapsible';
 import { ActivityIndicator } from 'react-native';
 import useSWRMutation from 'swr/mutation';
 import { LOCAL_URL, postData } from 'apis';
+import { I18n } from 'i18n';
 
 
 
@@ -18,6 +19,8 @@ const NotesItem = ({ item, onPress, showbutton, selectedStudent, onPressShowMore
     const [collapsed, setCollapsed] = useState(true);
     const theme = useTheme();
     const styles = dynamicStyles(theme);
+    const GradeEntryText: any = I18n.t("Dashboard.GradeEntry");
+
 
     return (
         <View
@@ -27,7 +30,7 @@ const NotesItem = ({ item, onPress, showbutton, selectedStudent, onPressShowMore
                     <Text selectable={true} style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{item?.name}</Text>
                 </View>
                 <View style={{ flexDirection: "row" }}>
-                    <TouchableOpacity style={{
+                    <TouchableOpacity style={[{
                         borderColor: theme.primary,
                         borderWidth: 1,
                         padding: 3,
@@ -35,11 +38,11 @@ const NotesItem = ({ item, onPress, showbutton, selectedStudent, onPressShowMore
                         borderRadius: 20,
                         alignItems: "center",
                         alignContent: "center",
-                    }}
+                    }, item?.is_exist && { backgroundColor: theme.primary, color: theme.secondaryText }]}
                         onPress={showbutton ? onPress : () => null}
                     >
-                        {!showbutton && <Text style={styles.value}>{item?.exam_marks ? item?.exam_marks?.total_weight_marks?.toString().slice(0, 4) : "0.0"}</Text>}
-                        {showbutton && <Text style={styles.value}>{item?.exam_marks ? item?.exam_marks?.marks?.toString().slice(0, 4) : "0.0"}</Text>}
+                        {!showbutton && <Text style={styles.value}>{item?.exam_marks ? item?.exam_marks?.total_weight_marks?.toString().slice(0, 4) : "--"}</Text>}
+                        {showbutton && <Text style={styles.value}>{(item?.exam_marks && item?.exam_marks?.marks > 0) ? item?.exam_marks?.marks?.toString().slice(0, 4) : "--"}</Text>}
                     </TouchableOpacity>
                     <MaterialCommunityIcons name={"dots-vertical"} size={25} color={theme.primaryText} />
                 </View>
@@ -51,7 +54,7 @@ const NotesItem = ({ item, onPress, showbutton, selectedStudent, onPressShowMore
                     <View
                         style={{ borderWidth: 1, borderColor: theme.gray, paddingHorizontal: 5, paddingVertical: 3, alignItems: "center", borderRadius: 5, backgroundColor: theme.primary }}
                     >
-                        <Text style={{ color: theme.secondaryText, fontSize: 16 }}>{"Present"}</Text>
+                        <Text style={{ color: theme.secondaryText, fontSize: 16 }}>{GradeEntryText.status_present}</Text>
                     </View>
 
                 }
@@ -60,7 +63,7 @@ const NotesItem = ({ item, onPress, showbutton, selectedStudent, onPressShowMore
                     <View
                         style={{ borderWidth: 1, borderColor: theme.gray, paddingHorizontal: 5, paddingVertical: 3, alignItems: "center", borderRadius: 5, backgroundColor: "red" }}
                     >
-                        <Text style={{ color: theme.secondaryText, fontSize: 16 }}>{"Absent"}</Text>
+                        <Text style={{ color: theme.secondaryText, fontSize: 16 }}>{GradeEntryText.status_absent}</Text>
                     </View>
 
                 }
@@ -69,7 +72,7 @@ const NotesItem = ({ item, onPress, showbutton, selectedStudent, onPressShowMore
                     <View
                         style={{ borderWidth: 1, borderColor: theme.gray, paddingHorizontal: 5, paddingVertical: 3, alignItems: "center", borderRadius: 5, }}
                     >
-                        <Text style={{ color: theme.primaryText, fontSize: 16 }}>{"Appel non fait"}</Text>
+                        <Text style={{ color: theme.primaryText, fontSize: 16 }}>{GradeEntryText.status_no_call}</Text>
                     </View>
 
                 }
@@ -92,18 +95,18 @@ const NotesItem = ({ item, onPress, showbutton, selectedStudent, onPressShowMore
                         }}
                         style={{ borderWidth: 1, borderColor: theme.gray, paddingHorizontal: 5, paddingVertical: 3, alignItems: "center", borderRadius: 5, }}
                     >
-                        <Text style={{ color: theme.primaryText, fontSize: 16 }}>{collapsed ? "Afficher les détails" : "Masquer"}</Text>
+                        <Text style={{ color: theme.primaryText, fontSize: 16 }}>{collapsed ? GradeEntryText.action_show_details : GradeEntryText.action_hide_details}</Text>
                     </TouchableOpacity>
 
                 }
             </View>
-            <Collapsible collapsed={collapsed} duration={1000} easing="easeOutCubic">
+            {!showbutton && <Collapsible collapsed={collapsed} duration={1000} easing="easeOutCubic">
                 {!collapsed && <DataTable>
                     {item?.exam_marks && item?.exam_marks?.sub_exams && item?.exam_marks?.sub_exams.map((item: any, index: number) => (
                         <DataTableItem item={item} key={index} theme={theme} index={index} selectedStudent={selectedStudent} onSuccesUpdateNote={onSuccesUpdateNote} />
                     ))}
                 </DataTable>}
-            </Collapsible>
+            </Collapsible>}
         </View>
     );
 };
@@ -111,10 +114,11 @@ const NotesItem = ({ item, onPress, showbutton, selectedStudent, onPressShowMore
 const DataTableItem = (props: any): React.JSX.Element => {
     const { item, theme, index, selectedStudent, onSuccesUpdateNote } = props;
     const styles = createStyles(theme);
-    const [note, setNote] = useState(item?.marks?.toString());
+    const [note, setNote] = useState(item?.marks > 0 ? item?.marks?.toString() : "--");
     const [loading, setLoading] = useState(false);
     const [showbutton, setShowbutton] = useState(false);
     const { trigger: postNoteForStudentSubExam } = useSWRMutation(`${LOCAL_URL}/api/change-notes/student/sub-exam/${item?.id}`, postData)
+    const GradeEntryText: any = I18n.t("Dashboard.GradeEntry");
 
 
     const postNoteForStudent = async () => {
@@ -130,11 +134,11 @@ const DataTableItem = (props: any): React.JSX.Element => {
                 return;
             }
             onSuccesUpdateNote();
-            showCustomMessage("Success", "Note Atribuer avec success", "success", "top")
+            showCustomMessage("Success", GradeEntryText.message_success, "success", "top")
 
         } catch (error: any) {
 
-            showCustomMessage("Information", 'Une erreur s\'est produite :' + error.message, "warning", "bottom")
+            showCustomMessage("Information", GradeEntryText.message_error + error.message, "warning", "bottom")
 
         } finally {
             setLoading(false)
@@ -153,7 +157,7 @@ const DataTableItem = (props: any): React.JSX.Element => {
             </Text>
             <View style={{ flexDirection: "row", gap: 10, }}>
                 <TextInput
-                    placeholder="Note"
+                    placeholder={GradeEntryText.note1}
                     value={note}
                     verticalAlign="middle"
                     onChangeText={(text) => {
@@ -164,7 +168,7 @@ const DataTableItem = (props: any): React.JSX.Element => {
                         }
                         setNote(text);
                     }}
-                    style={styles.input}
+                    style={[styles.input, item?.is_exist && { backgroundColor: theme.primary, color: theme.secondaryText }]}
                     textAlign="center"
                     textAlignVertical="center"
                     keyboardType="numeric"

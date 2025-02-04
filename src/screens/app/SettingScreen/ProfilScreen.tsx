@@ -118,7 +118,7 @@ const ProfileScreen = (props: any) => {
         try {
 
             setLoading(true);
-            const response = await changeTeacherPassword({ old_password: holdPassword, new_password: newPassword });
+            const response = await changeTeacherPassword({ old_password: data.holdPassword, new_password: data.newPassword });
             console.log(response);
             if (response.success) {
                 showCustomMessage("Success", "Mot de passe modifié avec succès.", "success", "center")

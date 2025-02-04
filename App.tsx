@@ -6,7 +6,7 @@
  */
 
 import { NavigationContainer } from '@react-navigation/native';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StatusBar, useColorScheme } from 'react-native';
 import { DefaultTheme, PaperProvider } from 'react-native-paper';
 import SplashScreen from 'react-native-splash-screen';
@@ -17,6 +17,8 @@ import FlashMessage from 'react-native-flash-message';
 import { I18n } from 'i18n';
 // @ts-ignore
 import { AppStack } from '@navigation';
+import NetInfo from '@react-native-community/netinfo';
+import { showCustomMessage } from 'utils';
 
 
 const App = () => {
@@ -29,6 +31,28 @@ const App = () => {
   useEffect(() => {
     SplashScreen.hide();
   }, []);
+
+  const [isConnected, setIsConnected] = useState<boolean>(false);
+
+
+  useEffect(() => {
+    // S'abonner aux changements de connexion
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsConnected(state.isConnected ?? false);
+      console.log(state.isConnected);
+      if (state.isConnected) {
+        showCustomMessage("Connexion rétablie", "", "success", "top")
+      } else {
+        showCustomMessage("Aucune connexion internet", "", "error", "top")
+      }
+    });
+
+    // Nettoyer l'abonnement lors du démontage du composant
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
 
   const theme = {
     ...DefaultTheme,
