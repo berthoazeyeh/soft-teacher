@@ -21,6 +21,10 @@ import { UserBlock } from "./Components";
 import AttendanceMenuButton from "./Components/ActionMenuItem";
 
 import { I18n } from 'i18n';
+import { getStudentsByFilter } from "services/StudentsServices";
+import { db } from "apis/database";
+import { getStudentsWithAttendance, syncAttendanceLines } from "services/AttendanceLineServices";
+import { StudentAttendances } from "services/CommonServices";
 
 
 
@@ -31,6 +35,18 @@ export interface AttendanceDataItem {
     // status: Record<'present' | 'absent' | 'late', boolean>;
 }
 
+interface AttendanceCount {
+    present: number;
+    absent: number;
+    late: number;
+    excused: number;
+}
+
+/**
+ * Compte le nombre d'étudiants présents, absents, en retard et excusés.
+ * @param {Student[]} students - La liste des étudiants.
+ * @returns {AttendanceCount} - Un objet contenant les comptes.
+ */
 
 
 function MyAbsencesScreen(props: any): React.JSX.Element {
@@ -40,6 +56,7 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
     const [lastAttendence, setLastAttendence] = useState<any[]>([])
     const [lastAttendenceElements, setLastAttendenceElements] = useState<any>(null)
     const [isLoading, setIsLoading] = useState(false)
+    const [loading, setLoading] = useState(false)
     const [isLoadingLastAttend, setIsLoadingLastAttend] = useState(false)
     const [visibleBanner, setVisibleBanner] = useState(false)
     const [updatingUser, setUpdatingUser] = useState(false)
@@ -49,10 +66,11 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
     const [selectedStudent, setSelectedStudent] = useState<any>(null)
     const styles = dynamicStyles(theme)
     const [dataAttend, setDataAttend] = useState<any[]>([]);
-    const [filteredData, setFilteredData] = useState<any[]>([])
-    const [attendanceList, setAttendanceList] = useState<any[]>([])
+    const [filteredData, setFilteredData] = useState<StudentAttendances[]>([])
+    const [attendanceList, setAttendanceList] = useState<StudentAttendances[]>([])
     const [refresh, setRefresh] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
+    const [attendanceCount, setAttendanceCount] = useState<AttendanceCount | undefined>();
     const [attendanceDataList, setAttendanceDataList] = useState<AttendanceDataItem[]>([]);
 
 
@@ -71,6 +89,26 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
         });
     };
 
+
+    const countAttendance = (students: any[]) => {
+        const counts: AttendanceCount = {
+            present: 0,
+            absent: 0,
+            late: 0,
+            excused: 0,
+        };
+
+        students.forEach((student) => {
+            if (student.attendance_line) {
+                if (student.attendance_line.present) counts.present++;
+                if (student.attendance_line.absent) counts.absent++;
+                if (student.attendance_line.late) counts.late++;
+                if (student.attendance_line.excused) counts.excused++;
+            }
+        });
+        setAttendanceCount(counts)
+        // return counts;
+    };
     const markAllAsPresent = () => {
 
         setAttendanceDataList([]);
@@ -89,7 +127,7 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
 
     useLayoutEffect(() => {
         navigation.setOptions({
-            title: classRoom?.name + `  -- (${filteredData.length}  Eleve(s))`,
+            title: classRoom?.name + ` -- (${filteredData.length})`,
             headerRight: () => <TouchableOpacity
                 style={{ marginRight: 20 }}
                 onPress={() => {
@@ -103,13 +141,14 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
     }, [attendanceList, filteredData]);
 
 
-    moment.locale("en");
+    // moment.locale("en");
     const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/attendances/session/room/${subject?.id}/${classRoom?.id}`, getData)
     const { trigger: setAttendencesForStudent } = useSWRMutation(`${LOCAL_URL}/api/crud/attendance-line/session/${subject?.id}/${classRoom?.id}`, postData)
-    const { trigger: setAttendencesForGroupedStudent, isMutating: loading } = useSWRMutation(`${LOCAL_URL}/api/crud/attendance-lines/session/${subject?.id}/${classRoom?.id}`, postData)
+    const { trigger: setAttendencesForGroupedStudent, isMutating: loadingTMP } = useSWRMutation(`${LOCAL_URL}/api/crud/attendance-lines/session/${subject?.id}/${classRoom?.id}`, postData)
     const { trigger: getTeacherTimeTableInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/attendance/room/${classRoom?.id}/from_date?date=${moment(subject?.start_datetime).format("YYYY/MM/DD").toString()}`, getData)
     const { trigger: setLastAttendencesAsCurrent, } = useSWRMutation(`${LOCAL_URL}/api/crud/attendances-lines/session/${subject?.id}/${classRoom?.id}/${lastAttendenceElements?.attendance_id}`, postData)
 
+    // console.log(attendanceCount);
 
     const getTeacherTimeTableInClassRoom = async () => {
         try {
@@ -118,21 +157,21 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
             // console.log(res?.data);
             if (res?.success) {
                 const timetable: any[] = res?.success ? res?.data : []
-                console.log(res);
-                setLastAttendence(timetable);
-                setLastAttendenceElements(res);
-                setVisibleBanner(true)
+                // console.log(res);
+                // setLastAttendence(timetable);
+                // setLastAttendenceElements(res);
+                // setVisibleBanner(true)
                 const timer = setTimeout(() => {
                     setVisibleBanner(false)
                 }, 5000);
                 return () => clearTimeout(timer);
             } else {
                 console.log(res);
-                showCustomMessage("Informationdddddddddd", res?.message, "warning", "bottom")
+                showCustomMessage("Information", res?.message, "warning", "bottom")
             }
         } catch (err: any) {
-            showCustomMessage("Informationddddddddddddd", 'Une erreur s\'est produite :' + err?.message, "warning", "bottom")
-            console.error('Une erreur s\'est produite :', err);
+            showCustomMessage("Information", 'Une erreur s\'est produite :' + err?.message, "warning", "bottom")
+            // console.error('Une erreur s\'est produite :', err);
         } finally {
             setIsLoading(false);
             setRefresh(false);
@@ -194,22 +233,40 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
     };
     const postAttendencesForGroupedStudent = async () => {
         try {
-            const assigma = await setAttendencesForGroupedStudent(attendanceDataList)
-            if (!assigma?.success) {
-                showCustomMessage("Information", assigma?.message, "warning", "bottom")
-                return;
-            }
+            setLoading(true);
+
+            const correctData = attendanceDataList.map(data => {
+                return {
+                    ...data,
+                    "session_id": subject?.id,
+                    "is_local": true,
+                }
+            });
+            const res = await syncAttendanceLines(correctData, db);
             setModalVisible(false);
             setAttendanceDataList([]);
+            console.log(res);
+
+            // const assigma = await setAttendencesForGroupedStudent(attendanceDataList)
+            // if (!assigma?.success) {
+            //     showCustomMessage("Information", assigma?.message, "warning", "bottom")
+            //     return;
+            // }
+            // setModalVisible(false);
+            // setAttendanceDataList([]);
 
             showCustomMessage("Information", "State updated to ", "success", "top")
 
         } catch (error: any) {
             showCustomMessage("Information", 'Une erreur s\'est produite :' + error?.message, "warning", "bottom")
         } finally {
-            getTeacherTimeTables(false)
+            // getTeacherTimeTables(false)
+            getLocalTeacherTimeTables(false);
+            setLoading(false);
         }
     };
+    // const MyLables = I18n.t("Dashboard.MyAbsencesScreen",)
+    // console.log(MyLables);
 
     const getTeacherTimeTables = async (relording: boolean) => {
         if (relording)
@@ -217,17 +274,17 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
         try {
             setIsLoading(true);
             const res = await getTeacherSubjectInClassRoome();
-            // console.log(";;;;;;;;'''''''", res);
             if (res?.success) {
                 const timetable: any[] = res?.success ? res?.data : []
-                setAttendanceList(timetable);
+                console.log(";;;;;;;;'''''''", timetable);
+                // setAttendanceList(timetable);
 
             } else {
-                showCustomMessage("Information", res?.message, "warning", "bottom")
+                // showCustomMessage("Information", res?.message, "warning", "bottom")
             }
         } catch (err: any) {
-            showCustomMessage("Information", 'Une erreur s\'est produite :' + err?.message, "warning", "bottom")
-            console.error('Une erreur s\'est produite :', err);
+            // showCustomMessage("Information", 'Une erreur s\'est produite :' + err?.message, "warning", "bottom")
+            // console.error('Une erreur s\'est produite :', err);
         } finally {
             setIsLoading(false);
             setRefresh(false);
@@ -235,9 +292,40 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
 
     };
 
+    const getLocalTeacherTimeTables = async (relording: boolean) => {
+        if (relording)
+            setAttendanceList([]);
+        try {
+            setIsLoading(true);
+            const res = await getStudentsWithAttendance(db, classRoom?.id, subject?.id);
+            // console.log(res);
+
+            // const res = await getStudentsByClassroom(db, classRoom?.id);
+            if (res?.success && res?.data) {
+                const timetable = res?.success ? res?.data : []
+                // const timetableTMP = timetable.map((t) => { return { ...t, attendance_line: "" } });
+                console.log("getLocalTeacherTimeTables;;;;;;;;'''''''", timetable.length);
+                setAttendanceList(timetable);
+
+            } else {
+                showCustomMessage("Information", res?.message, "warning", "bottom")
+            }
+        } catch (err: any) {
+            showCustomMessage("Information", 'Une erreur s\'est produite :' + err?.message, "warning", "bottom")
+            // console.error('Une erreur s\'est produite :', err);
+        } finally {
+            setIsLoading(false);
+            setRefresh(false);
+            // getTeacherTimeTables(false);
+        }
+
+    };
+
     useEffect(() => {
-        getTeacherTimeTables(true)
-        getTeacherTimeTableInClassRoom()
+        // getTeacherTimeTables(true)
+        getLocalTeacherTimeTables(true)
+
+        // getTeacherTimeTableInClassRoom()
     }, [refresh])
 
 
@@ -281,9 +369,9 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
 
     const onChangeSearch = (query: string) => {
         const sortedData = attendanceList.sort((a, b) => {
-            if (a.attendance_line === "" && b.attendance_line !== "") {
+            if (a.attendance_line && b.attendance_line) {
                 return -1;
-            } else if (a.attendance_line !== "" && b.attendance_line === "") {
+            } else if (a.attendance_line && b.attendance_line) {
                 return 1;
             } else {
                 return 0;
@@ -298,6 +386,7 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
 
     useEffect(() => {
         onChangeSearch("")
+        countAttendance(attendanceList);
     }, [attendanceList]);
     const renderEmptyElement = () => (
         <View style={styles.emptyData}>
@@ -317,10 +406,11 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
             setVisibleBanner={setVisibleBanner}
             isLocalImages={true}
             iconUrl={logo}
-            cancelLabel="Annuler"
+            cancelLabel={I18n.t("Dashboard.MyAbsencesScreen.cancelLabel")}
             confirmAction={toggleModal2}
-            modifyLabel="Considérer et modifier"
-            message={`L'appel a été fait dans cette classe pendant la période de -- à ${moment(lastAttendenceElements?.end_date).format("HH:mm")} par Mr/Mme. ${lastAttendenceElements?.faculty?.name}. Voulez-vous le considérer et le modifier ?`}
+            modifyLabel={I18n.t("Dashboard.MyAbsencesScreen.modifyLabel")}
+            message={I18n.t("Dashboard.MyAbsencesScreen.bannerMessage", { "endTime": moment(lastAttendenceElements?.end_date).format("HH:mm"), "facultyName": lastAttendenceElements?.faculty?.name })
+            }
 
         />
 
@@ -336,17 +426,17 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
                 style={{ backgroundColor: "red", borderRadius: 20, justifyContent: "center", paddingHorizontal: 15, paddingVertical: 3 }}>
                 <Text style={{
                     fontSize: 15,
-                    ...Theme.fontStyle.montserrat.regular,
+                    ...Theme.fontStyle.inter.regular,
                     color: 'white',
                     textAlign: "center"
-                }}>effacer</Text>
+                }}>{I18n.t("Dashboard.MyAbsencesScreen.clearButton")}</Text>
 
             </TouchableOpacity>}
         </View>
         {showSearch && <Animated.View style={[styles.header, { height: headerHeight }]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 }}>
                 <Searchbar
-                    placeholder="Search"
+                    placeholder={I18n.t("Dashboard.MyAbsencesScreen.searchPlaceholder")}
                     onChangeText={onChangeSearch}
                     value={searchQuery}
                     right={() =>
@@ -404,6 +494,47 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
                 ListEmptyComponent={renderEmptyElement}
             />
         </View>
+        {attendanceCount &&
+            <View style={{ position: "absolute", bottom: 0, right: 0, left: 0, height: 50, backgroundColor: "#537D8D", gap: 5, elevation: 2 }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+                    <Text style={{
+                        fontSize: 14,
+                        ...Theme.fontStyle.inter.regular,
+                        color: 'white',
+                        textAlign: "center"
+                    }}>{I18n.t("Dashboard.MyAbsencesScreen.totalStudents", { "count": attendanceList?.length ?? 0 })} </Text>
+                    <Text style={{
+                        fontSize: 14,
+                        ...Theme.fontStyle.inter.regular,
+                        color: 'white',
+                        textAlign: "center"
+                    }}>{I18n.t("Dashboard.MyAbsencesScreen.presentCount", { "count": attendanceCount.present })} </Text>
+                </View>
+
+                <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+                    <Text style={{
+                        fontSize: 14,
+                        ...Theme.fontStyle.inter.regular,
+                        color: 'white',
+                        textAlign: "center"
+                    }}>{I18n.t("Dashboard.MyAbsencesScreen.late", { "count": attendanceCount.late })} </Text>
+
+                    <Text style={{
+                        fontSize: 14,
+                        ...Theme.fontStyle.inter.regular,
+                        color: 'white',
+                        textAlign: "center"
+                    }}>{I18n.t("Dashboard.MyAbsencesScreen.absentCount", { "count": `${attendanceCount.absent} ` })}</Text>
+                    <Text style={{
+                        fontSize: 14,
+                        ...Theme.fontStyle.inter.regular,
+                        color: 'white',
+                        textAlign: "center"
+                    }}>{I18n.t("Dashboard.MyAbsencesScreen.excused", { "count": attendanceCount.excused })} </Text>
+
+                </View>
+            </View>
+        }
         <Modal
             onBackButtonPress={() => setModalVisible(false)}
             onBackdropPress={() => setModalVisible(false)}
@@ -454,7 +585,7 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
                             {updatingUser && <ActivityIndicator size={"large"} style={{ marginHorizontal: 20 }} />}
                         </View>
                         <TouchableOpacity onPress={toggleModal} style={styles.closeButton}>
-                            <Text style={styles.closeButtonText}>Fermer</Text>
+                            <Text style={styles.closeButtonText}>{I18n.t("Dashboard.MyAbsencesScreen.modalClose")}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -472,7 +603,7 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
                 <View style={{ alignItems: "center" }}>
 
                     <View style={styles.viewBar} />
-                    <Text style={styles.titleBottonSheet}>Fiche d'appel :</Text>
+                    <Text style={styles.titleBottonSheet}> Fiche d'appel :</Text>
                     <Divider style={{ width: "50%" }} />
                     <Text style={styles.modalcontainerText}>{"En validant, vous avez la posibilite de remodifier cette fiche."}</Text>
                 </View>
@@ -523,7 +654,7 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
             </View>
         </Modal>
         <FAB
-            label={`Soumettre ${attendanceDataList.length}/${filteredData.length}`}
+            label={I18n.t("Dashboard.MyAbsencesScreen.submitAttendance", { current: attendanceDataList.length, total: attendanceList.length })}
             onPress={() => postAttendencesForGroupedStudent()}
             visible={attendanceDataList.length > 0}
             color={theme.secondaryText}

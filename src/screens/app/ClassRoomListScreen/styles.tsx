@@ -27,7 +27,7 @@ const dynamicStyles = (theme: any, isSelected: any) => {
         classRoomText: {
             fontSize: 16,
             paddingVertical: 3,
-            ...Theme.fontStyle.montserrat.bold,
+            ...Theme.fontStyle.inter.bold,
             color: theme.primaryText
         },
         classRoomContainer: {
@@ -86,7 +86,7 @@ const dynamicStyles = (theme: any, isSelected: any) => {
         emptyDataText: {
             fontSize: 14,
             paddingVertical: 3,
-            ...Theme.fontStyle.montserrat.semiBold,
+            ...Theme.fontStyle.inter.semiBold,
             color: theme.primaryText,
             textAlign: "center"
         },
@@ -111,8 +111,8 @@ const dynamicStyles = (theme: any, isSelected: any) => {
         },
         title: {
             flex: 1,
-            fontSize: 25,
-            ...Theme.fontStyle.montserrat.bold,
+            fontSize: 18,
+            ...Theme.fontStyle.inter.bold,
             color: "black",
             overflow: "hidden"
         },
@@ -137,7 +137,7 @@ const dynamicStyles = (theme: any, isSelected: any) => {
         },
         liveTrackButtomText: {
             color: theme.secondaryText,
-            ...Theme.fontStyle.montserrat.semiBold,
+            ...Theme.fontStyle.inter.semiBold,
         },
         TitleContainer: {
             flex: 1,
@@ -149,19 +149,20 @@ const dynamicStyles = (theme: any, isSelected: any) => {
             paddingBottom: 5
         },
         etiquettesItemText: {
-            ...Theme.fontStyle.montserrat.semiBold,
+            ...Theme.fontStyle.inter.blackItalic,
             color: theme.secondaryText,
         },
         etiquettesItemText2: {
             paddingHorizontal: 10,
             paddingVertical: 1,
-            ...Theme.fontStyle.montserrat.semiBold,
+            fontSize: 12,
+            ...Theme.fontStyle.inter.semiBold,
             color: theme.secondaryText,
         },
         fieldText: {
             fontSize: 16,
             paddingVertical: 3,
-            ...Theme.fontStyle.montserrat.bold,
+            ...Theme.fontStyle.inter.bold,
             color: theme.primaryText,
         },
     });

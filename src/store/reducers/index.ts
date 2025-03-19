@@ -4,13 +4,15 @@ import { SelectedRouteScreenReducer } from '@store/reducers/SelectedRouteScreenR
 import { ThemeReducer } from './ThemeReducer';
 import { CountNotificationReducer } from './CountNotificationReducer';
 import { UserReducer } from './UserReducer';
+import { SynchroisationReducer } from './SynchroisationReducer';
 
 const RootReducer = combineReducers({
     translation: TranslationReducer, // Ajoutez le reducer de traduction ici
     current_screen: SelectedRouteScreenReducer,
     theme: ThemeReducer,
     notificationCount: CountNotificationReducer,
-    user: UserReducer
+    user: UserReducer,
+    sync: SynchroisationReducer,
 });
 
 export default RootReducer

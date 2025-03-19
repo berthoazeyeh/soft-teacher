@@ -29,7 +29,7 @@ const Header = ({ title, onLogoutPressed, theme, visible, setVisible }) => {
             >
                 <Menu.Item style={{ alignSelf: "center" }} titleStyle={{
                     fontWeight: "bold", textAlign: "center", color: theme.primaryText,
-                    ...Theme.fontStyle.montserrat.regular,
+                    ...Theme.fontStyle.inter.regular,
                 }} onPress={() => { }} title={I18n.t('more')} />
 
 
@@ -88,7 +88,7 @@ const styles = (theme) => StyleSheet.create({
     headerText: {
         fontSize: 18,
         color: theme.primaryText,
-        ...Theme.fontStyle.montserrat.semiBold
+        ...Theme.fontStyle.inter.semiBold
     },
 
     icon: {
@@ -106,7 +106,7 @@ const styles = (theme) => StyleSheet.create({
         flex: 1,
         fontSize: 16,
         color: theme.primaryText,
-        ...Theme.fontStyle.montserrat.regular,
+        ...Theme.fontStyle.inter.regular,
     },
 
 });

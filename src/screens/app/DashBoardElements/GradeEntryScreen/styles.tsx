@@ -18,12 +18,20 @@ const dynamicStyles = (theme: any) => {
             // borderColor: '#434343'
         },
         value: {
-            fontSize: 16,
+            fontSize: 14,
             marginRight: 10,
             textAlign: "center",
             alignSelf: "center",
             flex: 1,
-            ...Theme.fontStyle.montserrat.bold,
+            ...Theme.fontStyle.inter.bold,
+            color: theme.primaryText
+        },
+        value1: {
+            fontSize: 14,
+            textAlign: "center",
+            alignSelf: "center",
+            flex: 1,
+            ...Theme.fontStyle.inter.bold,
             color: theme.primaryText
         },
         content: {
@@ -52,7 +60,7 @@ const dynamicStyles = (theme: any) => {
             backgroundColor: theme.gray3,
             borderRadius: 1,
         },
-        pickerItemStyle: { color: "black", ...Theme.fontStyle.montserrat.semiBold },
+        pickerItemStyle: { color: "black", ...Theme.fontStyle.inter.semiBold, fontSize: 13, },
         header: {
             backgroundColor: 'skyblue',
             justifyContent: 'center',
@@ -62,13 +70,13 @@ const dynamicStyles = (theme: any) => {
         buttonLabel: {
             color: theme.secondaryText,
             fontSize: 20,
-            ...Theme.fontStyle.montserrat.semiBold,
+            ...Theme.fontStyle.inter.semiBold,
         },
         loginText: {
             color: theme.secondaryText,
             fontSize: 16,
             letterSpacing: 1.7,
-            ...Theme.fontStyle.montserrat.bold,
+            ...Theme.fontStyle.inter.bold,
 
         },
         error: {
@@ -79,7 +87,7 @@ const dynamicStyles = (theme: any) => {
         textdanger1: {
             margin: 2,
             color: 'red',
-            ...Theme.fontStyle.montserrat.italic,
+            ...Theme.fontStyle.inter.italic,
             fontSize: 10
         },
         linearGradient: {
@@ -100,7 +108,7 @@ const dynamicStyles = (theme: any) => {
             color: theme.primaryText,
             paddingVertical: 10,
             fontSize: 18,
-            ...Theme.fontStyle.montserrat.bold,
+            ...Theme.fontStyle.inter.bold,
         },
 
         scrollViewContent: {
@@ -111,7 +119,7 @@ const dynamicStyles = (theme: any) => {
 
         titleBottonSheet: {
             color: theme.primaryText,
-            ...Theme.fontStyle.montserrat.bold,
+            ...Theme.fontStyle.inter.bold,
             letterSpacing: 1,
             marginBottom: 15,
             paddingHorizontal: 20,
@@ -131,7 +139,7 @@ const dynamicStyles = (theme: any) => {
         emptyDataText: {
             fontSize: 14,
             paddingVertical: 3,
-            ...Theme.fontStyle.montserrat.semiBold,
+            ...Theme.fontStyle.inter.semiBold,
             color: theme.primaryText,
             textAlign: "center"
         },
@@ -260,14 +268,14 @@ const dynamicStyles = (theme: any) => {
             fontSize: 18,
             color: theme.primary,
             textAlign: "center",
-            ...Theme.fontStyle.montserrat.italic,
+            ...Theme.fontStyle.inter.italic,
             paddingTop: 10, paddingHorizontal: 0,
         },
         modalcontainerText1: {
             fontSize: 16,
             color: theme.primaryText,
             textAlign: "center",
-            ...Theme.fontStyle.montserrat.italic,
+            ...Theme.fontStyle.inter.italic,
             paddingTop: 5, paddingHorizontal: 0,
         },
         input: {
@@ -283,7 +291,7 @@ const dynamicStyles = (theme: any) => {
             fontSize: 20,
             color: theme.primaryText,
             backgroundColor: theme.gray,
-            ...Theme.fontStyle.montserrat.bold
+            ...Theme.fontStyle.inter.bold
         },
         input1: {
             borderWidth: 1,
@@ -291,7 +299,7 @@ const dynamicStyles = (theme: any) => {
             padding: 10,
             borderRadius: 5,
             fontSize: 16,
-            ...Theme.fontStyle.montserrat.bold,
+            ...Theme.fontStyle.inter.bold,
             marginTop: 5,
             width: '100%',
 
@@ -306,7 +314,7 @@ const dynamicStyles = (theme: any) => {
         },
         noteTitle: {
             color: theme.primaryText,
-            ...Theme.fontStyle.montserrat.bold,
+            ...Theme.fontStyle.inter.bold,
             letterSpacing: 1,
             paddingRight: 10,
             paddingLeft: 10,

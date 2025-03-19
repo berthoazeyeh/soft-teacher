@@ -75,28 +75,7 @@ function AssignmemtRenderStudentListScreen(props: any): React.JSX.Element {
         }).start();
     };
 
-    const data = [
-        { id: 1, name: "John Doe", status: true, timeMarked: "09:00 AM", date: "2024-09-23", remarks: "On time" },
-        { id: 2, name: "Jane Smith", status: false, timeMarked: "09:15 AM", date: "2024-09-23", remarks: "Absent" },
-        { id: 3, name: "Michael Johnson", status: false, timeMarked: null, date: "2024-09-23", remarks: "Pending" },
-        { id: 4, name: "Emily Davis", status: true, timeMarked: "08:50 AM", date: "2024-09-23", remarks: "Early arrival" },
-        { id: 5, name: "Daniel Brown", status: true, timeMarked: "09:05 AM", date: "2024-09-23", remarks: "On time" },
-        { id: 6, name: "Olivia Williams", status: false, timeMarked: null, date: "2024-09-23", remarks: "Pending" },
-        { id: 7, name: "James Miller", status: false, timeMarked: "09:30 AM", date: "2024-09-23", remarks: "Absent" },
-        { id: 8, name: "Sophia Wilson", status: true, timeMarked: "08:55 AM", date: "2024-09-23", remarks: "On time" },
-        { id: 9, name: "Liam Martinez", status: true, timeMarked: "09:10 AM", date: "2024-09-23", remarks: "Slightly late" },
-        { id: 10, name: "Emma Anderson", status: false, timeMarked: "09:25 AM", date: "2024-09-23", remarks: "Absent" },
-        { id: 11, name: "Noah Thomas", status: true, timeMarked: "08:45 AM", date: "2024-09-23", remarks: "Early arrival" },
-        { id: 12, name: "Ava Taylor", status: false, timeMarked: null, date: "2024-09-23", remarks: "Pending" },
-        { id: 13, name: "William Lee", status: true, timeMarked: "09:20 AM", date: "2024-09-23", remarks: "Slightly late" },
-        { id: 14, name: "Mia Harris", status: true, timeMarked: "09:00 AM", date: "2024-09-23", remarks: "On time" },
-        { id: 15, name: "Ethan Clark", status: false, timeMarked: "09:35 AM", date: "2024-09-23", remarks: "Absent" },
-        { id: 16, name: "Isabella Lewis", status: true, timeMarked: "09:05 AM", date: "2024-09-23", remarks: "On time" },
-        { id: 17, name: "Mason Walker", status: false, timeMarked: null, date: "2024-09-23", remarks: "Pending" },
-        { id: 18, name: "Lucas Hall", status: true, timeMarked: "08:55 AM", date: "2024-09-23", remarks: "Early arrival" },
-        { id: 19, name: "Charlotte Young", status: true, timeMarked: "09:10 AM", date: "2024-09-23", remarks: "Slightly late" },
-        { id: 20, name: "Elijah King", status: false, timeMarked: "09:30 AM", date: "2024-09-23", remarks: "Absent" }
-    ];
+
     const onChangeSearch = (query: string) => {
         setSearchQuery(query);
         const filtered = studentList.filter(item =>
@@ -127,7 +106,7 @@ function AssignmemtRenderStudentListScreen(props: any): React.JSX.Element {
             <MaterialCommunityIcons name='arrow-left' size={25} color={theme.primaryText} onPress={() => {
                 navigation.goBack()
             }} />
-            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 20, color: theme.primary }}>{""}</Text>
+            <Text style={{ ...Theme.fontStyle.inter.semiBold, fontSize: 20, color: theme.primary }}>{""}</Text>
             <TouchableOpacity
                 style={{ marginRight: 20 }}
                 onPress={() => {
@@ -190,10 +169,10 @@ function AssignmemtRenderStudentListScreen(props: any): React.JSX.Element {
                         </View >
                         <View style={{ justifyContent: "space-around", flex: 1, gap: 5, alignContent: "center", }}>
                             <View style={{ justifyContent: "space-between", flexDirection: "row", gap: 5, alignContent: "center", }}>
-                                <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{item?.student?.name}</Text>
+                                <Text style={{ ...Theme.fontStyle.inter.semiBold, fontSize: 14, color: theme.primaryText, flex: 1 }}>{item?.student?.name}</Text>
                                 <MaterialCommunityIcons name={item?.state === "accept" ? "eye-check-outline" : "eye-remove-outline"} size={25} color={item?.state === "accept" ? theme.primary : theme.primaryText} />
                             </View>
-                            <Text style={{ ...Theme.fontStyle.montserrat.regular, fontSize: 14, color: theme.primaryText }}>Rendu le: <Text style={{ ...Theme.fontStyle.montserrat.semiBold }}> {moment(item.submission_date).format("LLLL")}</Text></Text>
+                            <Text style={{ ...Theme.fontStyle.inter.regular, fontSize: 12, color: theme.primaryText }}> {I18n.t("SeeAndMarkStudentAsignmemtScreen.submittedOn")} <Text style={{ ...Theme.fontStyle.inter.semiBold }}> {moment(item.submission_date).format("LLLL")}</Text></Text>
                         </View>
                     </TouchableOpacity>
                 }

@@ -10,6 +10,7 @@ import { Picker } from "@react-native-picker/picker";
 import { Divider } from "react-native-paper";
 import { getTimeSlotsForWeek, Theme } from "utils";
 import HeaderDashBoad from "./Header";
+import React from "react";
 
 
 interface RenderPickerSemesterProps {
@@ -100,10 +101,10 @@ class MyTimetable extends Component<Props, State> {
 
 
     render() {
-        const timtable: any[] = this.props.data?.success ? this.props.data?.data : []
+        const timtable: any[] = this.props.data ? this.props.data : []
         let transformedStudents = timtable?.map(item =>
         ({
-            title: item?.subject_id.name,
+            title: item?.subject_id?.name,
             startTime: new Date(item.start_datetime),
             endTime: new Date(item.end_datetime),
             location: item.classroom_id?.name,

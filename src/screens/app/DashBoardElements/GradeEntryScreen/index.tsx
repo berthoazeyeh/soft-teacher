@@ -19,6 +19,7 @@ import NotesItem from "./components/NotesItem";
 import { dataStucture } from "./AddNewOrUpdateExams";
 import { hideHeader, showHeader } from "./utils";
 import { I18n } from 'i18n';
+import { SatisticModal } from "./components/SatisticModal";
 
 
 function GradeEntryScreen(props: any): React.JSX.Element {
@@ -26,6 +27,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
     const { classRoom } = route.params
     const theme = useTheme()
     const [isLoading, setIsLoading] = useState(false)
+    const [statisticModalVisible, setStatisticModalVisible] = useState(false)
     const [isLoadingSession, setIsLoadingSession] = useState(false)
     const [isLoadingExam, setIsLoadingExam] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
@@ -45,6 +47,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
     const [examsList, setExamsList] = useState<any[]>([])
     const [modalVisible, setModalVisible] = useState(false);
     const headerHeight = useRef(new Animated.Value(60)).current;
+    const filterHeight = useRef(new Animated.Value(45)).current;
     const GradeEntryText: any = I18n.t("Dashboard.GradeEntry");
 
 
@@ -134,6 +137,8 @@ function GradeEntryScreen(props: any): React.JSX.Element {
 
 
     const getCorrectFormatedExams = (selectedExamType: any) => {
+        console.log("////////................................................................");
+
         const exam = examsList.find(item => item.id === selectedExam);
         if (exam) {
             const list = selectedSession ? (dataStucture[sessions.find(item => item.id === selectedSession)?.exam_type?.code as keyof typeof dataStucture] || []) : [];
@@ -236,7 +241,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
             setIsLoading(true);
             const res = await getStudentWithListNote();
             if (res?.success) {
-                // console.log(".....", res?.data);
+                // console.log(".....", res);
                 setExamsData(res?.data);
 
             } else {
@@ -331,6 +336,52 @@ function GradeEntryScreen(props: any): React.JSX.Element {
     };
 
 
+    function getExamStats(students: any[]) {
+        let total = 0;
+        let withMarks = 0;
+        let withoutMarks = 0;
+        let passed = 0;
+        let failed = 0;
+        if (!students) {
+            return {
+                total,
+                withMarks,
+                withoutMarks,
+                passed,
+                failed
+            };
+        }
+        total = students.length;
+        students.forEach(student => {
+            if (student.exam_marks?.is_exist) {
+                withMarks++;
+                if (student.exam_marks?.marks !== undefined) {
+                    if (student.exam_marks.marks >= 10) {
+                        passed++;
+                    } else {
+                        failed++;
+                    }
+                }
+                if (student.exam_marks?.total_weight_marks !== undefined) {
+                    if (student.exam_marks.total_weight_marks >= 10) {
+                        passed++;
+                    } else {
+                        failed++;
+                    }
+                }
+            } else {
+                withoutMarks++;
+            }
+        });
+
+        return {
+            total,
+            withMarks,
+            withoutMarks,
+            passed,
+            failed
+        };
+    }
     const renderEmptyElement = () => (
         <View style={styles.emptyData}>
             {isLoading &&
@@ -359,10 +410,12 @@ function GradeEntryScreen(props: any): React.JSX.Element {
                 }
             </View>
             <Picker
-                itemStyle={{ color: theme.primaryText, ...Theme.fontStyle.montserrat.bold }}
+                itemStyle={{ color: theme.primaryText, ...Theme.fontStyle.inter.bold }}
                 selectedValue={selectedValue}
                 onValueChange={(itemValue) => setSelectedValue(itemValue)}
-                style={[styles.picker,]}>
+                onFocus={() => selectedExamType && getCorrectFormatedExams(selectedExamType)}
+                onTouchStart={() => selectedExamType && getCorrectFormatedExams(selectedExamType)}
+                style={[styles.picker]}>
                 <Picker.Item
                     style={[styles.pickerItemStyle, { fontSize: 10, }]}
                     label={text}
@@ -387,7 +440,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
             }}
             style={[styles.item, { backgroundColor: theme.primary, marginLeft: 5, flexDirection: "row", paddingHorizontal: 7, paddingVertical: 7, justifyContent: "center" }]}>
             <MaterialCommunityIcons name='plus' size={15} color={theme.secondaryText} />
-            <Text style={{ fontSize: 10, ...Theme.fontStyle.montserrat.semiBold, color: theme.secondaryText }}>{"Add"}</Text>
+            <Text style={{ fontSize: 10, ...Theme.fontStyle.inter.semiBold, color: theme.secondaryText }}>{"Add"}</Text>
         </TouchableOpacity>}
     </View >
     );
@@ -414,20 +467,28 @@ function GradeEntryScreen(props: any): React.JSX.Element {
         >
             <View style={styles.titleContainer}>
                 <Text style={styles.text}>
-                    {GradeEntryText?.header_title}
+                    {GradeEntryText?.header_title} ({filteredData?.length})
                 </Text>
-                <TouchableOpacity
-                    style={{ marginRight: 10, padding: 7, backgroundColor: theme.primary, borderRadius: 30 }}
-                    onPress={() => {
-                        showHeader(headerHeight)
-                    }}
-                >
-                    <MaterialCommunityIcons name='account-search' size={20} color={theme.secondaryText} />
-                </TouchableOpacity>
+                <View style={{ flexDirection: "row", gap: 18 }}>
+                    <TouchableOpacity
+                        style={{ padding: 5, backgroundColor: theme.primary, borderRadius: 30 }}
+                        onPress={() => {
+                            setStatisticModalVisible(true)
+                        }}>
+                        <MaterialCommunityIcons name="chart-bar" size={20} color="black" />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={{ marginRight: 7, padding: 5, backgroundColor: theme.primary, borderRadius: 30 }}
+                        onPress={() => {
+                            showHeader(headerHeight)
+                        }}>
+                        <MaterialCommunityIcons name='account-search' size={20} color={theme.secondaryText} />
+                    </TouchableOpacity>
+                </View>
             </View>
             <View style={styles.containerWrap}>
                 <View style={styles.item}>
-                    <Text style={{ color: theme.secondaryText, ...Theme.fontStyle.montserrat.semiBold, fontSize: 15, backgroundColor: theme.primaryText, paddingVertical: 5, paddingHorizontal: 3, }}>{position} </Text>
+                    <Text style={{ color: theme.secondaryText, ...Theme.fontStyle.inter.semiBold, fontSize: 15, backgroundColor: theme.primaryText, paddingVertical: 5, paddingHorizontal: 3, }}>{position} </Text>
                 </View>
                 {(selectedSession || selectedExam) && <TouchableOpacity style={[styles.item, { padding: 3, backgroundColor: theme.secondaryText, }]}
                     onPress={() => {
@@ -465,7 +526,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
                                 return (
                                     <View key={index} style={{ flexDirection: "row", alignItems: "center" }}>
                                         <RadioButton value={item} />
-                                        <Text style={{ ...Theme.fontStyle.montserrat.semiBold, color: theme.primaryText }}>{item}</Text>
+                                        <Text style={{ ...Theme.fontStyle.inter.semiBold, color: theme.primaryText }}>{item}</Text>
                                     </View>
                                 )
                             })}
@@ -601,6 +662,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
                 </ScrollView>
             </View>
         </Modal>
+        <SatisticModal isVisible={statisticModalVisible} onDismiss={setStatisticModalVisible} data={getExamStats(examsData)} />
 
     </View>
 
@@ -614,9 +676,9 @@ type TextValue = {
     showClose?: boolean;
 }
 const MyCustomerTextAndValue = ({ theme, text, value }: TextValue) => {
-    return (<Text style={{ color: theme.primaryText, fontSize: 16, ...Theme.fontStyle.montserrat.bold, }}>
+    return (<Text style={{ color: theme.primaryText, fontSize: 16, ...Theme.fontStyle.inter.bold, }}>
         {text}
-        <Text style={{ color: theme.primary, fontSize: 16, marginLeft: 10, ...Theme.fontStyle.montserrat.semiBold }}>
+        <Text style={{ color: theme.primary, fontSize: 16, marginLeft: 10, ...Theme.fontStyle.inter.semiBold }}>
             {' '}  {value}
         </Text>
     </Text>

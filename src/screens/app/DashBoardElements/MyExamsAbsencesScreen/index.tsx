@@ -59,9 +59,10 @@ function MyExamsAbsencesScreen(props: any): React.JSX.Element {
             student_id: student?.id,
         }
         try {
-            // @ts-ignore
             const assigma = await setAttendencesForStudent(data)
             if (!assigma?.success) {
+                console.log(assigma);
+
                 showCustomMessage("Information", assigma?.message, "warning", "bottom")
                 return;
             }
@@ -190,14 +191,14 @@ function MyExamsAbsencesScreen(props: any): React.JSX.Element {
                         backgroundColor: '#f0f0f0',
                     }}
                 />
-                <TouchableOpacity
+                {/* <TouchableOpacity
                     style={{ marginLeft: 10 }}
                     onPress={() => {
                         console.log('Filter clicked');
                     }}
                 >
                     <MaterialCommunityIcons name="filter" size={30} color="black" />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
         </Animated.View>}
         <View style={styles.content}>

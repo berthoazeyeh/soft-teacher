@@ -2,7 +2,7 @@ import React, { useLayoutEffect, useState } from 'react';
 import { View, Text, Button, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { AnimatedFAB, FAB, TextInput } from 'react-native-paper';
-import { clearUserStored, updateUserStored, useCurrentUser, useTheme } from 'store';
+import { clearUserStored, updateSyncing, updateUserStored, useCurrentUser, useTheme } from 'store';
 import { DEFAULT_IMG, showCustomMessage, Theme } from 'utils';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { I18n } from 'i18n';
@@ -13,6 +13,7 @@ import * as z from 'zod';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import useSWRMutation from 'swr/mutation';
+import { clearCustomTables } from 'apis/database';
 
 const schema = z.object({
     name: z.string()
@@ -129,6 +130,10 @@ const ProfileScreen = (props: any) => {
                 setNewPassword("")
 
                 dispatch(clearUserStored(null))
+                dispatch(updateSyncing(true))
+
+                // await clearCustomTables(["assignment_types", "assignment_types", "assignments", "assignment_rooms", "attendanceLine", "students", "sessions", "classrooms"]);
+
                 navigation.reset({
                     index: 0,
                     routes: [{ name: 'AuthStacks' }],

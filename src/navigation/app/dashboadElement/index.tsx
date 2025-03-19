@@ -1,6 +1,6 @@
 import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
-import { AddAssignmentScreen, AddNewOrUpdateExams, AssignmemtRenderStudentListScreen, AttendanceScreen, CourcesListeScreen, CreateUpdateSubExams, ExamsListeScreen, GradeEntryScreen, MyAbsencesScreen, MyAssignmentScreen, MyCourcesScreen, MyExamsAbsencesScreen, MyTimeTableScreen, NotebookScreen, PastReportCardsScreen, SeeAndMarkStudentAsignmemtScreen, StudentDetailsScreen, StudentListScreen } from 'screens';
+import { AddAssignmentScreen, AddNewOrUpdateExams, AssignmemtRenderStudentListScreen, AttendanceScreen, CourcesListeScreen, CreateUpdateSubExams, ExamsListeScreen, GradeEntryScreen, InviteStudentForCources, MyAbsencesScreen, MyAssignmentScreen, MyCourcesScreen, MyExamsAbsencesScreen, MyTimeTableScreen, NotebookScreen, PastReportCardsScreen, SeeAndMarkStudentAsignmemtScreen, StudentDetailsScreen, StudentListScreen } from 'screens';
 
 export type AuthStackList = {
     StudentListScreen: undefined;
@@ -35,6 +35,7 @@ const elements: Item[] = [
     { name: "StudentDetailsScreen", screen: StudentDetailsScreen, haveHeader: false },
     { name: "MyAssignmentScreen", screen: MyAssignmentScreen, haveHeader: false },
     { name: "AddAssignmentScreen", screen: AddAssignmentScreen, haveHeader: false },
+    { name: "InviteStudentForCources", screen: InviteStudentForCources, haveHeader: true },
     { name: "AssignmemtRenderStudentListScreen", screen: AssignmemtRenderStudentListScreen, haveHeader: false },
     { name: "SeeAndMarkStudentAsignmemtScreen", screen: SeeAndMarkStudentAsignmemtScreen, haveHeader: false },
     { name: "ExamsListeScreen", screen: ExamsListeScreen, haveHeader: false },

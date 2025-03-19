@@ -6,7 +6,6 @@ import { logo, Theme } from 'utils';
 import { I18n } from 'i18n';
 
 const Header = ({ title, onLogoutPressed, theme, visible, setVisible, navigation }) => {
-
     return (
         <View style={styles(theme).header}>
             <View style={styles(theme).headerIconText}>
@@ -22,12 +21,12 @@ const Header = ({ title, onLogoutPressed, theme, visible, setVisible, navigation
                 }}>
                 <MaterialCommunityIcons
                     name="message-text"
-                    size={27}
+                    size={20}
                     color={theme.primaryText}
                     style={styles(theme).icon}
                 />
                 <Badge
-                    style={{ color: "white", backgroundColor: "red", position: "absolute", top: -10, right: -10 }}
+                    style={{ color: "white", backgroundColor: "red", position: "absolute", top: -10, right: -2 }}
                     onPress={() => {
                         navigation.navigate("DiscussStacks")
                     }}>
@@ -43,11 +42,10 @@ const Header = ({ title, onLogoutPressed, theme, visible, setVisible, navigation
                     <TouchableOpacity onPress={setVisible}>
                         <MaterialCommunityIcons
                             name="more"
-                            size={27}
+                            size={20}
                             color={theme.primaryText}
                             style={styles.icon}
                         />
-
                     </TouchableOpacity>}>
                 <Menu.Item style={{ alignSelf: "center" }} titleStyle={{
                     fontWeight: "bold", textAlign: "center", color: theme.primaryText,
@@ -63,7 +61,7 @@ const Header = ({ title, onLogoutPressed, theme, visible, setVisible, navigation
                 >
                     <MaterialCommunityIcons
                         name="cog"
-                        size={27}
+                        size={20}
                         color={theme.primaryText}
                         style={styles(theme).icon}
                     />
@@ -75,7 +73,7 @@ const Header = ({ title, onLogoutPressed, theme, visible, setVisible, navigation
                 >
                     <MaterialCommunityIcons
                         name="logout"
-                        size={27}
+                        size={20}
                         color={theme.primaryText}
                         style={styles(theme).icon}
                     />
@@ -126,11 +124,12 @@ const styles = (theme) => StyleSheet.create({
 
     },
     headerText: {
-        fontSize: 18,
+        fontSize: 16,
         color: theme.primary,
-        ...Theme.fontStyle.montserrat.semiBold
+        ...Theme.fontStyle.inter.semiBold
     },
     icon: {
+        paddingHorizontal: 10,
     },
     menuItem: {
         flexDirection: 'row',
@@ -141,9 +140,9 @@ const styles = (theme) => StyleSheet.create({
     },
     menuText: {
         flex: 1,
-        fontSize: 16,
+        fontSize: 13,
         color: theme.primaryText,
-        ...Theme.fontStyle.montserrat.regular,
+        ...Theme.fontStyle.inter.regular,
     },
 
 });
@@ -177,7 +176,7 @@ const styless = (theme) => StyleSheet.create({
     headerText: {
         fontSize: 18,
         color: theme.primaryText,
-        ...Theme.fontStyle.montserrat.semiBold
+        ...Theme.fontStyle.inter.semiBold
     },
 
     icon: {
@@ -195,7 +194,7 @@ const styless = (theme) => StyleSheet.create({
         flex: 1,
         fontSize: 16,
         color: theme.primaryText,
-        ...Theme.fontStyle.montserrat.regular,
+        ...Theme.fontStyle.inter.regular,
     },
 
 });

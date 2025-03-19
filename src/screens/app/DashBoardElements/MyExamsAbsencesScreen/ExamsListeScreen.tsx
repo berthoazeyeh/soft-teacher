@@ -9,7 +9,7 @@ import { getRandomColor, showCustomMessage, Theme } from "utils";
 import { CustomDatePickerForm } from "components";
 import { Divider } from "react-native-paper";
 import useSWRMutation from "swr/mutation";
-import { getCorrectDateFormat, getData, LOCAL_URL } from "apis";
+import { getData, LOCAL_URL } from "apis";
 import { RefreshControl } from "react-native";
 import { useSelector } from "react-redux";
 
@@ -27,11 +27,8 @@ function ExamsListeScreen(props: any): React.JSX.Element {
     const user = useCurrentUser();
     const language = useSelector(selectLanguageValue);
 
-    // moment.locale("en");
     const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/exams/from_date/${classRoom?.id}?date_exam=${moment(selectedDate).format("YYYY/MM/DD").toString()}`, getData)
-    // const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/timesheet/faculty/${user?.id}/${classRoom.id}/${moment(selectedDate).format("dddd")}`, getData)
-    // moment.locale(language);
-    // console.log(nexScreen);
+
 
 
     const getTeacherTimeTables = async () => {
@@ -42,7 +39,6 @@ function ExamsListeScreen(props: any): React.JSX.Element {
             if (res?.success) {
                 const timetable: any[] = res?.success ? res?.data : []
                 setSubject(timetable);
-
             } else {
                 console.log(res);
                 showCustomMessage("Information", res?.message, "warning", "bottom")
@@ -58,7 +54,7 @@ function ExamsListeScreen(props: any): React.JSX.Element {
     };
     useEffect(() => {
         getTeacherTimeTables()
-    }, [rescan])
+    }, [rescan, selectedDate])
 
 
 
@@ -91,7 +87,7 @@ function ExamsListeScreen(props: any): React.JSX.Element {
             }}
         >
             <MaterialCommunityIcons name='arrow-left' size={25} color={theme.primaryText} />
-            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 28, color: theme.primary }}>{classRoom.name}</Text>
+            <Text style={{ ...Theme.fontStyle.inter.semiBold, fontSize: 28, color: theme.primary }}>{classRoom.name}</Text>
         </TouchableOpacity>
         <Divider />
         <View style={styles.headerTimeConatiner}>
@@ -127,21 +123,16 @@ function ExamsListeScreen(props: any): React.JSX.Element {
                             navigation.navigate("MyExamsAbsencesScreen", { classRoom: classRoom, exams: item })
                         }}
                         style={{ flexDirection: "row", alignItems: "center", gap: 20, paddingHorizontal: 10, width: "100%" }}>
-                        {/* <View style={{ justifyContent: "space-around", gap: 30 }}>
-                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{moment(item?.start_date).format("MMM YYYY")}</Text>
-                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{moment(item?.end_date).format("YYYY")}</Text>
-                        </View > */}
 
                         <View style={{ width: 7, backgroundColor: getRandomColor(), height: "100%", }} />
-
                         <View style={{ justifyContent: "space-around", flex: 1, }}>
-                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 23, color: theme.primaryText, }}>{item?.name}</Text>
+                            <Text style={{ ...Theme.fontStyle.inter.semiBold, fontSize: 14, color: theme.primaryText, }}>{item?.name}</Text>
                             <Text>{item?.session_id?.map((item: any) => item?.name + "; ")}</Text>
                             {item.attendance_sheet &&
-                                <MaterialCommunityIcons name='check-circle' size={25} color={theme.primary} />
+                                <MaterialCommunityIcons name='check-circle' size={20} color={theme.primary} />
                             }
                             {!item.attendance_sheet &&
-                                <MaterialCommunityIcons name='check-circle' size={25} color={"red"} />
+                                <MaterialCommunityIcons name='check-circle' size={20} color={"red"} />
                             }
 
                         </View>

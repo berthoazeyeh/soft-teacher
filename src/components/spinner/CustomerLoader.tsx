@@ -1,6 +1,7 @@
 import Spinner from "react-native-loading-spinner-overlay";
+import { I18n } from 'i18n';
 
-const CustomerLoader = ({ loading, theme, I18n, color }: any) => {
+const CustomerLoader = ({ loading, theme, color }: any) => {
     return <Spinner
         visible={loading}
         size={40}

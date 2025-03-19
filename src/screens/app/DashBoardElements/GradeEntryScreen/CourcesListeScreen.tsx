@@ -89,7 +89,7 @@ function CourcesListeScreen(props: any): React.JSX.Element {
             }}
         >
             <MaterialCommunityIcons name='arrow-left' size={25} color={theme.primaryText} />
-            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 28, color: theme.primary }}>{classRoom.name}</Text>
+            <Text style={{ ...Theme.fontStyle.inter.semiBold, fontSize: 28, color: theme.primary }}>{classRoom.name}</Text>
         </TouchableOpacity>
         <Divider />
         <View style={styles.headerTimeConatiner}>
@@ -126,14 +126,14 @@ function CourcesListeScreen(props: any): React.JSX.Element {
                         }}
                         style={{ flexDirection: "row", alignItems: "center", gap: 20, paddingHorizontal: 20, width: "100%" }}>
                         <View style={{ justifyContent: "space-around", gap: 30 }}>
-                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{moment(item?.start_datetime).format("HH:mm")}</Text>
-                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{moment(item?.end_datetime).format("HH:mm")}</Text>
+                            <Text style={{ ...Theme.fontStyle.inter.semiBold, fontSize: 18, color: theme.primaryText }}>{moment(item?.start_datetime).format("HH:mm")}</Text>
+                            <Text style={{ ...Theme.fontStyle.inter.semiBold, fontSize: 18, color: theme.primaryText }}>{moment(item?.end_datetime).format("HH:mm")}</Text>
                         </View >
 
                         <View style={{ width: 10, backgroundColor: getRandomColor(), height: "100%", }} />
 
                         <View style={{ justifyContent: "space-around", flex: 1, }}>
-                            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 25, color: theme.primaryText, }}>{item?.subject_id?.name}</Text>
+                            <Text style={{ ...Theme.fontStyle.inter.semiBold, fontSize: 25, color: theme.primaryText, }}>{item?.subject_id?.name}</Text>
                             <Text>{classRoom.name}</Text>
                             {item.attendance_sheet &&
                                 <MaterialCommunityIcons name='check-circle' size={25} color={theme.primary} />

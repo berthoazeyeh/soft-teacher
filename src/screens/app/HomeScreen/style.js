@@ -25,9 +25,9 @@ const dynamicStyles = (theme, isSelected) => {
             alignItems: "center"
         },
         classRoomText: {
-            fontSize: 16,
+            fontSize: 14,
             paddingVertical: 3,
-            ...Theme.fontStyle.montserrat.bold,
+            ...Theme.fontStyle.inter.regular,
             color: theme.primaryText
         },
         classRoomContainer: {
@@ -78,9 +78,9 @@ const dynamicStyles = (theme, isSelected) => {
 
         },
         emptyDataText: {
-            fontSize: 14,
+            fontSize: 12,
             paddingVertical: 3,
-            ...Theme.fontStyle.montserrat.semiBold,
+            ...Theme.fontStyle.inter.regular,
             color: theme.primaryText,
             textAlign: "center"
         },
@@ -105,8 +105,8 @@ const dynamicStyles = (theme, isSelected) => {
         },
         title: {
             flex: 1,
-            fontSize: 25,
-            ...Theme.fontStyle.montserrat.bold,
+            fontSize: 16,
+            ...Theme.fontStyle.inter.bold,
             color: "black",
             overflow: "hidden"
         },
@@ -131,7 +131,7 @@ const dynamicStyles = (theme, isSelected) => {
         },
         liveTrackButtomText: {
             color: theme.secondaryText,
-            ...Theme.fontStyle.montserrat.semiBold,
+            ...Theme.fontStyle.inter.semiBold,
         },
         TitleContainer: {
             flex: 1,
@@ -148,19 +148,21 @@ const dynamicStyles = (theme, isSelected) => {
             alignItems: 'center',
         },
         etiquettesItemText: {
-            ...Theme.fontStyle.montserrat.semiBold,
+            fontSize: 12,
+            ...Theme.fontStyle.inter.blackItalic,
             color: theme.secondaryText,
         },
         etiquettesItemText2: {
             paddingHorizontal: 10,
             paddingVertical: 1,
-            ...Theme.fontStyle.montserrat.semiBold,
+            fontSize: 12,
+            ...Theme.fontStyle.inter.semiBold,
             color: theme.secondaryText,
         },
         fieldText: {
             fontSize: 16,
             paddingVertical: 3,
-            ...Theme.fontStyle.montserrat.bold,
+            ...Theme.fontStyle.inter.bold,
             color: theme.primaryText,
         },
     });

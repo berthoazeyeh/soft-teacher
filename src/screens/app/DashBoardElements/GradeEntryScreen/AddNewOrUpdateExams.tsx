@@ -15,6 +15,7 @@ import useSWRMutation from "swr/mutation";
 import { getData, LOCAL_URL, postData, putData } from "apis";
 import HorizontalScrollMenu from "./components/HorizontalScrollMenu ";
 import { useFocusEffect } from "@react-navigation/native";
+import React from "react";
 
 const today = new Date();
 today.setHours(0, 0, 0, 0);

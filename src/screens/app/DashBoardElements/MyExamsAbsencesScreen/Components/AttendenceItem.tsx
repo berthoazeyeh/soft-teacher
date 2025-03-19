@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { Theme } from 'utils';
 interface AttendanceItemProps {
     item: any;
     theme: any;
@@ -166,8 +167,8 @@ const createStyles = (theme: any) => StyleSheet.create({
         alignContent: 'center',
     },
     nameText: {
-        fontFamily: 'Montserrat-SemiBold',
-        fontSize: 20,
+        ...Theme.fontStyle.inter.bold,
+        fontSize: 14,
         color: theme.primaryText,
     },
     statusContainer: {
@@ -182,9 +183,11 @@ const createStyles = (theme: any) => StyleSheet.create({
         paddingVertical: 3,
         alignItems: 'center',
         borderRadius: 5,
+
     },
     statusText: {
-        fontSize: 16,
+        ...Theme.fontStyle.inter.regular,
+        fontSize: 12,
     },
 });
 function splitAttendanceData(data: any) {

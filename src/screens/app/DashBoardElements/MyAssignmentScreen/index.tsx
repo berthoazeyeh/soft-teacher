@@ -9,7 +9,6 @@ import moment from "moment";
 import { AssignmentFiles, ChoseFileScreen, HeaderDashBoad, ScanFileScreen } from "./Components";
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { getData, LOCAL_URL } from "apis";
-import useSWRMutation from "swr/mutation";
 import { I18n } from 'i18n';
 import ImageView from "react-native-image-viewing";
 import Modal from 'react-native-modal';
@@ -19,6 +18,9 @@ import { SafeAreaView } from "react-native";
 import { RefreshControl } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import React from "react";
+import { getAssignmentsByClassroomId } from "services/AssignmentsServices";
+import { db } from "apis/database";
+import { Assignment } from "services/CommonServices";
 
 
 function MyAssignmentScreen(props: any): React.JSX.Element {
@@ -34,7 +36,6 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
     const [modalVisibleB, setModalVisibleB] = useState(false)
     const [visibleImage, setVisibleImage] = useState(false)
     const [curentScanText, setCurentScanText] = useState<any>();
-    const [isExtended, setIsExtended] = useState(true);
     const [refresh, setRefresh] = useState(true);
 
     const [curentImagesView, setCurentImagesView] = useState([{
@@ -48,9 +49,6 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
     },]);
     const [visible, setVisible] = useState(false)
     const styles = dynamicStyles(theme)
-    const { trigger: getStudentCoursesID } = useSWRMutation(`${LOCAL_URL}/api/op.admission/search?domain=[('student_id','=',${classRoom?.id})]`, getData)
-    const { trigger: checkIfStudentHasSubmitAssigment } = useSWRMutation(`${LOCAL_URL}/api/op.admission/search?domain=[('student_id','=',${classRoom?.id})]`, getData)
-
 
     const hideDialog = (v: boolean, doc?: any) => {
         if (doc) {
@@ -77,16 +75,11 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
         }
 
     }
-    const items = [
-        { id: '1', type: 'image', uri: 'https://soft.metuaa.com/web/content/1049', name: 'Image 1' },
-        { id: '2', type: 'image', uri: 'https://static.fnac-static.com/multimedia/Images/FR/NR/f8/8a/cb/13339384/1541-1/tsp20211119084117/Livres-d-exercices-mathematiques-terminale-specialite-et-maths-expertes.jpg', name: 'Image 1' },
-        { id: '6', type: 'file', name: 'Document 1.pdf', uri: 'https://simo.education/pdf2/MTD.pdf' },
-        { id: '7', type: 'image', uri: 'https://img.freepik.com/photos-premium/vue-panoramique-plage-contre-ciel_1048944-16126290.jpg?ga=GA1.1.1593920591.1714745952', name: 'Image 2' },
-    ];
+
 
     const onScroll = ({ nativeEvent }: any) => {
         const currentScrollPosition = Math.floor(nativeEvent.contentOffset.y);
-        setIsExtended(currentScrollPosition <= 0);
+        // setIsExtended(currentScrollPosition <= 0);
     };
 
     const handleButtonPress = (val: boolean, index: number) => {
@@ -97,13 +90,7 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
         }
 
     }
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setIsExtended(prevState => !prevState);
-        }, 3000);
 
-        return () => clearInterval(interval);
-    }, [])
 
     useEffect(() => {
         getStudentAssigment()
@@ -132,28 +119,33 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
         setIsLoading(true)
 
         try {
-            const assigma = await getData(`${LOCAL_URL}/api/assignments/faculty/${user?.id}/${classRoom?.id}`)
+
+            // const assigma = await getData(`${LOCAL_URL}/api/assignments/faculty/${user?.id}`)
+            const assigma = await getAssignmentsByClassroomId(db, classRoom?.id ?? 0)
+            // console.log("assigma1..////....///....///", assigma1);
+
             if (!assigma?.success) {
                 showCustomMessage("Information", assigma.message, "warning", "bottom")
                 return;
             }
             let assigmCorrect: any[] = [];
-            const assigms: any[] = assigma?.success ? assigma?.data : []
+            const assigms: Assignment[] = assigma?.data ?? []
             assigms?.forEach((item) => {
-                console.log(item);
+                // console.log("...", item);
                 assigmCorrect.push({
                     id: item.id,
                     tache: item?.name,
                     date: item?.submission_date,
                     name: item?.subject_id.name,
-                    lieuRemise: item.room_id.name,
+                    lieuRemise: item.room_id?.[0]?.name,
                     description: item?.description,
-                    document: item?.document
+                    document: item?.document,
+                    submision: item.submissions ?? []
                 })
             })
             const sections1 = Object.entries(groupTasksByDate(assigmCorrect));
+            // console.log("getStudentAssigment----", assigms, sections1);
             setAssignment(sections1);
-            console.log("getStudentAssigment----", assigmCorrect.length);
 
         } catch (error: any) {
             showCustomMessage("Information", 'Une erreur s\'est produite :' + error.message, "warning", "bottom")
@@ -171,7 +163,7 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
     }
     return <SafeAreaView style={styles.container}>
         <HeaderDashBoad navigation={navigation} children={classRoom} theme={theme} />
-        <Text style={{ textAlign: "center", ...Theme.fontStyle.montserrat.bold, color: theme.primary, paddingVertical: 5 }}>
+        <Text style={{ textAlign: "center", ...Theme.fontStyle.inter.bold, color: theme.primary, paddingVertical: 5 }}>
             {I18n.t("Home.renderWorkHeader")}
         </Text>
         <View style={{ flex: 1, padding: 10, }}>
@@ -209,7 +201,7 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
                             justifyContent: "center",
                             borderRadius: 30,
                             position: "absolute", top: -15, right: 10, backgroundColor: theme.primaryText,
-                            ...Theme.fontStyle.montserrat.bold
+                            ...Theme.fontStyle.inter.bold
                         }} >
                         <MaterialCommunityIcons name="close-circle-outline" size={20} color={theme.secondaryText} />
                     </TouchableOpacity>
@@ -225,22 +217,39 @@ function MyAssignmentScreen(props: any): React.JSX.Element {
             visible={visibleImage}
             onRequestClose={() => setVisibleImage(false)}
         />
-        <AnimatedFAB
-            icon="plus"
-            label="Ajouter un devoir"
-            extended={isExtended}
-            onPress={() => navigation.navigate("AddAssignmentScreen", { classRoom })}
-            visible={true}
-            animateFrom="right"
-            iconMode="dynamic"
-            color={theme.secondaryText}
-            style={styles.fabStyle}
-
-        />
+        <MyAnimatedFAB navigation={navigation} classRoom={classRoom} />
 
     </SafeAreaView>
 
 }
+
+function MyAnimatedFAB({ navigation, classRoom }: { navigation: any, classRoom: any }): React.JSX.Element {
+
+    const [isExtended, setIsExtended] = useState(true);
+    const theme = useTheme()
+    const styles = dynamicStyles(theme)
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setIsExtended(prevState => !prevState);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, [])
+    return <AnimatedFAB
+        icon="plus"
+        label="Ajouter un devoir"
+        extended={isExtended}
+        onPress={() => navigation.navigate("AddAssignmentScreen", { classRoom })}
+        visible={true}
+        animateFrom="right"
+        iconMode="dynamic"
+        color={theme.secondaryText}
+        style={styles.fabStyle}
+
+    />
+}
+
+
 
 interface createStylesProps {
     theme: any,
@@ -258,8 +267,10 @@ export const TaskItem = ({ theme, item: [date, tasks], hideDialog, visible, rend
     const [assignmentSubmit, setAssignmentSubmit] = useState<any[]>([])
     const [visibleSubmited, setVisibleSubmited] = useState<boolean>(false)
     const [submitNumber, setSubmitNumber] = useState<number>(0)
-    const [loading, setLoading] = useState<boolean>(true)
+    const [loading, setLoading] = useState<boolean>(false)
     const styles = createStyles(theme);
+    // console.log(tasks);
+
     const getAssigmentById = async () => {
         setLoading(true)
         try {
@@ -281,9 +292,9 @@ export const TaskItem = ({ theme, item: [date, tasks], hideDialog, visible, rend
             setLoading(false)
         }
     };
-    useEffect(() => {
-        getAssigmentById();
-    }, []);
+    // useEffect(() => {
+    //     getAssigmentById();
+    // }, []);
     return (
         <View style={styles.container}>
             <View style={styles.dateContainer}>
@@ -306,19 +317,19 @@ export const TaskItem = ({ theme, item: [date, tasks], hideDialog, visible, rend
                                 </View>
                                 <View style={styles.statusContainer}>
                                     <Text style={styles.statusText}>
-                                        {"Rendu par"}
+                                        {I18n.t("Dashboard.AssignmentsScreen.submittedBy")}
                                     </Text>
                                     {loading && < ActivityIndicator color={theme.secondary} />}
                                     {
                                         !loading &&
                                         <Text style={styles.statusText1}>
-                                            {submitNumber + ""}{" Personnes"}
+                                            {(item?.submision ?? []).length + " "}{I18n.t("Dashboard.AssignmentsScreen.people")}
                                         </Text>
                                     }
                                 </View>
                             </View>
                             {item.description &&
-                                <Text style={styles.description}>{I18n.t("Dashboard.AssignmentsScreen.descriptionLabel")} <Text style={{ ...Theme.fontStyle.montserrat.regular }}> {item.description}</Text></Text>}
+                                <Text style={styles.description}>{I18n.t("Dashboard.AssignmentsScreen.descriptionLabel")} <Text style={{ ...Theme.fontStyle.inter.regular }}> {item.description}</Text></Text>}
                             {item.description &&
                                 <>
                                     <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
@@ -327,33 +338,24 @@ export const TaskItem = ({ theme, item: [date, tasks], hideDialog, visible, rend
                                         <Text style={styles.dueText}>  {I18n.t("Dashboard.AssignmentsScreen.dueDateLabel")} {item.lieuRemise}</Text>
                                     </View>
                                     {!visibleSubmited &&
-                                        <View style={{ flexDirection: "column", flex: 1, gap: 9 }}>
-                                            <Button
-                                                mode="text"
-                                                style={{ flex: 1 }}
-                                                labelStyle={{ color: theme.secondary }}
+                                        <View style={{ flexDirection: "row", flex: 1, gap: 5, justifyContent: "space-between" }}>
 
-                                                onPress={() => {
-                                                    hideDialog && hideDialog(!visible, item?.document);
-                                                }}
-                                                icon={"eye"}>
-                                                {"Voir les documents du devoirs"}
-                                            </Button>
-                                            <Button
-                                                mode="text"
-                                                style={{ flex: 1, }}
-                                                labelStyle={{ color: theme.secondary }}
+                                            <TouchableOpacity
+                                                style={{ flexDirection: "row", gap: 1, flex: 1, borderColor: theme.gray, borderWidth: 1, paddingHorizontal: 3, borderRadius: 30, paddingVertical: 4 }}
                                                 onPress={async () => {
-
+                                                    hideDialog && hideDialog(!visible, item?.document);
+                                                }}>
+                                                <MaterialCommunityIcons name='eye' size={17} color={theme.secondary} />
+                                                <Text style={{ color: theme.secondary }}> {I18n.t("Dashboard.AssignmentsScreen.documents")}</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                style={{ flexDirection: "row", gap: 1, flex: 1, borderColor: theme.gray, borderWidth: 1, paddingHorizontal: 3, borderRadius: 30, paddingVertical: 4 }}
+                                                onPress={async () => {
                                                     navigation.navigate("AssignmemtRenderStudentListScreen", { classRoom: children, assignment: item })
-
-                                                }}
-                                                icon={"eye"}>
-                                                {"Voir les Devoirs rendus par les eleves"}
-
-
-
-                                            </Button>
+                                                }}>
+                                                <MaterialCommunityIcons name='eye' size={17} color={theme.secondary} />
+                                                <Text style={{ color: theme.secondary }}> {I18n.t("Dashboard.AssignmentsScreen.submittedAssignments")}</Text>
+                                            </TouchableOpacity>
                                         </View>}
                                     {visibleSubmited &&
                                         <FlatList
@@ -376,7 +378,7 @@ export const TaskItem = ({ theme, item: [date, tasks], hideDialog, visible, rend
                                                 })}
                                                 <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 10 }}>
                                                     <Text style={{
-                                                        ...Theme.fontStyle.montserrat.bold
+                                                        ...Theme.fontStyle.inter.bold
                                                     }}>
                                                         {I18n.t("Dashboard.AssignmentsScreen.statusLabel")}  <Text style={{
                                                             color: item?.state === 'accept' ? theme.primary : theme.primaryText
@@ -384,7 +386,7 @@ export const TaskItem = ({ theme, item: [date, tasks], hideDialog, visible, rend
                                                             {item?.state}</Text>
                                                     </Text>
                                                     <Text style={{
-                                                        ...Theme.fontStyle.montserrat.semiBold,
+                                                        ...Theme.fontStyle.inter.semiBold,
                                                         color: theme.primaryText
                                                     }}>{I18n.t("Dashboard.AssignmentsScreen.noteLabel")}  <Text style={{
                                                         color: item?.marks >= 10 ? theme.primary : "red",
@@ -396,7 +398,7 @@ export const TaskItem = ({ theme, item: [date, tasks], hideDialog, visible, rend
                                             }
                                             ListHeaderComponent={() =>
                                                 <View>
-                                                    <Text style={{ color: theme.primary, ...Theme.fontStyle.montserrat.semiBold }}>
+                                                    <Text style={{ color: theme.primary, ...Theme.fontStyle.inter.semiBold }}>
                                                         {I18n.t("Dashboard.AssignmentsScreen.alreadySubmittedHeader")}
                                                     </Text>
                                                 </View>
@@ -433,7 +435,7 @@ const createStyles = (theme: any) => StyleSheet.create({
         marginVertical: 10,
     },
     dateText: {
-        ...Theme.fontStyle.montserrat.semiBold,
+        ...Theme.fontStyle.inter.semiBold,
         color: "black",
     },
     taskContainer: {
@@ -458,11 +460,11 @@ const createStyles = (theme: any) => StyleSheet.create({
     },
 
     subjectText: {
-        ...Theme.fontStyle.montserrat.bold,
+        ...Theme.fontStyle.inter.bold,
         color: theme.primaryText,
     },
     taskText: {
-        ...Theme.fontStyle.montserrat.regular,
+        ...Theme.fontStyle.inter.regular,
         color: theme.primaryText,
     },
     statusContainer: {
@@ -476,12 +478,12 @@ const createStyles = (theme: any) => StyleSheet.create({
 
     },
     statusText: {
-        ...Theme.fontStyle.montserrat.semiBold,
+        ...Theme.fontStyle.inter.semiBold,
         color: theme.primaryText,
         textAlign: "center",
     },
     statusText1: {
-        ...Theme.fontStyle.montserrat.regular,
+        ...Theme.fontStyle.inter.regular,
         color: theme.primary,
         textAlign: "center",
     },
@@ -504,13 +506,13 @@ const createStyles = (theme: any) => StyleSheet.create({
         fontSize: 16,
     },
     dueText: {
-        ...Theme.fontStyle.montserrat.italic,
+        ...Theme.fontStyle.inter.italic,
         color: theme.primaryText,
         textAlign: "right",
         paddingVertical: 10,
     },
     description: {
-        ...Theme.fontStyle.montserrat.semiBold,
+        ...Theme.fontStyle.inter.semiBold,
         color: theme.primaryText,
         textAlign: "left",
         paddingVertical: 10,

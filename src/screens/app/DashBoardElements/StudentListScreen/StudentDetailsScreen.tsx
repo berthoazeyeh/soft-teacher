@@ -10,6 +10,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet } from "react-native";
 import { EducationScreen, GuardiansScreen, StudentProfilScreen, TabNavigator } from "./Components";
+import { Student } from "services/CommonServices";
 
 
 
@@ -19,14 +20,9 @@ import { EducationScreen, GuardiansScreen, StudentProfilScreen, TabNavigator } f
 
 function StudentDetailsScreen(props: any): React.JSX.Element {
     const { navigation, route } = props
-    const { classRoom, student } = route.params
+    const { student }: { student: Student } = route.params
     const theme = useTheme()
-    const [isLoading, setIsLoading] = useState(false)
-    const [showSearch, setShowSearch] = useState(false)
-    const [searchQuery, setSearchQuery] = useState("")
-    const [selectedStudent, setSelectedStudent] = useState<any>(null)
-    const styles = dynamicStyles(theme)
-    const [filteredData, setFilteredData] = useState<any[]>([])
+
     useEffect(() => {
 
     }, [])
@@ -42,14 +38,14 @@ function StudentDetailsScreen(props: any): React.JSX.Element {
                 navigation.goBack()
             }}>
             <MaterialCommunityIcons name='arrow-left' size={25} color={theme.primaryText} />
-            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primary }}>{"Fiche de renseignements"}</Text>
+            <Text style={{ ...Theme.fontStyle.inter.semiBold, fontSize: 16, color: theme.primary }}>{"Fiche de renseignements"}</Text>
 
         </TouchableOpacity>
         <Divider />
         <TabNavigator>
             <StudentProfilScreen student={student} />
             <EducationScreen />
-            <GuardiansScreen />
+            <GuardiansScreen student={student} />
         </TabNavigator>
     </SafeAreaView>
 
@@ -58,24 +54,7 @@ function StudentDetailsScreen(props: any): React.JSX.Element {
 
 
 
-const IdentiteScreen = () => {
-    return (
-        <View style={styles.container}>
-            <Text style={styles.text}>Identité Screen Content</Text>
-        </View>
-    );
-};
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    text: {
-        fontSize: 20,
-    },
-});
 
 
 export default StudentDetailsScreen;

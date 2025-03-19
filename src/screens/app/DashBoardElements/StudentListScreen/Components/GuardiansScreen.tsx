@@ -4,6 +4,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from 'store';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Theme } from 'utils';
+import { Student, ParentInfo as ParentInfo1 } from 'services/CommonServices';
 
 const PersonInfo = ({ person }: any) => {
     const theme = useTheme();
@@ -13,14 +14,14 @@ const PersonInfo = ({ person }: any) => {
         <View style={styles.container}>
             {/* Name */}
             <View style={styles.infoRow}>
-                <View>
+                <View style={{ flex: 1, }}>
 
                     <Text style={styles.label}>{person.name}</Text>
                     <Text style={styles.email}>{person.email}</Text>
                 </View>
-                <View style={{ backgroundColor: theme.gray, padding: 5, paddingHorizontal: 10, borderTopRightRadius: 10, alignItems: "center", alignContent: "center" }}>
+                <View style={{ backgroundColor: theme.gray, padding: 5, height: 30, paddingHorizontal: 10, borderTopRightRadius: 10, alignItems: "center", alignContent: "center" }}>
 
-                    <Text style={styles.labelStatus}>{person.status}</Text>
+                    <Text style={styles.labelStatus}>{person?.relation?.name ?? "  "}</Text>
                 </View>
             </View>
 
@@ -30,8 +31,8 @@ const PersonInfo = ({ person }: any) => {
             <View style={styles.infoRow}>
                 <Text style={styles.labelAddress}>Adresse:</Text>
                 <View style={styles.address}>
-                    <Text style={styles.value}>{person.addressLine1}</Text>
-                    <Text style={styles.value}>{person.addressLine2}</Text>
+                    <Text style={styles.value}>{'--'}</Text>
+                    {/* <Text style={styles.value}>{person.addressLine2}</Text> */}
                 </View>
             </View>
 
@@ -41,7 +42,7 @@ const PersonInfo = ({ person }: any) => {
                 <View style={{ borderColor: theme.gray, borderWidth: 1, padding: 5, paddingHorizontal: 10, borderRadius: 20, flexDirection: "row", gap: 10, alignItems: "center" }}>
 
                     <MaterialCommunityIcons name={"phone-classic"} size={25} color={theme.primary} />
-                    <Text style={styles.value}>{person.phone}</Text>
+                    <Text style={styles.value}>{person.mobile}</Text>
 
                 </View>
             </View>
@@ -55,7 +56,8 @@ const PersonInfo = ({ person }: any) => {
         </View>
     );
 };
-const GuardiansScreen = () => {
+const GuardiansScreen = (props: { student: Student }) => {
+    const { student } = props
     const theme = useTheme();
     const data = [
         {
@@ -83,13 +85,13 @@ const GuardiansScreen = () => {
             email: "martin.jacques@example.com",
         }
     ];
-
-    const renderItem = ({ item }: any) => <PersonInfo person={item} />;
+    // student.parents
+    const renderItem = ({ item }: { item: ParentInfo1 }) => <PersonInfo person={item} />;
     const styles = style(theme)
 
     return (
         <FlatList
-            data={data}
+            data={student?.parents ?? []}
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
             renderItem={renderItem}
@@ -119,36 +121,37 @@ const style = (theme: any) => StyleSheet.create({
     infoRow: {
         flexDirection: 'row',
         marginBottom: 10,
+        flex: 1,
         justifyContent: "space-between",
     },
     label: {
-        fontSize: 16,
+        fontSize: 14,
         marginRight: 10,
-        ...Theme.fontStyle.montserrat.bold,
+        ...Theme.fontStyle.inter.bold,
         color: theme.primaryText
     },
     email: {
         fontSize: 12,
-        ...Theme.fontStyle.montserrat.regular,
+        ...Theme.fontStyle.inter.regular,
         color: theme.primaryText
     },
     value: {
         fontSize: 16,
         marginRight: 10,
-        ...Theme.fontStyle.montserrat.bold,
+        ...Theme.fontStyle.inter.bold,
         color: theme.primaryText
     },
     labelAddress: {
         fontSize: 16,
         marginRight: 10,
-        ...Theme.fontStyle.montserrat.regular,
+        ...Theme.fontStyle.inter.regular,
         color: theme.primaryText
     },
     labelStatus: {
         textAlign: "center",
         fontSize: 16,
         marginRight: 10,
-        ...Theme.fontStyle.montserrat.semiBold,
+        ...Theme.fontStyle.inter.semiBold,
         color: theme.primary
     },
     address: {

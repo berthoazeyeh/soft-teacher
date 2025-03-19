@@ -2,8 +2,10 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useTheme } from 'store';
+import { selectLanguageValue, useTheme } from 'store';
 import { Theme } from 'utils';
+import 'moment/locale/fr';
+import { useSelector } from 'react-redux';
 
 const CustomDatePickerForm = props => {
   const { theme } = props;
@@ -11,6 +13,8 @@ const CustomDatePickerForm = props => {
   const [date, setDate] = useState(
     (props.date && moment(props.date)) || moment(),
   );
+  const language = useSelector(selectLanguageValue);
+
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -18,6 +22,7 @@ const CustomDatePickerForm = props => {
       props.onDateChange(date.toDate());
     }
   }, [date]);
+  moment.locale(language);
 
   const onAndroidChange = (e, selectDate) => {
     setShow(false);
@@ -50,7 +55,7 @@ const CustomDatePickerForm = props => {
       style={styles.containerDatePicker}
       onPress={() => setShow(true)}>
       <View style={styles.viewDatePicker}>
-        <Text style={styles.datePicker}>{props?.date ? moment(props?.date).format('ddd DD MMMM') : moment().format('ddd DD MMMM')}</Text>
+        <Text style={styles.datePicker}>{props?.date ? moment(props?.date).format('dddd DD MMMM') : moment().format('ddd DD MMMM')}</Text>
         {show && renderDatePicker()}
       </View>
     </TouchableOpacity>
@@ -74,8 +79,8 @@ const dynamicStyles = (theme) => {
     },
     datePicker: {
       color: theme.primaryText,
-      ...Theme.fontStyle.montserrat.bold,
-      fontSize: 22,
+      ...Theme.fontStyle.inter.bold,
+      fontSize: 18,
     },
   });
 };

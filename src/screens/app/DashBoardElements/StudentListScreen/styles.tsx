@@ -37,7 +37,6 @@ const dynamicStyles = (theme: any) => {
             flex: 1,
             textAlign: "center",
             fontSize: 17
-
         },
         viewBar: {
             width: 40,
@@ -45,7 +44,6 @@ const dynamicStyles = (theme: any) => {
             borderBottomColor: theme.primaryText,
             borderRadius: 5,
             marginBottom: 20,
-
         },
         emptyDataText: {
             fontSize: 14,
@@ -90,9 +88,49 @@ const dynamicStyles = (theme: any) => {
             padding: 10,
             flex: 1,
         },
+        classRoomText: {
+            fontSize: 14,
+            paddingVertical: 3,
+            ...Theme.fontStyle.inter.blackItalic,
+            color: theme.primaryText
+        },
+        classRoomContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 10,
+            paddingVertical: 10,
+            backgroundColor: 'lightblue',
+            gap: 3,
+        },
+        headerTimeConatiner: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 0,
+            paddingHorizontal: 10,
+            // paddingVertical: 10,
+            backgroundColor: 'lightblue',
+        },
 
+        item: {
+            padding: 5,
+            height: 35,
+            paddingHorizontal: 10,
+            marginHorizontal: 5,
+            backgroundColor: "#ddd",
+            borderRadius: 10,
+            alignItems: "center",
+            justifyContent: "center",
 
-
+        },
+        selectedItem: {
+            backgroundColor: "#007bff",
+        },
+        text: {
+            color: theme.primaryText,
+            fontSize: 14,
+            ...Theme.fontStyle.inter.semiBold,
+        },
     });
 };
 

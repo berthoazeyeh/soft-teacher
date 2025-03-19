@@ -29,28 +29,28 @@ const dynamicStyles = (theme) => {
             borderWidth: 1,
             borderRadius: 5,
             paddingHorizontal: 10,
-            marginVertical: 10,
+            marginVertical: 5,
             backgroundColor: '#fff',
         },
         dateText: {
             color: theme.primaryText,
             fontSize: 16,
-            ...Theme.fontStyle.montserrat.regular
+            ...Theme.fontStyle.inter.regular
         },
         input: {
             borderColor: '#ccc',
             borderWidth: 1,
             borderRadius: 5,
             paddingHorizontal: 10,
-            marginVertical: 10,
+            marginBottom: 10,
             color: theme.primaryText,
             backgroundColor: theme.primaryBackground,
-            ...Theme.fontStyle.montserrat.bold
+            ...Theme.fontStyle.inter.bold
         },
         textdanger1: {
             margin: 2,
             color: 'red',
-            ...Theme.fontStyle.montserrat.italic,
+            ...Theme.fontStyle.inter.italic,
             fontSize: 10,
             marginLeft: 10,
         },
@@ -72,7 +72,7 @@ const dynamicStyles = (theme) => {
             backgroundColor: theme.gray3,
             borderRadius: 10,
         },
-        pickerItemStyle: { color: "black", ...Theme.fontStyle.montserrat.semiBold },
+        pickerItemStyle: { color: "black", ...Theme.fontStyle.inter.semiBold },
         modalContent: {
             justifyContent: 'flex-end',
             alignItems: 'center',
@@ -103,7 +103,7 @@ const dynamicStyles = (theme) => {
         },
         titleBottonSheet: {
             color: theme.primaryText,
-            ...Theme.fontStyle.montserrat.bold,
+            ...Theme.fontStyle.inter.bold,
             letterSpacing: 1,
             marginBottom: 15,
             paddingHorizontal: 20,
@@ -123,7 +123,7 @@ const dynamicStyles = (theme) => {
         emptyDataText: {
             fontSize: 14,
             paddingVertical: 3,
-            ...Theme.fontStyle.montserrat.semiBold,
+            ...Theme.fontStyle.inter.semiBold,
             color: theme.primaryText,
             textAlign: "center"
         },
