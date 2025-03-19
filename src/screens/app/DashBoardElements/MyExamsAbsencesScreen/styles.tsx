@@ -46,7 +46,7 @@ const dynamicStyles = (theme: any) => {
         },
         titleBottonSheet: {
             color: theme.primaryText,
-            ...Theme.fontStyle.montserrat.bold,
+            ...Theme.fontStyle.inter.bold,
             letterSpacing: 1,
             marginBottom: 15,
             paddingHorizontal: 20,
@@ -66,7 +66,7 @@ const dynamicStyles = (theme: any) => {
         emptyDataText: {
             fontSize: 14,
             paddingVertical: 3,
-            ...Theme.fontStyle.montserrat.semiBold,
+            ...Theme.fontStyle.inter.semiBold,
             color: theme.primaryText,
             textAlign: "center"
         },
@@ -126,14 +126,14 @@ const dynamicStyles = (theme: any) => {
         },
         titleText: {
             fontSize: 24,
-            ...Theme.fontStyle.montserrat.bold,
+            ...Theme.fontStyle.inter.bold,
             marginBottom: 15,
             color: theme.primaryText,
             textAlign: "center"
         },
         itemTitleText: {
             fontSize: 20,
-            ...Theme.fontStyle.montserrat.regular,
+            ...Theme.fontStyle.inter.regular,
             marginBottom: 15,
             color: theme.primaryText,
             textAlign: "center"

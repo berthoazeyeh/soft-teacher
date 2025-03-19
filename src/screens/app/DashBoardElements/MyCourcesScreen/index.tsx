@@ -19,14 +19,15 @@ function MyCourcesScreen(props: any): React.JSX.Element {
     const theme = useTheme()
     const [isLoading, setIsLoading] = useState(true);
     const [refresh, setRefresh] = useState(false);
-    const [subjects, setSubject] = useState<any[]>([]);
+    const [subjects, setSubject] = useState<any[]>(classRoom?.subjects ?? []);
     const [selectedDate, setSelectedDate] = useState<any>(null);
     const styles = dynamicStyles(theme)
     const user = useCurrentUser();
     const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/subjects/faculty/${user?.id}/${classRoom?.id}`, getData)
+    // console.log(classRoom);
 
     useEffect(() => {
-        getTeacherSubjectInClassRoom();
+        // getTeacherSubjectInClassRoom();
     }, [refresh])
     const getTeacherSubjectInClassRoom = async () => {
         try {
@@ -65,13 +66,6 @@ function MyCourcesScreen(props: any): React.JSX.Element {
                 <Text style={styles.emptyDataText}>{"Aucun cours present."}</Text>}
         </View>
     );
-    const incrementDate = () => {
-        setSelectedDate((prevDate: any) => moment(prevDate).add(1, 'days'));
-    };
-
-    const decrementDate = () => {
-        setSelectedDate((prevDate: any) => moment(prevDate).subtract(1, 'days'));
-    };
 
 
     return <View style={styles.container}>
@@ -81,12 +75,12 @@ function MyCourcesScreen(props: any): React.JSX.Element {
             }}
         >
             <MaterialCommunityIcons name='arrow-left' size={25} color={theme.primaryText} />
-            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 28, color: theme.primary }}>{classRoom.name}</Text>
+            <Text style={{ ...Theme.fontStyle.inter.semiBold, fontSize: 18, color: theme.primary }}>{classRoom.name} ({subjects.length})</Text>
         </TouchableOpacity>
         <Divider />
 
         {nexScreen && <View style={{ paddingHorizontal: 10, alignItems: "center", backgroundColor: theme.primaryText, paddingVertical: 10, }}        >
-            <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 28, color: theme.secondaryText, textAlign: "center" }}>
+            <Text style={{ ...Theme.fontStyle.inter.semiBold, fontSize: 28, color: theme.secondaryText, textAlign: "center" }}>
                 {"Choisissez un cours"}
             </Text>
         </View>}
@@ -102,18 +96,18 @@ function MyCourcesScreen(props: any): React.JSX.Element {
                     }}
                 />}
             renderItem={({ item, index }) =>
-                <TouchableOpacity
-                    onPress={() => {
-                        if (nexScreen) {
-                            navigation.navigate(nexScreen, { classRoom: classRoom, subject: item })
-                        }
-                    }}
+                <View
+                    // onPress={() => {
+                    //     if (nexScreen) {
+                    //         navigation.navigate(nexScreen, { classRoom: classRoom, subject: item })
+                    //     }
+                    // }}
                     style={{ flexDirection: "row", marginBottom: 20, gap: 20, paddingHorizontal: 20, }}>
                     <View style={{ width: 10, backgroundColor: getRandomColor(), height: 50, }} />
                     <View style={{ justifyContent: "space-around" }}>
-                        <Text style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 25, color: theme.primaryText }}>{item.name}</Text>
+                        <Text style={{ ...Theme.fontStyle.inter.semiBold, fontSize: 16, color: theme.primaryText }}>{item.name}</Text>
                     </View>
-                </TouchableOpacity>
+                </View>
 
             }
             contentContainerStyle={{ paddingVertical: 10, }}

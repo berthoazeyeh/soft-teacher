@@ -17,6 +17,8 @@ import moment from 'moment';
 import useSWRMutation from 'swr/mutation';
 import 'moment/locale/fr';
 import { Animated } from "react-native";
+import { getClassrooms, syncAllClassrooms } from "services";
+import { db } from "apis/database";
 
 function ClassRoomListScreen(props: any): React.JSX.Element {
     const { navigation } = props;
@@ -29,6 +31,8 @@ function ClassRoomListScreen(props: any): React.JSX.Element {
     const [secondaryClassRoom, setSecondaryClassRoom] = useState<any[]>([])
     const [refresh, setRefresh] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
+    const [isLocalLoading, setIsLocalLoading] = useState(false)
+
     const [filteredData, setFilteredData] = useState<any[]>([])
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -45,7 +49,38 @@ function ClassRoomListScreen(props: any): React.JSX.Element {
         });
     }, []);
     const { trigger: getTeacherClassRoome, error, isMutating: isLoading } = useSWRMutation(`${LOCAL_URL}/api/rooms/faculty/${user?.id}`, getData)
+    async function fetchClassrooms() {
+        try {
+            setIsLocalLoading(true)
+            const response = await getClassrooms(db, false, user?.id);
+            const response1 = await getClassrooms(db, true, user?.id);
+
+            if (response.success) {
+                if (response.data) {
+                    setClassRoom([...response.data, ...(response1?.data ?? [])]);
+
+                }
+            } else {
+                console.error("Erreur :", response.error);
+            }
+            if (response1.success) {
+                if (response1.data) {
+                    setSecondaryClassRoom(response1.data);
+                }
+            } else {
+                console.error("Erreur :", response1.error);
+            }
+        } catch (error) {
+            console.error("Erreur lors de la récupération :", error);
+        } finally {
+            setIsLocalLoading(false)
+
+        }
+    }
+
+
     useEffect(() => {
+        fetchClassrooms();
         getTeacherClassRoom();
         setTimeout(() => {
             setRefresh(false);
@@ -81,15 +116,32 @@ function ClassRoomListScreen(props: any): React.JSX.Element {
             const classe = await getTeacherClassRoome();
             if (classe?.success) {
                 const assigms: any = classe?.success ? classe?.data : {}
-                setClassRoom(assigms?.rooms);
-                setSecondaryClassRoom(assigms?.diffuser_rooms)
-                console.log("getTeacherClassRoom------size-------", assigms);
+                syncClassrooms(assigms?.rooms, assigms?.diffuser_rooms)
+                // setClassRoom(assigms?.rooms);
+                // setSecondaryClassRoom(assigms?.diffuser_rooms)
+                // console.log("getTeacherClassRoom------size-------", assigms?.rooms[0]);
             } else {
             }
         } catch (error) {
 
         }
     };
+    function syncClassrooms(data1: any[], data2: any[]) {
+        syncAllClassrooms(data1, db, false, user?.id)
+            .then(result => {
+                console.log("Sync successful:------rooms", result);
+                fetchClassrooms();
+            })
+            .catch(error => console.error("Sync failed:", error));
+        syncAllClassrooms(data2, db, true, user?.id)
+            .then(result => {
+                console.log("Sync successful:-----diffuser_rooms.", result);
+                fetchClassrooms();
+            })
+            .catch(error => console.error("Sync failed:", error));
+
+    }
+
     const onChangeSearch = (query: string) => {
         setSearchQuery(query);
         const filtered = [...classRoom, ...secondaryClassRoom]?.filter((item: any) =>
@@ -99,12 +151,12 @@ function ClassRoomListScreen(props: any): React.JSX.Element {
     };
 
 
-    const renderHeader = (text: string) => (
+    const renderHeader = (text: string, count: number) => (
         <View
             style={styles.logo}>
             <TouchableOpacity
                 style={styles.TitleContainer}>
-                <Text style={styles.fieldText}>{text} ({classRoom?.length})</Text>
+                <Text style={styles.fieldText}>{text} ({count})</Text>
             </TouchableOpacity>
             <Divider />
 
@@ -121,7 +173,7 @@ function ClassRoomListScreen(props: any): React.JSX.Element {
     const renderEmptyStudentElement = () => (
 
         <View style={styles.emptyData}>
-            {isLoading &&
+            {(isLocalLoading) &&
                 <ActivityIndicator color={theme.primary} size={25} />}
             {error &&
                 <Text style={styles.emptyDataText}>{error?.message}</Text>}
@@ -175,7 +227,7 @@ function ClassRoomListScreen(props: any): React.JSX.Element {
             <FlatList
                 scrollEnabled={false}
                 nestedScrollEnabled={false}
-                ListHeaderComponent={() => renderHeader(I18n.t('Home.myClassrooms'))}
+                ListHeaderComponent={() => renderHeader(I18n.t('Home.myClassrooms'), classRoom.length)}
                 data={classRoom}
                 renderItem={({ item, index }) => <ClasseItem
                     item={item}
@@ -193,7 +245,7 @@ function ClassRoomListScreen(props: any): React.JSX.Element {
             <FlatList
                 scrollEnabled={false}
                 nestedScrollEnabled={false}
-                ListHeaderComponent={() => renderHeader("My extra classroom")}
+                ListHeaderComponent={() => renderHeader("My extra classroom", secondaryClassRoom.length)}
                 data={secondaryClassRoom}
                 renderItem={({ item, index }) => <ClasseItem
                     item={item}

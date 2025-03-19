@@ -20,6 +20,7 @@ export default (Component) => (props) => {
         theme={theme}
         language={language}
         I18n={I18n}
+        dispatch={dispatch}
         isDarkMode={isDarkMode()}
         selectedLanguage={language}
         onMapTypeSelect={onMapTypeSelect}

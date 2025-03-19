@@ -79,6 +79,36 @@ const theme = {
                 fontFamily: Platform.OS === 'android' ? 'Montserrat-Italic' : 'Arial',
             },
         },
+        inter: {
+            black: {
+                fontFamily: 'Inter_18pt-Black',
+            },
+            blackItalic: {
+                fontFamily: 'Inter_18pt-BlackItalic',
+            },
+            bold: {
+                fontFamily: 'Inter_18pt-Bold',
+            },
+            extraBold: {
+                fontFamily: 'Inter_18pt-ExtraBold',
+            },
+            semiBold: {
+                fontFamily: 'Inter_18pt-SemiBold',
+            },
+            regular: {
+                fontFamily: 'Inter_18pt-Regular',
+            },
+            thin: {
+                fontFamily: 'Inter_18pt-Thin',
+            },
+            light: {
+                fontFamily: 'Inter_18pt-Light',
+            },
+            italic: {
+                fontFamily: 'Inter_18pt-Italic',
+            },
+        },
+
     },
     icons: {
     },

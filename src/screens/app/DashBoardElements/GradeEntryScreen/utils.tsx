@@ -19,6 +19,24 @@ export const hideHeader = (headerHeight: Animated.Value) => {
 };
 
 
+
+export const hideFilter = (filterHeight: Animated.Value) => {
+    Animated.timing(filterHeight, {
+        toValue: 0,
+        duration: 400,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: false,
+    }).start();
+};
+export const showFilter = (filterHeight: Animated.Value) => {
+    Animated.timing(filterHeight, {
+        toValue: 45,
+        duration: 400,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: false,
+    }).start();
+};
+
 export const getPosition = (classRoom: any,) => {
 
 }

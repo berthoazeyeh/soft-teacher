@@ -22,6 +22,10 @@ import DocumentPicker from 'react-native-document-picker';
 import * as z from 'zod';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import React from "react";
+import { createAssignment, getAssignmentTypes } from "services/AssignmentsServices";
+import { db } from "apis/database";
+import { Assignment, AssignmentType } from "services/CommonServices";
 
 
 const schema = z.object({
@@ -34,7 +38,10 @@ const schema = z.object({
     description: z.string({ required_error: I18n.t('AddAssignmentScreen.error_description.required') })
         .min(5, I18n.t('AddAssignmentScreen.error_description.min')),
     date: z.date({ required_error: I18n.t('AddAssignmentScreen.error_date.required') }),
-    document: z.array(z.any({ required_error: I18n.t('AddAssignmentScreen.error_document.required') }), { required_error: I18n.t('AddAssignmentScreen.error_document.required') }).nonempty(I18n.t('AddAssignmentScreen.error_document.nonempty')),
+
+    document: z.array(z.any()).optional(),
+
+    // document: z.array(z.any({ required_error: I18n.t('AddAssignmentScreen.error_document.required') }), { required_error: I18n.t('AddAssignmentScreen.error_document.required') }).nonempty(I18n.t('AddAssignmentScreen.error_document.nonempty')),
 });
 
 
@@ -45,12 +52,12 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
     const theme = useTheme()
     const user = useCurrentUser()
     const [isLoadingType, setIsLoadingType] = useState(true)
-    const [isLoadingSubject, setIsLoadingSubject] = useState(true)
+    const [isLoadingSubject, setIsLoadingSubject] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [showDatePicker, setShowDatePicker] = useState(false)
     const [showModal, setShowModal] = useState(false)
     const [isScan, setIsScan] = useState<any>(null)
-    const [subjectList, setSubjectList] = useState<any>([])
+    const [subjectList, setSubjectList] = useState<any>(classRoom?.subjects ?? [])
     const [assignmentType, setAssignmentType] = useState<any>([])
 
     const form = useForm({
@@ -60,13 +67,13 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
     const { trigger: createNewAssignment } = useSWRMutation(`${LOCAL_URL}/api/crud/assignment`, postDataDoc)
 
     const styles = dynamicStyles(theme)
-    const { trigger: getAssignmentTypes } = useSWRMutation(`${LOCAL_URL}/api/grading.assignment.type/search`, getData)
+    // const { trigger: getAssignmentTypes } = useSWRMutation(`${LOCAL_URL}/api/grading.assignment.type/search`, getData)
     const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/subjects/faculty/${user?.id}/${classRoom?.id}`, getData)
     // console.log(classRoom);
 
 
     useEffect(() => {
-        getTeacherSubjectInClassRoom();
+        // getTeacherSubjectInClassRoom();
         getAssignmentType()
     }, [])
     const getTeacherSubjectInClassRoom = async () => {
@@ -82,10 +89,10 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
 
                 }
             } else {
-                showCustomMessage(I18n.t('AddAssignmentScreen.info'), subject.message, "warning", "bottom")
+                // showCustomMessage(I18n.t('AddAssignmentScreen.info'), subject.message, "warning", "bottom")
             }
         } catch (err: any) {
-            showCustomMessage(I18n.t('AddAssignmentScreen.info'), I18n.t('AddAssignmentScreen.loadingError') + err.message, "warning", "bottom")
+            // showCustomMessage(I18n.t('AddAssignmentScreen.info'), I18n.t('AddAssignmentScreen.loadingError') + err.message, "warning", "bottom")
             console.error('Une erreur s\'est produite :', err);
         } finally {
             setIsLoadingSubject(false);
@@ -94,11 +101,11 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
     const getAssignmentType = async () => {
         try {
             setIsLoadingType(true);
-            const subject = await getAssignmentTypes();
+            const subject = await getAssignmentTypes(db);
             if (subject?.success) {
-                const data: any[] = subject?.success ? subject?.data : []
+                const data: AssignmentType[] = subject?.data ? subject?.data : []
+                // console.log(data);
                 setAssignmentType(data);
-
             } else {
                 showCustomMessage(I18n.t('AddAssignmentScreen.info'), I18n.t('AddAssignmentScreen.loadingError') + " " + subject.message, "warning", "bottom")
             }
@@ -116,6 +123,31 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
         console.log(data);
 
         setIsLoading(true);
+
+
+        const subject = subjectList.find((item: any) => item.id === data.subject)
+        const type = assignmentType.find((item: any) => item.id === data.type)
+        const newAssignmentData: Assignment = {
+            id: 0,
+            is_local: true,
+            name: data.title,
+            description: data.description,
+            reviewer: "",
+            course_id: { id: classRoom?.course?.id, name: classRoom?.course?.name },
+            subject_id: subject ?? { id: 1, name: "" },
+            submission_date: moment(data.date).format("YYYY-MM-DD HH:mm:ss"),
+            issued_date: moment(data.date).format("YYYY-MM-DD HH:mm:ss"),
+            assignment_type: type ?? data.type,
+            document: data.document?.[0] ?? '',
+            batch_id: 0,
+            active: true,
+            state: "draft",
+            marks: 0,
+            submissions: [],
+            room_id: [{ id: classRoom?.id, name: classRoom?.name }],
+        }
+
+
         const assignmentData = {
             'name': data.title,
             'faculty_id': user.id,
@@ -124,20 +156,23 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
             'description': data.description,
             'submission_date': moment(data.date).format("YYYY-MM-DD HH:mm:ss"),
             'assignment_type': data.type,
-            'document': data.document[0],
+            'document': data.document?.[0],
 
         }
         try {
-            const response = await createNewAssignment(assignmentData);
-            console.log(response);
+            const response = await createAssignment(db, newAssignmentData);
+            showCustomMessage("Succes", response, 'success', "center");
+            navigation.goBack();
+            // const response = await createNewAssignment(assignmentData);
+            // console.log(response);
 
-            if (response?.success) {
-                showCustomMessage("Succes", response.message, 'success', "center");
-                const data = response.data;
-                navigation.goBack();
-            } else {
-                showCustomMessage(I18n.t('AddAssignmentScreen.info'), response?.message, "warning", "bottom")
-            }
+            // if (response?.success) {
+            //     showCustomMessage("Succes", response.message, 'success', "center");
+            //     const data = response.data;
+            //     navigation.goBack();
+            // } else {
+            //     showCustomMessage(I18n.t('AddAssignmentScreen.info'), response?.message, "warning", "bottom")
+            // }
 
         } catch (err: any) {
             showCustomMessage(I18n.t('AddAssignmentScreen.info'), I18n.t('AddAssignmentScreen.loadingError') + err.message, "warning", "bottom")
@@ -192,23 +227,31 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
                 );
                 throw err;
             }
+        } finally {
+            setIsScan(null)
+
         }
     }
 
     const startScanningDocumment = async (onchange: (val: any) => void) => {
         if (await permmition()) {
-            const { scannedImages } = await DocumentScanner.scanDocument({})
-            const nouvelleListe = files;
-            const listeCorrect = scannedImages ? scannedImages.map((element: any) => {
-                return {
-                    "fileCopyUri": element, "name": (element?.toString())?.split("/")[((element?.toString())?.split("/"))?.length - 1], "size": 50693, "type": "image/jpeg", "uri": element
+            try {
+                const { scannedImages } = await DocumentScanner.scanDocument({})
+                const nouvelleListe = files;
+                const listeCorrect = scannedImages ? scannedImages.map((element: any) => {
+                    return {
+                        "fileCopyUri": element, "name": (element?.toString())?.split("/")[((element?.toString())?.split("/"))?.length - 1], "size": 50693, "type": "image/jpeg", "uri": element
+                    }
+                }) : []
+                let listeFusionnee = nouvelleListe ? nouvelleListe.concat(listeCorrect) : listeCorrect;
+                if (scannedImages && scannedImages.length > 0) {
+                    onchange(listeFusionnee)
+                    setFiles(listeFusionnee)
                 }
-            }) : []
-            let listeFusionnee = nouvelleListe ? nouvelleListe.concat(listeCorrect) : listeCorrect;
-
-            if (scannedImages && scannedImages.length > 0) {
-                onchange(listeFusionnee)
-                setFiles(listeFusionnee)
+            } catch (error: any) {
+                console.log(error);
+                showCustomMessage(I18n.t('AddAssignmentScreen.info'), error?.message, "warning", "bottom")
+                setIsScan(null)
             }
         }
     }
@@ -253,7 +296,7 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
                 }
             </View>
             <Picker
-                itemStyle={{ color: theme.primaryText, ...Theme.fontStyle.montserrat.bold }}
+                itemStyle={{ color: theme.primaryText, ...Theme.fontStyle.inter.bold }}
                 selectedValue={selectedValue}
                 onValueChange={(itemValue) => setSelectedValue(itemValue)}
                 style={styles.picker}>
@@ -276,7 +319,7 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
         <HeaderDashBoad navigation={navigation} children={classRoom} theme={theme} />
         <ScrollView style={styles.content}>
 
-            <Text style={{ textAlign: "center", ...Theme.fontStyle.montserrat.bold, color: theme.primary, paddingVertical: 15, fontSize: 18, }}>
+            <Text style={{ textAlign: "center", ...Theme.fontStyle.inter.bold, color: theme.primary, paddingVertical: 15, fontSize: 18, }}>
                 {I18n.t('AddAssignmentScreen.createNewAssignment')}
             </Text>
             <Controller
@@ -284,6 +327,9 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
                 name="subject"
                 render={({ field, fieldState }) => {
                     return <View >
+                        <Text style={{ ...Theme.fontStyle.inter.regular, color: theme.primaryText, paddingBottom: 5, fontSize: 14, }}>
+                            {I18n.t('AddAssignmentScreen.chooseCourse')}
+                        </Text>
                         {renderHeader(subjectList, field.value, field.onChange, I18n.t('AddAssignmentScreen.chooseCourse'), isLoadingSubject)}
                         {fieldState.invalid && <Text style={styles.textdanger1}>{fieldState?.error?.message}</Text>}
                     </View>
@@ -293,6 +339,9 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
                 name="type"
                 render={({ field, fieldState }) => {
                     return <View >
+                        <Text style={{ ...Theme.fontStyle.inter.regular, color: theme.primaryText, paddingBottom: 5, fontSize: 14, }}>
+                            {I18n.t('AddAssignmentScreen.chooseExerciseType')}
+                        </Text>
                         {renderHeader(assignmentType, field.value, field.onChange, I18n.t('AddAssignmentScreen.chooseExerciseType'), isLoadingType)}
                         {fieldState.invalid && <Text style={styles.textdanger1}>{fieldState?.error?.message}</Text>}
                     </View>
@@ -304,6 +353,9 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
                 name="title"
                 render={({ field, fieldState }) => {
                     return <View >
+                        <Text style={{ ...Theme.fontStyle.inter.regular, color: theme.primaryText, paddingBottom: 0, fontSize: 14, }}>
+                            {I18n.t('AddAssignmentScreen.assignmentTitle')}
+                        </Text>
                         <TextInput
                             placeholder={I18n.t('AddAssignmentScreen.assignmentTitle')}
                             value={field.value || ''}
@@ -323,6 +375,9 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
                 name="description"
                 render={({ field, fieldState }) => {
                     return <View >
+                        <Text style={{ ...Theme.fontStyle.inter.regular, color: theme.primaryText, paddingBottom: 0, fontSize: 14, }}>
+                            {I18n.t('AddAssignmentScreen.assignmentDescription')}
+                        </Text>
                         <TextInput
                             placeholder={I18n.t('AddAssignmentScreen.assignmentDescription')}
                             value={field.value || ''}
@@ -345,6 +400,9 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
                 name="date"
                 render={({ field, fieldState }) => {
                     return <View >
+                        <Text style={{ ...Theme.fontStyle.inter.regular, color: theme.primaryText, paddingBottom: 0, fontSize: 14, }}>
+                            {I18n.t('AddAssignmentScreen.chooseEndDate')}
+                        </Text>
                         <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateInput}>
                             <MaterialCommunityIcons name="calendar-today" size={20} color={theme.primary} />
                             <Text style={styles.dateText}>
@@ -480,7 +538,7 @@ const createStyles = (theme: any) => StyleSheet.create({
         marginVertical: 10,
     },
     dateText: {
-        ...Theme.fontStyle.montserrat.semiBold,
+        ...Theme.fontStyle.inter.semiBold,
         color: "black",
     },
     taskContainer: {
@@ -505,11 +563,11 @@ const createStyles = (theme: any) => StyleSheet.create({
     },
 
     subjectText: {
-        ...Theme.fontStyle.montserrat.bold,
+        ...Theme.fontStyle.inter.bold,
         color: theme.primaryText,
     },
     taskText: {
-        ...Theme.fontStyle.montserrat.regular,
+        ...Theme.fontStyle.inter.regular,
         color: theme.primaryText,
     },
     statusContainer: {
@@ -523,12 +581,12 @@ const createStyles = (theme: any) => StyleSheet.create({
 
     },
     statusText: {
-        ...Theme.fontStyle.montserrat.semiBold,
+        ...Theme.fontStyle.inter.semiBold,
         color: theme.primaryText,
         textAlign: "center",
     },
     statusText1: {
-        ...Theme.fontStyle.montserrat.regular,
+        ...Theme.fontStyle.inter.regular,
         color: theme.primary,
         textAlign: "center",
     },
@@ -551,13 +609,13 @@ const createStyles = (theme: any) => StyleSheet.create({
         fontSize: 16,
     },
     dueText: {
-        ...Theme.fontStyle.montserrat.italic,
+        ...Theme.fontStyle.inter.italic,
         color: theme.primaryText,
         textAlign: "right",
         paddingVertical: 10,
     },
     description: {
-        ...Theme.fontStyle.montserrat.semiBold,
+        ...Theme.fontStyle.inter.semiBold,
         color: theme.primaryText,
         textAlign: "left",
         paddingVertical: 10,

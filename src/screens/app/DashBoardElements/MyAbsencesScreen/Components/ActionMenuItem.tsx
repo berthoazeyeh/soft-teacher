@@ -5,6 +5,9 @@ import { View, StyleSheet } from 'react-native';
 import { Menu, Button, Provider } from 'react-native-paper';
 import { useTheme } from 'store';
 import { Theme } from 'utils';
+import { I18n } from 'i18n';
+
+
 
 interface AttendanceMenuProps {
     markAllPresent: () => void;
@@ -16,7 +19,8 @@ const AttendanceMenuButton: React.FC<AttendanceMenuProps> = ({ markAllPresent, m
     const theme = useTheme();
     const openMenu = () => setVisible(true);
     const closeMenu = () => setVisible(false);
-
+    const MyLables: any = I18n.t("Dashboard.AttendanceMenuButton")
+    console.log(MyLables);
     return (
 
         <View style={styles.container}>
@@ -24,7 +28,6 @@ const AttendanceMenuButton: React.FC<AttendanceMenuProps> = ({ markAllPresent, m
                 visible={visible}
                 onDismiss={closeMenu}
                 contentStyle={{ backgroundColor: theme.primaryBackground, }}
-
                 anchor={
                     <TouchableOpacity
                         onPress={openMenu}
@@ -34,16 +37,13 @@ const AttendanceMenuButton: React.FC<AttendanceMenuProps> = ({ markAllPresent, m
                             ...Theme.fontStyle.montserrat.regular,
                             color: 'white',
                             textAlign: "center"
-                        }}>Gérer la Présence</Text>
-
+                        }}>{MyLables?.manageAttendance}</Text>
                     </TouchableOpacity>
-
-                }
-            >
+                } >
                 <Menu.Item
                     titleStyle={{
                         fontWeight: "bold", textAlign: "center", color: theme.primary,
-                        ...Theme.fontStyle.montserrat.regular,
+                        ...Theme.fontStyle?.montserrat.regular,
                     }}
 
                     onPress={() => {
@@ -51,7 +51,7 @@ const AttendanceMenuButton: React.FC<AttendanceMenuProps> = ({ markAllPresent, m
                         closeMenu();
                     }}
 
-                    title="Tout marquer Présent"
+                    title={MyLables.markAllPresent}
                     leadingIcon="check-circle"
                 />
                 <Menu.Item
@@ -64,7 +64,7 @@ const AttendanceMenuButton: React.FC<AttendanceMenuProps> = ({ markAllPresent, m
                         markAllAbsent();
                         closeMenu();
                     }}
-                    title="Tout marquer Absent"
+                    title={MyLables?.markAllAbsent}
                     leadingIcon="cancel"
                 />
             </Menu>

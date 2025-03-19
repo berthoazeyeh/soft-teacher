@@ -5,10 +5,13 @@ import { Divider } from "react-native-paper";
 import { profils, Theme } from "utils";
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { I18n } from "i18n";
+import React from "react";
 
 function StudentProfilScreen(props: any): React.JSX.Element {
     const { student } = props
     const theme = useTheme()
+    // console.log(student);
+
     const list = I18n.t("Dashboard.studentProfile.studentInfo")
     type GenderKey = 'm' | 'f';
     const sexe: Record<GenderKey, string> = {
@@ -54,7 +57,7 @@ function StudentProfilScreen(props: any): React.JSX.Element {
         },
         {
             key: "adresse",
-            value: "Foto Dschang, Ouest Cameroun",
+            value: "--",
             labels: list[6],
             icon: "home"
         }
@@ -138,14 +141,18 @@ const styles = (theme: any) => StyleSheet.create({
     },
     label: {
         flex: 1,
-        ...Theme.fontStyle.montserrat.bold,
-        color: theme.primaryText
+        ...Theme.fontStyle.inter.bold,
+        color: theme.primaryText,
+        fontSize: 13,
+
     },
     value: {
         textAlign: "center",
-        ...Theme.fontStyle.montserrat.semiBold,
+        ...Theme.fontStyle.inter.regular,
         color: theme.primaryText,
         flex: 2,
+        fontSize: 12,
+
     },
     column: {
         justifyContent: "space-evenly",
@@ -175,15 +182,15 @@ const styles = (theme: any) => StyleSheet.create({
     },
 
     title: {
-        ...Theme.fontStyle.montserrat.bold,
+        ...Theme.fontStyle.inter.bold,
         color: theme.primaryText,
-        fontSize: 18,
+        fontSize: 16,
 
     },
     name: {
-        ...Theme.fontStyle.montserrat.bold,
+        ...Theme.fontStyle.inter.bold,
         color: theme.primaryText,
-        fontSize: 18,
+        fontSize: 15,
 
     },
     headerContentText: {

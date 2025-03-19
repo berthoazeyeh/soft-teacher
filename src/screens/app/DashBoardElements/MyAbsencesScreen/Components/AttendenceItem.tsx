@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AttendanceDataItem } from '..';
+import { formatName, Theme } from 'utils';
+import { StudentAttendances } from 'services/CommonServices';
 interface AttendanceItemProps {
-    item: any;
+    item: StudentAttendances;
     attendanceDataList: AttendanceDataItem[];
     theme: any;
     setSelectedStudent: (student: any, data: any[]) => void; // If you have a specific type for student, you can define it instead of `any`
@@ -31,7 +33,6 @@ const AttendanceItem = ({ attendanceDataList, item, theme, setSelectedStudent, s
         <View
             style={styles.itemContainer}>
             <View style={styles.imageContainer}>
-
                 {attendanceDataItem === null && <Image source={{ uri: item.avatar }}
                     style={[styles.image, {
 
@@ -42,11 +43,14 @@ const AttendanceItem = ({ attendanceDataList, item, theme, setSelectedStudent, s
 
                         borderColor: getColorBorder(attendanceDataItem, theme).backgroundColor
                     }]} />}
+
+                {item.is_invited && <View style={{ width: 40 }}>
+                    <Text numberOfLines={1} style={{ ...Theme.fontStyle.inter.blackItalic, fontSize: 10, overflow: "hidden" }}>{item.home_class?.name} </Text>
+                </View>}
             </View>
 
             <View style={styles.detailsContainer}>
-                <Text style={styles.nameText}>{item.name}</Text>
-
+                <Text style={styles.nameText}>{formatName(item.name)}</Text>
                 <View style={styles.statusContainer}>
                     {attendanceDataItem === null && item?.attendance_line && (
                         <>{
@@ -170,7 +174,7 @@ const AttendanceItem = ({ attendanceDataList, item, theme, setSelectedStudent, s
                             }
                             setModalVisible(true);
                         }}>
-                        <MaterialCommunityIcons name='dots-horizontal-circle' size={35} color={theme.gray4} />
+                        <MaterialCommunityIcons name='dots-horizontal-circle' size={20} color={theme.gray4} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -192,21 +196,21 @@ const createStyles = (theme: any) => StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: theme.gray,
         paddingBottom: 10,
-        alignItems: 'center',
+        // alignItems: 'center',
     },
     imageContainer: {
-        width: 55,
-        height: 55,
-        borderRadius: 50,
+        width: 42,
+        height: 42,
+        borderRadius: 5,
         // borderWidth: 1,
         backgroundColor: theme.gray,
         alignItems: "center",
     },
     image: {
-        width: 55,
+        width: 40,
         borderWidth: 2,
         borderColor: "red",
-        height: 55,
+        height: 40,
         borderRadius: 50,
         backgroundColor: 'transparent',
     },
@@ -217,9 +221,9 @@ const createStyles = (theme: any) => StyleSheet.create({
         alignContent: 'center',
     },
     nameText: {
-        fontFamily: 'Montserrat-SemiBold',
-        fontSize: 20,
+        fontSize: 14,
         color: theme.primaryText,
+        ...Theme.fontStyle.inter.semiBold,
     },
     statusContainer: {
         flexDirection: 'row',
@@ -235,7 +239,9 @@ const createStyles = (theme: any) => StyleSheet.create({
         borderRadius: 5,
     },
     statusText: {
-        fontSize: 16,
+        fontSize: 12,
+        ...Theme.fontStyle.inter.regular,
+
     },
 });
 function splitAttendanceData(data: any) {

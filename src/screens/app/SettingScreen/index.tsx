@@ -9,11 +9,16 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import whitPropsAll from "./whitPropsAll";
 import dynamicStyles from "./style";
 import { Header } from "components";
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { clearUserStored, updateSyncing } from "store";
+import { clearCustomTables } from "apis/database";
+import { useDispatch } from "react-redux";
 
 interface Props {
     navigation: any;
     I18n: any;
     theme: any;
+    dispatch: any;
     isDarkMode: boolean;
     onThemeChange: (isDarkMode: boolean) => void;
 }
@@ -74,7 +79,7 @@ class SettingsScreen extends Component<Props, State> {
     };
 
     render() {
-        const { I18n, theme, navigation } = this.props;
+        const { I18n, theme, navigation, dispatch } = this.props;
         const { changeTheme } = this.state;
         const {
             screenTitle,
@@ -85,6 +90,7 @@ class SettingsScreen extends Component<Props, State> {
             darkModeSwitch,
         } = I18n.t("SettingsScreen");
         const styles = dynamicStyles(theme);
+
         return (
             <View style={styles.container1}>
                 <Header theme={theme} title={screenTitle} navigation={navigation} />
@@ -141,6 +147,45 @@ class SettingsScreen extends Component<Props, State> {
                         />
                         <Text style={styles.primaryText}>{darkModeSwitch}</Text>
                     </TouchableOpacity>
+
+                    <TouchableOpacity
+                        activeOpacity={0.8}
+                        style={styles.button}
+                        onPress={async () => {
+                            dispatch(clearUserStored(null))
+                            await clearCustomTables(["users", "student_subject", "student_classroom", "assignment_types", "assignment_types", "assignments", "assignment_rooms", "attendanceLine", "students", "sessions", "classrooms"]);
+
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'AuthStacks' }],
+                            });
+                            dispatch(updateSyncing(true))
+                            console.log("log out");
+                        }}
+                    >
+                        <MaterialCommunityIcons name="database-alert-outline" size={24} style={styles.icon} />
+                        <Text style={styles.primaryText}>{'Netoyer mes données'}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        activeOpacity={0.8}
+                        style={styles.button}
+                        onPress={async () => {
+                            dispatch(clearUserStored(null))
+                            // await clearCustomTables(["users", "student_subject", "student_classroom", "assignment_types", "assignment_types", "assignments", "assignment_rooms", "attendanceLine", "students", "sessions", "classrooms"]);
+
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'AuthStacks' }],
+                            });
+                            dispatch(updateSyncing(true))
+                            console.log("log out");
+                        }}
+                    >
+                        <MaterialCommunityIcons name="logout" size={24} style={styles.icon} />
+                        <Text style={styles.primaryText}>{I18n.t('logout')}</Text>
+                    </TouchableOpacity>
+
+
                 </View>
             </View>
         );

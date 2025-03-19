@@ -19,8 +19,8 @@ const dynamicStyles = (theme) => {
             width: "89%",
 
         },
-        pickerItemStyle: { color: "black", ...Theme.fontStyle.montserrat.bold },
-        pickerItemStyle1: { color: "#4B7895", ...Theme.fontStyle.montserrat.bold, },
+        pickerItemStyle: { color: "black", ...Theme.fontStyle.inter.bold },
+        pickerItemStyle1: { color: "#4B7895", ...Theme.fontStyle.inter.bold, },
         column: {
             justifyContent: 'space-between',
         },
@@ -36,11 +36,12 @@ const dynamicStyles = (theme) => {
             width: (windowWidth - 30) / 2,
         },
         itemText: {
-            fontSize: 16,
+            fontSize: 14,
             color: theme.secondaryText,
             paddingHorizontal: 5,
+            paddingVertical: 5,
             textAlign: 'center',
-            ...Theme.fontStyle.montserrat.regular
+            ...Theme.fontStyle.inter.regular
         },
         itemTextlabels: {
             fontSize: 14,
@@ -94,7 +95,7 @@ const dynamicStyles = (theme) => {
         },
         selectedPageText: {
             color: theme.primaryText,
-            ...Theme.fontStyle.montserrat.regular
+            ...Theme.fontStyle.inter.regular
 
         },
     });

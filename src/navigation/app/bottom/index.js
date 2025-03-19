@@ -29,6 +29,8 @@ const HomeBottomTabNavigation = () => {
                 tabBarAndroidRipple: {
                     color: "#ffffff"
                 },
+                tabBarIconStyle: { width: 80 },
+
                 tabBarStyle: { backgroundColor: theme.primaryBackground, paddingBottom: 5, paddingTop: 5, },
             }}
         >

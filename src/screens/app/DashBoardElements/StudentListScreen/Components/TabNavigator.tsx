@@ -57,14 +57,13 @@ const style = (theme: any) => StyleSheet.create({
     },
     tabText: {
         color: theme.primaryText,
-        ...Theme.fontStyle.montserrat.semiBold,
-        fontSize: 14,
+        ...Theme.fontStyle.inter.semiBold,
+        fontSize: 13,
     },
     activeTabText: {
         color: "blue",
-        fontWeight: 'bold',
-        ...Theme.fontStyle.montserrat.semiBold,
-        fontSize: 18,
+        ...Theme.fontStyle.inter.semiBold,
+        fontSize: 16,
     },
     indicator: {
         position: 'absolute',

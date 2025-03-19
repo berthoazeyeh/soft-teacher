@@ -8,28 +8,34 @@ import { useDispatch } from "react-redux";
 import { ThemeActionTypes } from "store/actions/ThemeAction";
 import { useColorScheme } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { clearTables, createAllTable, db, dropCustomTables, dropTables } from "apis/database";
+import { getClassroomsTMP } from "services";
 
 
 
 
 const Welcome = (props) => {
-    const theme = useTheme()
-    const { navigation } = props
-    const dispatch = useDispatch()
+    const theme = useTheme();
+    const { navigation } = props;
+    const dispatch = useDispatch();
     const user = useCurrentUser();
     useEffect(() => {
-        tryToLoginParents()
-        // console.log("user------------", user);
+        tryToLoginParents();
+        console.log("user------------", user);
     }, [navigation]);
     const scheme = useColorScheme();
 
 
+    const createAllTables = async () => {
+        // const res = await dropTables(db);
+        // const res = await dropCustomTables(["assignment_types", "assignment_types", "assignments", "assignment_rooms", "attendanceLine", "students", "sessions", "classrooms"]);
+        // console.log(res);
 
+    }
 
 
 
     useEffect(() => {
-
         dispatch({ type: ThemeActionTypes.SET_SYSTEM_THEME, payload: scheme });
 
     }, [dispatch, scheme]);
@@ -38,11 +44,18 @@ const Welcome = (props) => {
 
     const tryToLoginParents = async () => {
         try {
+            await createAllTables();
+            await createAllTable(db);
             const user_Parent_Id = user?.id
             if (!user_Parent_Id) {
 
                 navigation.navigate("LoginScreen");
                 return;
+            } else {
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'AppStacks' }],
+                })
             }
             const response = await getDataM(`${LOCAL_URL}/api/op.parent/${user_Parent_Id}`)
             if (response?.success) {

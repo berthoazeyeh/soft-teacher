@@ -1,6 +1,6 @@
 import { useEffect, useState, } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { clearUserStored, useCurrentUser, useTheme } from 'store';
+import { clearUserStored, updateSyncing, useCurrentUser, useTheme } from 'store';
 import dynamicStyles from './style';
 import { Header } from './components';
 import { I18n } from 'i18n';
@@ -16,6 +16,9 @@ import useSWR from 'swr';
 import { useIsFocused } from '@react-navigation/native';
 import { RefreshControl } from 'react-native';
 import useSWRMutation from 'swr/mutation';
+import React from 'react';
+import { getClassrooms, syncAllClassrooms } from 'services';
+import { clearCustomTables, db } from 'apis/database';
 
 
 
@@ -33,22 +36,23 @@ function DashBoardScreen(props: any): React.JSX.Element {
     const user = useCurrentUser();
     const [classRoom, setClassRoom] = useState<any[]>([])
     const [refresh, setRefresh] = useState(false)
+    const [isLocalLoading, setIsLocalLoading] = useState(false)
     const isFocused = useIsFocused();
     const [secondaryClassRoom, setSecondaryClassRoom] = useState<any[]>([])
     let ElementList = I18n.t("Dashboard.ElementList");
-    const { data: rooms, error, isLoading } = useSWR(`${LOCAL_URL}/api/rooms/faculty/${user?.id}`,
-        getData,
-        {
-            refreshInterval: 100000,
-            refreshWhenHidden: true,
-        },
-    );
+    // const { data: rooms, error, isLoading } = useSWR(`${LOCAL_URL}/api/rooms/faculty/${user?.id}`,
+    //     getData,
+    //     {
+    //         refreshInterval: 100000,
+    //         refreshWhenHidden: true,
+    //     },
+    // );
 
     const { trigger: getTeacherClassRoome } = useSWRMutation(`${LOCAL_URL}/api/rooms/faculty/${user?.id}`, getData)
     useEffect(() => {
-        HandleGetStudent()
+
+        fetchClassrooms()
     }, [refresh])
-    // console.log(classRoom);
 
     const HandleGetStudent = async () => {
         try {
@@ -69,57 +73,108 @@ function DashBoardScreen(props: any): React.JSX.Element {
 
         }
     }
+    async function fetchClassrooms() {
+        try {
+            setIsLocalLoading(true)
+            const response = await getClassrooms(db, false, user?.id);
+            const response1 = await getClassrooms(db, true, user?.id);
+
+            if (response.success) {
+                if (response.data) {
+                    setClassRoom([...response.data, ...(response1?.data ?? [])]);
+
+                }
+            } else {
+                console.error("Erreur :", response.error);
+            }
+            if (response1.success) {
+                if (response1.data) {
+                    setSecondaryClassRoom(response1.data);
+                }
+            } else {
+                console.error("Erreur :", response1.error);
+            }
+        } catch (error) {
+            console.error("Erreur lors de la récupération :", error);
+        } finally {
+            setIsLocalLoading(false)
+            setRefresh(false);
+
+        }
+    }
+    // function syncClassrooms() {
+    //     if (rooms?.success)
+    //         if (rooms && rooms.data) {
+    //             syncAllClassrooms(rooms?.data?.rooms ?? [], db, false, user?.id)
+    //                 .then(result => {
+    //                     console.log("Sync successful:------rooms", result);
+    //                     fetchClassrooms();
+    //                 })
+    //                 .catch(error => console.error("Sync failed:", error));
+    //             syncAllClassrooms(rooms?.data?.diffuser_rooms ?? [], db, true, user?.id)
+    //                 .then(result => {
+    //                     console.log("Sync successful:-----diffuser_rooms.", result);
+    //                     fetchClassrooms();
+    //                 })
+    //                 .catch(error => console.error("Sync failed:", error));
+    //         }
+    // }
 
     useEffect(() => {
         if (route.params && route.params?.clasRoom) {
             setSelectedValue(route.params.clasRoom?.id)
         }
-    }, [rooms, navigation, route.params?.clasRoom?.id])
+    }, [navigation, route.params?.clasRoom?.id])
 
     useEffect(() => {
         if (isFocused) {
-
-            if (rooms?.success)
-                if (rooms && rooms.data) {
-                    const second: any[] = rooms?.data?.diffuser_rooms;
-                    const second1 = second.map(room => {
-                        return { ...room, isSecondary: true }
-                    });
-                    setClassRoom([...rooms?.data?.rooms, ...second1]);
-                    setSecondaryClassRoom(rooms?.data?.diffuser_rooms)
-                }
+            // fetchClassrooms();
+            // syncClassrooms();
+            // fetchClassrooms();
+            // if (rooms?.success)
+            //     if (rooms && rooms.data) {
+            //         const second: any[] = rooms?.data?.diffuser_rooms;
+            //         const second1 = second.map(room => {
+            //             return { ...room, isSecondary: true }
+            //         });
+            //         setClassRoom([...rooms?.data?.rooms, ...second1]);
+            //         setSecondaryClassRoom(rooms?.data?.diffuser_rooms)
+            //     }
         }
-    }, [isFocused, rooms]);
+    }, [isFocused]);
 
 
     const onMenuPressed = (val: boolean) => {
         setVisible(val)
     }
-    const onLogoutPressed = (isSetting: boolean) => {
+    const onLogoutPressed = async (isSetting: boolean) => {
         setVisible(false)
         if (isSetting) {
             navigation.navigate("SettingsScreenStacks")
         } else {
             dispatch(clearUserStored(null))
+            // await clearCustomTables(["assignment_types", "assignment_types", "assignments", "assignment_rooms", "attendanceLine", "students", "sessions", "classrooms"]);
+
             navigation.reset({
                 index: 0,
                 routes: [{ name: 'AuthStacks' }],
-            })
+            });
+            dispatch(updateSyncing(true))
             console.log("log out");
         }
     }
     const renderHeader = () => (<>
         <View style={styles.header}>
             <View style={styles.profil}>
-                {isLoading &&
+                {(isLocalLoading) &&
                     <ActivityIndicator color={"green"} size={25} />
                 }
-                {!isLoading &&
+                {(!isLocalLoading) &&
                     <MaterialCommunityIcons name={"school"} size={20} color={theme.primaryText} />
                 }
             </View>
             <Picker
-                itemStyle={{ color: theme.primaryText, ...Theme.fontStyle.montserrat.bold }}
+                itemStyle={{ color: theme.primaryText, ...Theme.fontStyle.inter.bold }}
                 selectedValue={selectedValue}
                 onValueChange={(itemValue) => setSelectedValue(itemValue)}
                 style={styles.picker}>
@@ -162,8 +217,8 @@ function DashBoardScreen(props: any): React.JSX.Element {
         { id: 5, color: 'green', haveBadge: true, name: I18n.t("Dashboard.Elems.attendanceTracking"), icon: 'clipboard-list', screen: 'CourcesListeScreen' },
         { id: 6, color: theme.primaryText, haveBadge: false, name: I18n.t("Dashboard.Elems.gradeEntry"), icon: 'book-open-variant', screen: 'GradeEntryScreen' },
         { id: 7, color: theme.primaryText, haveBadge: true, name: I18n.t("Dashboard.Elems.examsAndAttendance"), icon: 'library', screen: 'ExamsListeScreen' },
-        { id: 8, color: "green", haveBadge: true, name: I18n.t("Dashboard.Elems.notebook"), icon: 'pencil', screen: 'NotebookScreen' },
-        { id: 9, color: "green", haveBadge: true, name: I18n.t("Dashboard.Elems.pastReportCards"), icon: 'library', screen: 'PastReportCardsScreen' }
+        // { id: 8, color: "green", haveBadge: true, name: I18n.t("Dashboard.Elems.notebook"), icon: 'pencil', screen: 'NotebookScreen' },
+        // { id: 9, color: "green", haveBadge: true, name: I18n.t("Dashboard.Elems.pastReportCards"), icon: 'library', screen: 'PastReportCardsScreen' }
     ];
 
     const handlePagePress = (pageNum: number) => {
@@ -180,16 +235,7 @@ function DashBoardScreen(props: any): React.JSX.Element {
                 console.log(selectedValue);
 
                 if (selectedValue) {
-                    // if (item.screen === "GradeEntryScreen") {
 
-                    //     navigation.navigate('DashboadElementStacks', {
-                    //         screen: "MyCourcesScreen",
-                    //         params: {
-                    //             classRoom: classRoom.find((item: any) => item.id === selectedValue),
-                    //             nexScreen: "GradeEntryScreen"
-                    //         },
-                    //     });
-                    // } else
 
                     if (item.screen === "CourcesListeScreen") {
 
@@ -215,13 +261,13 @@ function DashBoardScreen(props: any): React.JSX.Element {
                 }
             }}
             style={[styles.item, { backgroundColor: item.color }]}>
-            {item.haveBadge &&
+            {/* {item.haveBadge &&
                 <View style={{ alignSelf: "flex-end", backgroundColor: theme.primaryText, height: 20, borderRadius: 5 }}>
                     <Text style={styles.itemTextlabels}>{0}</Text>
                 </View>
-            }
+            } */}
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                <MaterialCommunityIcons name={item.icon} size={60} color="white" />
+                <MaterialCommunityIcons name={item.icon} size={40} color="white" />
                 <Text style={styles.itemText}>{item.name}</Text>
             </View>
         </TouchableOpacity>

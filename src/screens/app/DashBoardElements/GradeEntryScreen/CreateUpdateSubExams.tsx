@@ -139,8 +139,8 @@ const CreateUpdateSubExams = (props: any): React.JSX.Element => {
 
     return <View style={styles.container}>
         <View style={{ margin: 10, backgroundColor: theme.gray, justifyContent: "center", borderRadius: 10, padding: 10, }}>
-            <Text style={{ textAlign: "center", ...Theme.fontStyle.montserrat.bold, color: theme.primaryText, fontSize: 16 }}>{exam?.session_id?.name} - {label?.toUpperCase()}   </Text>
-            <Text style={{ textAlign: "center", ...Theme.fontStyle.montserrat.regular, color: theme.primaryText, fontSize: 16 }}>  {items ? items.name : ''}</Text>
+            <Text style={{ textAlign: "center", ...Theme.fontStyle.inter.bold, color: theme.primaryText, fontSize: 16 }}>{exam?.session_id?.name} - {label?.toUpperCase()}   </Text>
+            <Text style={{ textAlign: "center", ...Theme.fontStyle.inter.regular, color: theme.primaryText, fontSize: 16 }}>  {items ? items.name : ''}</Text>
         </View>
         <DateAndNotesPickerSubExams canEdit={canEdit} exam={items} form={form} />
         {canEdit && <View style={{ paddingVertical: 20, }}>

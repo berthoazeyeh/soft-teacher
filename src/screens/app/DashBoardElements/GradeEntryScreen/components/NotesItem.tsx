@@ -26,25 +26,31 @@ const NotesItem = ({ item, onPress, showbutton, selectedStudent, onPressShowMore
         <View
             style={{ marginBottom: 10, gap: 5, paddingHorizontal: 0, borderBottomWidth: 1, borderBottomColor: theme.gray, paddingBottom: 10, }}>
             <View style={{ flexDirection: "row", }}>
-                <View style={{ justifyContent: "space-between", flex: 1, gap: 5, alignContent: "center", }}>
-                    <Text selectable={true} style={{ ...Theme.fontStyle.montserrat.semiBold, fontSize: 18, color: theme.primaryText }}>{item?.name}</Text>
+                <View style={{ justifyContent: "space-between", flex: 1, gap: 1, alignContent: "center", }}>
+                    <Text selectable={true} style={{ ...Theme.fontStyle.inter.semiBold, fontSize: 14, color: theme.primaryText }}>{item?.name}</Text>
+                    {
+                        item?.is_invited &&
+                        <Text style={{ color: theme.primary, ...Theme.fontStyle.inter.regular, fontSize: 12 }}>{item?.home_classroom?.name ?? ''}</Text>
+                    }
                 </View>
-                <View style={{ flexDirection: "row" }}>
+                <View style={{ flexDirection: "row", }}>
                     <TouchableOpacity style={[{
                         borderColor: theme.primary,
                         borderWidth: 1,
                         padding: 3,
-                        paddingHorizontal: 10,
+                        paddingHorizontal: 15,
                         borderRadius: 20,
+                        height: 25,
                         alignItems: "center",
                         alignContent: "center",
+                        justifyContent: "center",
                     }, item?.is_exist && { backgroundColor: theme.primary, color: theme.secondaryText }]}
                         onPress={showbutton ? onPress : () => null}
                     >
-                        {!showbutton && <Text style={styles.value}>{item?.exam_marks ? item?.exam_marks?.total_weight_marks?.toString().slice(0, 4) : "--"}</Text>}
-                        {showbutton && <Text style={styles.value}>{(item?.exam_marks && item?.exam_marks?.marks > 0) ? item?.exam_marks?.marks?.toString().slice(0, 4) : "--"}</Text>}
+                        {!showbutton && <Text style={styles.value1}>{item?.exam_marks && item?.exam_marks?.is_exist ? item?.exam_marks?.total_weight_marks?.toString().slice(0, 4) : "--"}</Text>}
+                        {showbutton && <Text style={styles.value1}>{(item?.exam_marks && item?.exam_marks?.marks > 0) ? item?.exam_marks?.marks?.toString().slice(0, 4) : "--"}</Text>}
                     </TouchableOpacity>
-                    <MaterialCommunityIcons name={"dots-vertical"} size={25} color={theme.primaryText} />
+                    <MaterialCommunityIcons name={"dots-vertical"} size={23} color={theme.primaryText} />
                 </View>
             </View>
 
@@ -54,7 +60,7 @@ const NotesItem = ({ item, onPress, showbutton, selectedStudent, onPressShowMore
                     <View
                         style={{ borderWidth: 1, borderColor: theme.gray, paddingHorizontal: 5, paddingVertical: 3, alignItems: "center", borderRadius: 5, backgroundColor: theme.primary }}
                     >
-                        <Text style={{ color: theme.secondaryText, fontSize: 16 }}>{GradeEntryText.status_present}</Text>
+                        <Text style={{ color: theme.secondaryText, ...Theme.fontStyle.inter.regular, fontSize: 14 }}>{GradeEntryText.status_present}</Text>
                     </View>
 
                 }
@@ -63,7 +69,7 @@ const NotesItem = ({ item, onPress, showbutton, selectedStudent, onPressShowMore
                     <View
                         style={{ borderWidth: 1, borderColor: theme.gray, paddingHorizontal: 5, paddingVertical: 3, alignItems: "center", borderRadius: 5, backgroundColor: "red" }}
                     >
-                        <Text style={{ color: theme.secondaryText, fontSize: 16 }}>{GradeEntryText.status_absent}</Text>
+                        <Text style={{ color: theme.secondaryText, ...Theme.fontStyle.inter.regular, fontSize: 14 }}>{GradeEntryText.status_absent}</Text>
                     </View>
 
                 }
@@ -72,7 +78,7 @@ const NotesItem = ({ item, onPress, showbutton, selectedStudent, onPressShowMore
                     <View
                         style={{ borderWidth: 1, borderColor: theme.gray, paddingHorizontal: 5, paddingVertical: 3, alignItems: "center", borderRadius: 5, }}
                     >
-                        <Text style={{ color: theme.primaryText, fontSize: 16 }}>{GradeEntryText.status_no_call}</Text>
+                        <Text style={{ color: theme.primaryText, ...Theme.fontStyle.inter.regular, fontSize: 12 }}>{GradeEntryText.status_no_call}</Text>
                     </View>
 
                 }
@@ -81,7 +87,7 @@ const NotesItem = ({ item, onPress, showbutton, selectedStudent, onPressShowMore
                     <View
                         style={{ borderWidth: 1, borderColor: "red", paddingHorizontal: 5, paddingVertical: 3, alignItems: "center", borderRadius: 5, }}
                     >
-                        <Text style={{ color: theme.primaryText, fontSize: 16 }}>{item?.note}</Text>
+                        <Text style={{ color: theme.primaryText, ...Theme.fontStyle.inter.regular, fontSize: 12 }}>{item?.note}</Text>
                     </View>
 
                 }
@@ -95,7 +101,7 @@ const NotesItem = ({ item, onPress, showbutton, selectedStudent, onPressShowMore
                         }}
                         style={{ borderWidth: 1, borderColor: theme.gray, paddingHorizontal: 5, paddingVertical: 3, alignItems: "center", borderRadius: 5, }}
                     >
-                        <Text style={{ color: theme.primaryText, fontSize: 16 }}>{collapsed ? GradeEntryText.action_show_details : GradeEntryText.action_hide_details}</Text>
+                        <Text style={{ color: theme.primaryText, ...Theme.fontStyle.inter.regular, fontSize: 12 }}>{collapsed ? GradeEntryText.action_show_details : GradeEntryText.action_hide_details}</Text>
                     </TouchableOpacity>
 
                 }
@@ -221,12 +227,12 @@ const createStyles = (theme: any) => StyleSheet.create({
         marginHorizontal: 5, // Space between cards
     },
     dayText: {
-        ...Theme.fontStyle.montserrat.semiBold,
-        fontSize: 14,
+        ...Theme.fontStyle.inter.semiBold,
+        fontSize: 13,
         color: theme.primaryText,
     },
     dateText: {
-        ...Theme.fontStyle.montserrat.regular,
+        ...Theme.fontStyle.inter.regular,
         color: theme.primaryText,
     },
     iconCell: {
@@ -237,7 +243,7 @@ const createStyles = (theme: any) => StyleSheet.create({
         justifyContent: "flex-end",
         alignSelf: "center",
         textAlign: "right",
-        ...Theme.fontStyle.montserrat.bold,
+        ...Theme.fontStyle.inter.bold,
         color: theme.primary,
     },
     collapsibleContainer: {
@@ -250,11 +256,11 @@ const createStyles = (theme: any) => StyleSheet.create({
         alignItems: "flex-start",
     },
     collapsibleText: {
-        ...Theme.fontStyle.montserrat.semiBold,
+        ...Theme.fontStyle.inter.semiBold,
         color: theme.primaryText,
     },
     boldText: {
-        ...Theme.fontStyle.montserrat.bold,
+        ...Theme.fontStyle.inter.bold,
     },
     remark: {
         borderWidth: 1,
@@ -263,12 +269,12 @@ const createStyles = (theme: any) => StyleSheet.create({
         width: "100%",
         marginVertical: 5,
         textAlign: "center",
-        ...Theme.fontStyle.montserrat.semiBold,
+        ...Theme.fontStyle.inter.semiBold,
         borderColor: theme.gray4,
         color: theme.primaryText,
     },
     italicText: {
-        ...Theme.fontStyle.montserrat.italic,
+        ...Theme.fontStyle.inter.italic,
     },
     input: {
         borderColor: '#ccc',
@@ -279,10 +285,10 @@ const createStyles = (theme: any) => StyleSheet.create({
         width: 80,
         textAlign: "center",
         paddingHorizontal: 7,
-        fontSize: 14,
+        fontSize: 12,
         color: theme.primaryText,
         backgroundColor: theme.gray,
-        ...Theme.fontStyle.montserrat.bold
+        ...Theme.fontStyle.inter.bold
     },
 });
 

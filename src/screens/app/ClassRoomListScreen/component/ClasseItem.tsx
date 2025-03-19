@@ -6,6 +6,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { I18n } from 'i18n';
 import { Divider } from "react-native-paper";
 import moment from "moment";
+import React from "react";
 
 export const ClasseItem = ({ item, I18n, index, navigation, isSelected }: any): React.JSX.Element => {
     const theme = useTheme()
@@ -32,8 +33,8 @@ export const ClasseItem = ({ item, I18n, index, navigation, isSelected }: any): 
             <View style={{ flexDirection: "row", gap: 10, marginTop: 20, }}>
                 <View
                     style={{
-                        width: 50,
-                        height: 50,
+                        width: 40,
+                        height: 40,
                         borderRadius: 50,
                         backgroundColor: getRandomColor(),
                         borderColor: theme.gray2,
@@ -41,15 +42,15 @@ export const ClasseItem = ({ item, I18n, index, navigation, isSelected }: any): 
                         alignItems: "center"
                     }}
                 >
-                    <Text style={{ color: theme.secondaryText, fontSize: 40 }}>#</Text>
+                    <Text style={{ color: theme.secondaryText, fontSize: 25 }}>#</Text>
                 </View>
                 <Text style={styles.title}>{item.name} </Text>
             </View>
             <View style={{ gap: 5, flex: 1, alignItems: "center" }}>
                 <View style={styles.containerWrap}>
-                    <Text style={{ color: theme.primaryText, ...Theme.fontStyle.montserrat.semiBold }}>{I18n.t("Home.course")}:</Text>
+                    <Text style={{ color: theme.primaryText, ...Theme.fontStyle.inter.semiBold }}>{I18n.t("Home.course")}:</Text>
                     {item?.subjects?.slice(0, 3)?.map((item: any, index: number) => <View key={index} style={styles.item}>
-                        <Text style={{ color: theme.primaryText, ...Theme.fontStyle.montserrat.semiBold, fontSize: 10 }}>{item.name} </Text>
+                        <Text style={{ color: theme.primaryText, ...Theme.fontStyle.inter.regular, fontSize: 10 }}>{item.name} </Text>
                     </View>
                     )}
                     <View key={index} style={styles.item}>
@@ -130,7 +131,7 @@ const createStyles = (theme: any) => StyleSheet.create({
         marginVertical: 10,
     },
     dateText: {
-        ...Theme.fontStyle.montserrat.semiBold,
+        ...Theme.fontStyle.inter.semiBold,
         color: "black",
     },
     taskContainer: {
@@ -155,11 +156,11 @@ const createStyles = (theme: any) => StyleSheet.create({
     },
 
     subjectText: {
-        ...Theme.fontStyle.montserrat.bold,
+        ...Theme.fontStyle.inter.bold,
         color: theme.primaryText,
     },
     taskText: {
-        ...Theme.fontStyle.montserrat.regular,
+        ...Theme.fontStyle.inter.regular,
         color: theme.primaryText,
     },
     statusContainer: {
@@ -171,7 +172,7 @@ const createStyles = (theme: any) => StyleSheet.create({
         borderTopEndRadius: 10,
     },
     statusText: {
-        ...Theme.fontStyle.montserrat.semiBold,
+        ...Theme.fontStyle.inter.semiBold,
         color: theme.primaryText,
         textAlign: "center",
     },
@@ -194,13 +195,13 @@ const createStyles = (theme: any) => StyleSheet.create({
         fontSize: 16,
     },
     dueText: {
-        ...Theme.fontStyle.montserrat.italic,
+        ...Theme.fontStyle.inter.italic,
         color: theme.primaryText,
         textAlign: "right",
         paddingVertical: 10,
     },
     description: {
-        ...Theme.fontStyle.montserrat.semiBold,
+        ...Theme.fontStyle.inter.semiBold,
         color: theme.primaryText,
         textAlign: "left",
         paddingVertical: 10,

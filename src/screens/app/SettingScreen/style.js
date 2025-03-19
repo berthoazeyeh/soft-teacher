@@ -21,10 +21,9 @@ const dynamicStyles = (theme) => {
 
         },
         primaryText: {
-            fontSize: 18,
+            fontSize: 14,
             letterSpacing: 1,
-            fontWeight: "500",
-            ...Theme.fontStyle.montserrat.semiBold,
+            ...Theme.fontStyle.inter.semiBold,
             color: theme.primaryText
         },
         icon: {

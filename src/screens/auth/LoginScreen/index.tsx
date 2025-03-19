@@ -15,6 +15,7 @@ import * as z from 'zod';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DATABASE, LOCAL_URL, postData } from "apis";
+import { createOrUpdateUser, loginUserWithPartner } from "apis/database";
 
 const schema = z.object({
     email: z.string()
@@ -27,7 +28,7 @@ const schema = z.object({
     // .regex(/\d/, { message: I18n.t('Login.validation_password_number') })
 });
 
-const LoginScreen = (props) => {
+const LoginScreen = (props: any) => {
     const { navigation } = props;
     const theme = useTheme()
     const styles = dynamicStyles(theme)
@@ -37,13 +38,84 @@ const LoginScreen = (props) => {
         resolver: zodResolver(schema),
         mode: "onChange",
     });
-    const { trigger: loginParrents } = useSWRMutation(`${LOCAL_URL}/api/login/faculty`, postData)
+    const { trigger: loginPartner } = useSWRMutation(`${LOCAL_URL}/api/login/faculty`, postData)
 
     const [loading, setLoading] = useState(false)
     const [securePasswordEntry, setSecurePasswordEntry] = useState(true)
 
 
-    const handleSubmittedFormuler = async (data) => {
+
+
+    const handleSubmitLocal = async (data: any) => {
+        try {
+
+            setLoading(true)
+            const localRes: any = await loginUserWithPartner(data.email, data.password);
+            if (localRes.success) {
+                dispatch(updateUserStored(localRes.data))
+                showCustomMessage("Success", "Authentification successful\n", "success", "center");
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'AppStacks' }],
+                })
+                setLoading(false)
+            }
+            else {
+                console.log("error################", localRes);
+                const dataLogin = {
+                    login: data.email,
+                    password: data.password,
+                    db: DATABASE
+                }
+                const pass = data.password;
+                loginPartner(dataLogin).then(async (data) => {
+                    if (data?.success) {
+                        console.log(data);
+                        const { avatar, birth_date, department, email, gender, id, max_sub_exams, name, mobile, partner_id, phone, user_id, registration_number } = data?.data
+                        showCustomMessage("Success", "Authentification successful\n" + data?.data?.name, "success", "center");
+                        dispatch(updateUserStored(data.data))
+                        navigation.reset({
+                            index: 0,
+                            routes: [{ name: 'AppStacks' }],
+                        })
+                        createOrUpdateUser(
+                            id,
+                            name,
+                            email,
+                            pass,
+                            phone ?? mobile,
+                            mobile,
+                            partner_id,
+                            avatar,
+                            birth_date,
+                            department,
+                            gender,
+                            max_sub_exams,
+                            registration_number,
+                            user_id
+                        ).then((e: any) => {
+                            console.log("createUserWithPartner----", e);
+                            setLoading(false)
+                        }).catch((err: any) => {
+                            console.log("createUserWithPartner----", err);
+                        });
+                    } else {
+                        setLoading(false)
+                        showCustomMessage("Information", data?.message ? data?.message : "Une erreur est survenue lors de l'authentification. veillez reessayer", "warning", "bottom")
+                    }
+                    setLoading(false)
+                });
+            }
+
+        } catch (error) {
+            console.log(error);
+            showCustomMessage("Ave.rtisement", "error", "success", "center");
+            setLoading(false)
+        }
+    }
+
+
+    const handleSubmittedFormuler = async (data: any) => {
         setLoading(true);
         const parrentData = {
             login: data.email,
@@ -51,7 +123,7 @@ const LoginScreen = (props) => {
             db: DATABASE
         }
 
-        const response = await loginParrents(parrentData);
+        const response = await loginPartner(parrentData);
         if (response?.success) {
             showCustomMessage("Succes", response.message, 'success', "center");
             const data = response.data;
@@ -147,15 +219,15 @@ const LoginScreen = (props) => {
 
                 <View style={styles.buttonContainer}>
                     <Button
-                        style={{ ...styles.loginButton, backgroundColor: loading ? theme.gray : theme.primary, flex: 1 }}
+                        style={{ backgroundColor: loading ? theme.gray : theme.primary, flex: 1 }}
                         onPress={() => {
                             if (!form.formState.isValid) {
                                 console.log("----------------------", form.formState.isValid);
                                 showCustomMessage("Information", "Tout les champs sont requis", "warning", "bottom")
-                                form.handleSubmit(handleSubmittedFormuler)();
+                                form.handleSubmit(handleSubmitLocal)();
                                 return;
                             }
-                            form.handleSubmit(handleSubmittedFormuler)();
+                            form.handleSubmit(handleSubmitLocal)();
                         }
                         }
                         loading={loading}
@@ -167,14 +239,14 @@ const LoginScreen = (props) => {
                         <Text style={styles.loginText}>{I18n.t("Login.login")}</Text>
                     </Button>
                 </View>
-                <View style={{ justifyContent: "flex-end", flexDirection: "row", flex: 1, alignSelf: "flex-end" }}>
+                {/* <View style={{ justifyContent: "flex-end", flexDirection: "row", flex: 1, alignSelf: "flex-end" }}>
                     <Text style={{ color: theme.primaryText }}>Pas de compte?</Text>
                     <TouchableOpacity onPress={() => {
                         navigation.navigate('SignInScreen')
                     }}>
                         <Text style={{ paddingHorizontal: 10, color: "blue" }}>Créer un</Text>
                     </TouchableOpacity>
-                </View>
+                </View> */}
 
             </View>
         </View>

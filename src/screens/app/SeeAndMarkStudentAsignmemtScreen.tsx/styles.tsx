@@ -46,7 +46,7 @@ const dynamicStyles = (theme: any) => {
         },
         titleBottonSheet: {
             color: theme.primaryText,
-            ...Theme.fontStyle.montserrat.bold,
+            ...Theme.fontStyle.inter.bold,
             letterSpacing: 1,
             marginBottom: 15,
             paddingHorizontal: 20,
@@ -66,7 +66,7 @@ const dynamicStyles = (theme: any) => {
         emptyDataText: {
             fontSize: 14,
             paddingVertical: 3,
-            ...Theme.fontStyle.montserrat.semiBold,
+            ...Theme.fontStyle.inter.semiBold,
             color: theme.primaryText,
             textAlign: "center"
         },
@@ -99,7 +99,7 @@ const dynamicStyles = (theme: any) => {
         },
         noteTitle: {
             color: theme.primaryText,
-            ...Theme.fontStyle.montserrat.bold,
+            ...Theme.fontStyle.inter.bold,
             letterSpacing: 1,
             paddingRight: 10,
             paddingLeft: 10,
@@ -118,7 +118,7 @@ const dynamicStyles = (theme: any) => {
             fontSize: 20,
             color: theme.primaryText,
             backgroundColor: theme.gray,
-            ...Theme.fontStyle.montserrat.bold
+            ...Theme.fontStyle.inter.bold
         },
         InputContainers: {
             width: '100%',
@@ -167,36 +167,36 @@ const dynamicStyles = (theme: any) => {
             flexDirection: "column",
         },
         subjectName: {
-            fontSize: 18, color: theme.primary, ...Theme.fontStyle.montserrat.semiBold,
+            fontSize: 18, color: theme.primary, ...Theme.fontStyle.inter.semiBold,
         },
         itemTitle: {
-            fontSize: 18, color: theme.primaryText, ...Theme.fontStyle.montserrat.bold,
+            fontSize: 18, color: theme.primaryText, ...Theme.fontStyle.inter.bold,
             paddingTop: 20, paddingHorizontal: 0,
         },
         taskContainer: {},
         taskContainerText: {
             fontSize: 18,
             color: theme.primaryText,
-            ...Theme.fontStyle.montserrat.regular,
+            ...Theme.fontStyle.inter.regular,
             paddingTop: 20, paddingHorizontal: 0,
         },
         modalcontainerText: {
             fontSize: 16,
             color: theme.primary,
             textAlign: "center",
-            ...Theme.fontStyle.montserrat.italic,
+            ...Theme.fontStyle.inter.italic,
             paddingTop: 10, paddingHorizontal: 0,
         },
         classeName: {
-            fontSize: 14, color: theme.primaryText, ...Theme.fontStyle.montserrat.regular,
+            fontSize: 14, color: theme.primaryText, ...Theme.fontStyle.inter.regular,
         },
 
         textLab: {
-            fontSize: 14, color: theme.primaryText, ...Theme.fontStyle.montserrat.regular,
+            fontSize: 14, color: theme.primaryText, ...Theme.fontStyle.inter.regular,
 
         },
         textVal: {
-            fontSize: 16, color: theme.primaryText, ...Theme.fontStyle.montserrat.bold,
+            fontSize: 16, color: theme.primaryText, ...Theme.fontStyle.inter.bold,
 
         },
 

@@ -15,6 +15,24 @@ export const profils = require("assets/images/profils.png")
 export const bus = require("assets/icons/launch_screen.jpg")
 export const logo = require("assets/images/launch_screen.png")
 export const logo1 = require("assets/images/openeducat-logo-transparent.png")
+export const synchronisation = require("assets/images/synchronisation.png")
+export function formatName(fullName: string): string {
+    let parts = fullName.trim().split(" ");
+
+    return parts
+        .map((word, index) =>
+            index === 0
+                ? word.toUpperCase()  // Garder le premier mot en majuscules
+                : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() // Majuscule sur la première lettre uniquement
+        )
+        .join(" ");
+}
+
+// Exemple d'utilisation :
+console.log(formatName("ANDREA BEKIRA INDIRA")); // "ANDREA Bekira Indira"
+console.log(formatName("JOHN DOE SMITH")); // "JOHN Doe Smith"
+
+
 
 export const groupTasksByDate = (tasks: any[]) => {
     return tasks.reduce((acc, task) => {

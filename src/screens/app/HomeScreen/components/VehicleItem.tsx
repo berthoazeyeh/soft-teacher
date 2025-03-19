@@ -30,11 +30,11 @@ export const VehicleItem = ({ item, I18n, index, navigation }: any): React.JSX.E
             <Text style={styles.etiquettesItemText2}>{capitalizeFirstLetter(item.branch?.name)}</Text>
         </View>
         <TouchableOpacity onPress={() => handleGotoLive(item)}>
-            <View style={{ flexDirection: "row", gap: 10, marginTop: 20, }}>
+            <View style={{ flexDirection: "row", gap: 10, marginTop: 20, alignItems: "center" }}>
                 <View
                     style={{
-                        width: 50,
-                        height: 50,
+                        width: 40,
+                        height: 40,
                         borderRadius: 50,
                         backgroundColor: getRandomColor(),
                         borderColor: theme.gray2,
@@ -42,15 +42,15 @@ export const VehicleItem = ({ item, I18n, index, navigation }: any): React.JSX.E
                         alignItems: "center"
                     }}
                 >
-                    <Text style={{ color: theme.secondaryText, fontSize: 40 }}>#</Text>
+                    <Text style={{ color: theme.secondaryText, fontSize: 25, ...Theme.fontStyle.inter.extraBold }}>#</Text>
                 </View>
                 <Text style={styles.title}>{item.name} </Text>
             </View>
             <View style={{ gap: 5, flex: 1, alignItems: "center" }}>
                 <View style={styles.containerWrap}>
-                    <Text style={{ color: theme.primaryText, ...Theme.fontStyle.montserrat.semiBold }}>{I18n.t("Home.course")}:</Text>
+                    <Text style={{ color: theme.primaryText, ...Theme.fontStyle.inter.semiBold }}>{I18n.t("Home.course")}:</Text>
                     {item?.subjects?.slice(0, 3)?.map((item: any, index: number) => <View key={index} style={styles.item}>
-                        <Text style={{ color: theme.primaryText, ...Theme.fontStyle.montserrat.semiBold, fontSize: 10 }}>{item.name} </Text>
+                        <Text style={{ color: theme.primaryText, ...Theme.fontStyle.inter.regular, fontSize: 10 }}>{item.name} </Text>
                     </View>
                     )}
                     <View key={index} style={styles.item}>
@@ -92,7 +92,7 @@ export const TaskItemTimeTable = ({ theme, item: [date, tasks] }: createStylesPr
                                 <View style={styles.colorIndicator} />
                                 <View style={styles.taskDetailsContainer}>
                                     <Text style={styles.subjectText}>{item?.subject_id?.name}</Text>
-                                    <Text style={styles.taskText}>Mr. {item.name?.split(":")?.[0]}</Text>
+                                    <Text style={styles.taskText}>Mr/Mme. {item.name?.split(":")?.[0]}</Text>
                                 </View>
                             </View>
                             {/* subject */}
@@ -131,7 +131,7 @@ const createStyles = (theme: any) => StyleSheet.create({
         marginVertical: 10,
     },
     dateText: {
-        ...Theme.fontStyle.montserrat.semiBold,
+        ...Theme.fontStyle.inter.semiBold,
         color: "black",
     },
     taskContainer: {
@@ -156,11 +156,14 @@ const createStyles = (theme: any) => StyleSheet.create({
     },
 
     subjectText: {
-        ...Theme.fontStyle.montserrat.bold,
+        fontSize: 13,
+        ...Theme.fontStyle.inter.bold,
         color: theme.primaryText,
     },
     taskText: {
-        ...Theme.fontStyle.montserrat.regular,
+        fontSize: 12,
+
+        ...Theme.fontStyle.inter.regular,
         color: theme.primaryText,
     },
     statusContainer: {
@@ -172,7 +175,8 @@ const createStyles = (theme: any) => StyleSheet.create({
         borderTopEndRadius: 10,
     },
     statusText: {
-        ...Theme.fontStyle.montserrat.semiBold,
+        fontSize: 12,
+        ...Theme.fontStyle.inter.black,
         color: theme.primaryText,
         textAlign: "center",
     },
@@ -195,13 +199,13 @@ const createStyles = (theme: any) => StyleSheet.create({
         fontSize: 16,
     },
     dueText: {
-        ...Theme.fontStyle.montserrat.italic,
+        ...Theme.fontStyle.inter.italic,
         color: theme.primaryText,
         textAlign: "right",
         paddingVertical: 10,
     },
     description: {
-        ...Theme.fontStyle.montserrat.semiBold,
+        ...Theme.fontStyle.inter.semiBold,
         color: theme.primaryText,
         textAlign: "left",
         paddingVertical: 10,
