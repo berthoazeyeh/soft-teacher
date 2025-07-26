@@ -4,7 +4,7 @@ export const userLocal = '@user'
 export const logoutLocal = '@logout'
 export const SERVICE_KEY = 'CgYh5TbHicce4HDZzk11At2Z2k1DuxkR'
 export const base_url = "http://167.86.75.204:8024";
-export const LOCAL_URLDEV = "https://soft.metuaa.com";
+// export const LOCAL_URL = "https://soft.metuaa.com";
 
 // prod params
 export const LOCAL_URL = "https://soft.erp.sekoo.org";
@@ -32,7 +32,7 @@ export async function postData(url, { arg }) {
         method: 'POST',
         body: JSON.stringify(arg)
     }).then((res) => {
-        // console.log("mauvaise reponse", res);
+        console.log("mauvaise reponse", res);
         if (res.ok) {
             return res.json()
         } else {

@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator, Easing } from "react-native";
-import { isDarkMode, useTheme } from "store";
+import { isDarkMode, useCurrentUser, useTheme } from "store";
 import dynamicStyles from "./styles";
 import { getRandomColor, logo, profils, showCustomMessage, Theme } from "utils";
 import { FlatList } from "react-native";
@@ -24,7 +24,9 @@ import { I18n } from 'i18n';
 import { getStudentsByFilter } from "services/StudentsServices";
 import { db } from "apis/database";
 import { getStudentsWithAttendance, syncAttendanceLines } from "services/AttendanceLineServices";
-import { StudentAttendances } from "services/CommonServices";
+import { FacultyAttendance, Session, StudentAttendances } from "services/CommonServices";
+import { Alert } from "react-native";
+import { saveFacultyAttendance } from "services/FacultyAttendanceServices";
 
 
 
@@ -53,6 +55,7 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
     const { navigation, route } = props
     const { classRoom, subject } = route.params
     const theme = useTheme()
+    const user = useCurrentUser();
     const [lastAttendence, setLastAttendence] = useState<any[]>([])
     const [lastAttendenceElements, setLastAttendenceElements] = useState<any>(null)
     const [isLoading, setIsLoading] = useState(false)
@@ -90,6 +93,54 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
     };
 
 
+    function showCloseSessionAlert() {
+        Alert.alert(
+            I18n.t("Dashboard.MyAbsencesScreen.closeSessionTitle"), // Titre traduit
+            I18n.t("Dashboard.MyAbsencesScreen.closeSessionMessage"), // Message traduit
+            [
+                {
+                    text: I18n.t("Dashboard.MyAbsencesScreen.continueButton"), // Bouton "Continuer" traduit
+                    onPress: () => postAttendencesForGroupedStudent(),
+                    style: "cancel",
+                },
+                {
+                    text: I18n.t("Dashboard.MyAbsencesScreen.closeButton"), // Bouton "Clôturer" traduit
+                    onPress: () => saveAttendance(subject),
+                    style: "destructive",
+                },
+            ]
+        );
+    }
+    const saveAttendance = async (item: Session) => {
+        console.log(item.facultyAttendance);
+        setLoading(true);
+        try {
+            let facultyAttendance: FacultyAttendance = item.facultyAttendance ? {
+                ...item.facultyAttendance,
+                checkout: moment(item.end_datetime).format('YYYY-MM-DD HH:mm:ss'),
+                is_local: true,
+                name: '...',
+            } : {
+                name: '...',
+                user_id: user?.id,
+                session_id: item.id,
+                date: moment().format('YYYY-MM-DD HH:mm:ss'),
+                checkin: moment().format('YYYY-MM-DD HH:mm:ss'),
+                present: true,
+                absent: false,
+                late: false,
+                is_local: true,
+                remark: "RAS"
+            };
+            const res = await saveFacultyAttendance(db, facultyAttendance, true);
+            console.log("saveFacultyAttendance------", res);
+        } catch (error) {
+            console.log(error);
+            showCustomMessage("Information", 'Une erreur s\'est produite lors de l\'enregistrement de l\'absence :' + error, "warning", "bottom")
+        } finally {
+            postAttendencesForGroupedStudent();
+        }
+    }
     const countAttendance = (students: any[]) => {
         const counts: AttendanceCount = {
             present: 0,
@@ -495,7 +546,7 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
             />
         </View>
         {attendanceCount &&
-            <View style={{ position: "absolute", bottom: 0, right: 0, left: 0, height: 50, backgroundColor: "#537D8D", gap: 5, elevation: 2 }}>
+            <View style={{ height: 50, backgroundColor: "#537D8D", gap: 5, elevation: 5, zIndex: 2 }}>
                 <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
                     <Text style={{
                         fontSize: 14,
@@ -655,12 +706,12 @@ function MyAbsencesScreen(props: any): React.JSX.Element {
         </Modal>
         <FAB
             label={I18n.t("Dashboard.MyAbsencesScreen.submitAttendance", { current: attendanceDataList.length, total: attendanceList.length })}
-            onPress={() => postAttendencesForGroupedStudent()}
+            onPress={() => showCloseSessionAlert()}
             visible={attendanceDataList.length > 0}
             color={theme.secondaryText}
             style={{
                 padding: 0,
-                bottom: 25,
+                bottom: 55,
                 alignSelf: "center",
                 backgroundColor: theme.primary,
                 position: 'absolute',

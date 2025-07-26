@@ -28,6 +28,7 @@ function ExamsListeScreen(props: any): React.JSX.Element {
     const language = useSelector(selectLanguageValue);
 
     const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/exams/from_date/${classRoom?.id}?date_exam=${moment(selectedDate).format("YYYY/MM/DD").toString()}`, getData)
+    // const { trigger: getTeacherSubExamClassRoome } = useSWRMutation(`${LOCAL_URL}/api/sub-exams/from_date/${classRoom?.id}?date_exam=${moment(selectedDate).format("YYYY/MM/DD").toString()}`, getData)
 
 
 

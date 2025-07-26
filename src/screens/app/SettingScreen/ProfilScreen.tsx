@@ -28,10 +28,8 @@ const schema1 = z.object({
         .regex(/[a-z]/, { message: I18n.t('Login.validation_password_lowercase') })
         .regex(/\d/, { message: I18n.t('Login.validation_password_number') }),
     holdPassword: z.string()
-        .min(8, { message: I18n.t('Login.validation_password_too_short') })
-        .regex(/[A-Z]/, { message: I18n.t('Login.validation_password_uppercase') })
-        .regex(/[a-z]/, { message: I18n.t('Login.validation_password_lowercase') })
-        .regex(/\d/, { message: I18n.t('Login.validation_password_number') }),
+        .min(5, { message: I18n.t('Login.validation_password_too_short') }),
+
     ConfirmNewPassword: z.string()
         .min(8, { message: I18n.t('Login.validation_password_too_short') })
         .regex(/[A-Z]/, { message: I18n.t('Login.validation_password_uppercase') })

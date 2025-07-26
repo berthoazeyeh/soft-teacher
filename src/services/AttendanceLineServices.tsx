@@ -183,12 +183,13 @@ export const getStudentsWithAttendance = (
 ): Promise<Response<StudentAttendances[]>> => {
     return new Promise((resolve) => {
         db.transaction((tx: any) => {
+
             // 🔍 Récupérer les étudiants de la classe via la table `student_classroom`
             tx.executeSql(
                 `
                 SELECT s.* FROM students s
                 INNER JOIN student_classroom sc ON s.id = sc.student_id
-                WHERE sc.classroom_id = ?;
+                WHERE sc.classroom_id = ?  ORDER BY s.name ASC;
                 `,
                 [classroom_id],
                 (_: any, studentsResults: any) => {

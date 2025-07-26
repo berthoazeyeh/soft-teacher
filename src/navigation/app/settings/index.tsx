@@ -1,11 +1,12 @@
 import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
-import { LanguageSettings, ProfileScreen, SettingsScreen } from 'screens';
+import { ConfidentielsSettings, LanguageSettings, ProfileScreen, SettingsScreen } from 'screens';
 
 export type SettingsList = {
     SettingsScreen: undefined;
     ProfileScreen: undefined;
     LanguageSettings: undefined;
+    PrivacySettings: undefined;
 
 };
 interface Item {
@@ -17,6 +18,7 @@ interface Item {
 const elements: Item[] = [
     { name: "LanguageSettings", screen: LanguageSettings, haveHeader: false },
     { name: "ProfileScreen", screen: ProfileScreen, haveHeader: true },
+    { name: "PrivacySettings", screen: ConfidentielsSettings, haveHeader: false },
 
 ];
 const SettingsScreenStack = createStackNavigator<SettingsList>()

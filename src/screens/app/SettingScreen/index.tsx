@@ -117,8 +117,8 @@ class SettingsScreen extends Component<Props, State> {
                     <TouchableOpacity
                         activeOpacity={0.8}
                         style={styles.button}
-                        disabled={true}
-                        onPress={() => navigation.navigate("PrivacySettings")}
+                        // disabled={true}
+                        onPress={() => this.handleScreenRedirection("PrivacySettings")}
                     >
                         <Icon name="privacy-tip" size={30} style={styles.icon} />
                         <Text style={styles.primaryText}>{privacyTitle}</Text>
@@ -153,7 +153,7 @@ class SettingsScreen extends Component<Props, State> {
                         style={styles.button}
                         onPress={async () => {
                             dispatch(clearUserStored(null))
-                            await clearCustomTables(["users", "student_subject", "student_classroom", "assignment_types", "assignment_types", "assignments", "assignment_rooms", "attendanceLine", "students", "sessions", "classrooms"]);
+                            await clearCustomTables(["users", "notifications", "faculty_attendances", "student_subject", "student_classroom", "assignment_types", "assignment_types", "assignments", "assignment_rooms", "attendanceLine", "students", "sessions", "classrooms", "faculty_attendances"]);
 
                             navigation.reset({
                                 index: 0,

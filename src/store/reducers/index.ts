@@ -5,6 +5,7 @@ import { ThemeReducer } from './ThemeReducer';
 import { CountNotificationReducer } from './CountNotificationReducer';
 import { UserReducer } from './UserReducer';
 import { SynchroisationReducer } from './SynchroisationReducer';
+import { NotificationReducer } from './NotificationReducer';
 
 const RootReducer = combineReducers({
     translation: TranslationReducer, // Ajoutez le reducer de traduction ici
@@ -13,6 +14,7 @@ const RootReducer = combineReducers({
     notificationCount: CountNotificationReducer,
     user: UserReducer,
     sync: SynchroisationReducer,
+    notif_settings: NotificationReducer,
 });
 
 export default RootReducer

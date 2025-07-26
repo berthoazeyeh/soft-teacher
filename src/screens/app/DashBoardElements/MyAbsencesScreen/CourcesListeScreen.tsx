@@ -15,7 +15,9 @@ import { useSelector } from "react-redux";
 import { getSessionsFilter } from "services/SessionsServices";
 import { db } from "apis/database";
 import 'moment/locale/fr';
-
+import { FacultyAttendance, Session } from "services/CommonServices";
+import { saveFacultyAttendance } from "services/FacultyAttendanceServices";
+import { I18n } from "i18n"
 
 function CourcesListeScreen(props: any): React.JSX.Element {
     const { navigation, route } = props
@@ -24,11 +26,12 @@ function CourcesListeScreen(props: any): React.JSX.Element {
     const [isLoading, setIsLoading] = useState(true);
     const [refresh, setRefresh] = useState(false);
     const [rescan, setRescan] = useState(false);
-    const [subjects, setSubject] = useState<any[]>([]);
+    const [subjects, setSubject] = useState<Session[]>([]);
     const [selectedDate, setSelectedDate] = useState<any>(new Date());
     const styles = dynamicStyles(theme)
     const user = useCurrentUser();
     const language = useSelector(selectLanguageValue);
+    const MyLables: any = I18n.t("Dashboard.AttendanceMenuButton")
 
     const { trigger: getTeacherSubjectInClassRoome } = useSWRMutation(`${LOCAL_URL}/api/timesheet/faculty/${user?.id}/${classRoom.id}?day=${moment(selectedDate).format("YYYY-MM-DD")}`, getData)
     moment.locale(language);
@@ -62,10 +65,44 @@ function CourcesListeScreen(props: any): React.JSX.Element {
     }, [rescan, selectedDate])
 
 
-    async function fetchLocalData() {
+    const saveAttendance = async (item: Session) => {
+        console.log(item.facultyAttendance);
+
+        try {
+            let facultyAttendance: FacultyAttendance = item.facultyAttendance ? {
+                ...item.facultyAttendance,
+                checkout: moment(item.end_datetime).format('YYYY-MM-DD HH:mm:ss'),
+                is_local: true,
+                name: '...',
+            } : {
+                name: '...',
+                user_id: user?.id,
+                session_id: item.id,
+                date: moment().format('YYYY-MM-DD HH:mm:ss'),
+                checkin: moment().format('YYYY-MM-DD HH:mm:ss'),
+                present: true,
+                absent: false,
+                late: false,
+                is_local: true,
+                remark: "RAS"
+            };
+            const res = await saveFacultyAttendance(db, facultyAttendance, true);
+            console.log("saveFacultyAttendance------", res);
+        } catch (error) {
+            console.log(error);
+
+            showCustomMessage("Information", 'Une erreur s\'est produite lors de l\'enregistrement de l\'absence :' + error, "warning", "bottom")
+        } finally {
+            fetchLocalData(true);
+        }
+    }
+
+    async function fetchLocalData(isSilent?: boolean) {
         try {
             setIsLoading(true);
-            setSubject([]);
+            if (!isSilent) {
+                setSubject([]);
+            }
             const res0 = await getSessionsFilter(db, user?.id, classRoom.id, moment(selectedDate).format("YYYY-MM-DD"));
             if (res0.success && res0.data) {
                 console.log(res0.error, res0.data.length);
@@ -140,29 +177,58 @@ function CourcesListeScreen(props: any): React.JSX.Element {
                 const format = "LT";
                 const start_datetime = moment(item?.start_datetime).format(format);
                 const end_datetime = moment(item?.end_datetime).format(format);
-
+                const isStarted = true;
 
                 return <View >
                     <TouchableOpacity
                         onPress={() => {
                             navigation.navigate(nexScreen, { classRoom: classRoom, subject: item })
                         }}
-                        style={{ flexDirection: "row", alignItems: "center", gap: 20, paddingHorizontal: 20, backgroundColor: theme.gray, marginHorizontal: 10, }}>
+                        style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 10, backgroundColor: theme.gray, marginHorizontal: 10, }}>
                         <View style={{ justifyContent: "space-around", gap: 30 }}>
                             <Text style={{ ...Theme.fontStyle.inter.black, fontSize: 14, color: theme.primaryText }}>{start_datetime}</Text>
                             <Text style={{ ...Theme.fontStyle.inter.black, fontSize: 14, color: theme.primaryText }}>{end_datetime}</Text>
                         </View >
                         <View style={{ width: 5, backgroundColor: getRandomColor(), height: "100%", }} />
-                        <View style={{ justifyContent: "space-around", flex: 1, gap: 5 }}>
-                            <Text style={{ ...Theme.fontStyle.inter.semiBold, fontSize: 16, color: theme.primaryText, }}>{item?.subject_id?.name}</Text>
-                            <Text style={{ ...Theme.fontStyle.inter.regular, fontSize: 12, color: theme.primaryText, }}>{classRoom.name}</Text>
-                            {item.attendance_sheet &&
-                                <MaterialCommunityIcons name='check-circle' size={25} color={theme.primary} />
-                            }
-                            {!item.attendance_sheet &&
-                                <MaterialCommunityIcons name='check-circle' size={25} color={"red"} />
-                            }
+                        <View style={{ justifyContent: "space-around", flex: 1, gap: 5, paddingVertical: 5, }}>
+                            <View style={{ flexDirection: "row", justifyContent: "space-between", flex: 1, gap: 5 }}>
 
+                                <Text style={{ ...Theme.fontStyle.inter.semiBold, fontSize: 16, color: theme.primaryText, }}>{item?.subject_id?.name}</Text>
+                                {item.attendance_sheet &&
+                                    <MaterialCommunityIcons name='check-circle' size={22} color={theme.primary} />
+                                }
+                                {!item.attendance_sheet &&
+                                    <MaterialCommunityIcons name='check-circle' size={22} color={"red"} />
+                                }
+                            </View>
+                            {!item.facultyAttendance &&
+                                <Text style={{ ...Theme.fontStyle.inter.regular, fontSize: 12, color: theme.primaryText, }}>
+                                    {classRoom.name}
+                                </Text>}
+                            {item.facultyAttendance?.checkin && (
+                                <Text style={{ ...Theme.fontStyle.inter.regular, fontSize: 12, color: theme.primaryText }}>
+                                    {MyLables.courseStarted}
+                                    <Text style={{ ...Theme.fontStyle.inter.bold }}>
+                                        {' '} {moment(item.facultyAttendance.checkin).format("HH:mm")}
+                                    </Text>
+                                </Text>
+                            )}
+
+                            {item.facultyAttendance?.checkout && (
+                                <Text style={{ ...Theme.fontStyle.inter.regular, fontSize: 12, color: theme.primaryText }}>
+                                    {MyLables.courseEnded}
+                                    <Text style={{ ...Theme.fontStyle.inter.bold }}>
+                                        {' '} {moment(item.facultyAttendance.checkout).format("HH:mm")}
+                                    </Text>
+                                </Text>
+                            )}
+                            {!item?.facultyAttendance?.checkout && <TouchableOpacity
+                                onPress={() => saveAttendance(item)}
+                                style={item.facultyAttendance ? styles.startedButton : styles.unStartedButton}>
+                                <Text style={styles.taskText}>
+                                    {!item.facultyAttendance ? MyLables.startPrompt : MyLables.endPrompt}
+                                </Text>
+                            </TouchableOpacity>}
                         </View>
                     </TouchableOpacity>
                     <Divider style={{ width: "100%", marginVertical: 10 }}></Divider>

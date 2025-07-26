@@ -5,7 +5,7 @@ import { Header, TaskItemTimeTable, VehicleItem } from './components';
 import { clearUserStored, selectLanguageValue, updateBannerMessageIndex, updateSyncing, useCurrentBannerMessageIndex, useCurrentUser, useMustSuncFirtTime, useTheme } from 'store';
 import dynamicStyles from './style';
 import { Image } from 'react-native';
-import { groupByDay, ImageE1, showCustomMessage, Theme } from 'utils';
+import { displayScheduledNotification, groupByDay, ImageE1, showCustomMessage, Theme } from 'utils';
 import { Divider, ProgressBar, Searchbar } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch, useSelector } from 'react-redux';
@@ -25,6 +25,8 @@ import { UnSyncModal } from './components/UnSyncModal';
 import { insertOrUpdateAssignments, insertOrUpdateAssignmentTypes } from 'services/AssignmentsServices';
 import { insertOrUpdateSubjectsList } from 'services/SubjectsServices';
 import { syncOnlineAttendanceLines } from 'services/AttendanceLineServices';
+import { FacultyAttendance } from 'services/CommonServices';
+import { syncOnlineFacultyAttendances } from 'services/FacultyAttendanceServices';
 
 interface Evaluation {
     date: string,
@@ -77,6 +79,7 @@ function HomeScreen(props: any): React.JSX.Element {
     const { trigger: getTeacherClassRoome } = useSWRMutation(`${LOCAL_URL}/api/rooms/faculty/${user?.id}`, getData)
     const { trigger: getAllTeachersClassRoomStudent } = useSWRMutation(`${LOCAL_URL}/api/teacher/classes/${user?.id}`, getData)
     const { trigger: getAllTeachersAttendencesStudent } = useSWRMutation(`${LOCAL_URL}/api/attendance-lines/${user?.id}`, getData)
+    const { trigger: getAllTeacherAttendancesLine } = useSWRMutation(`${LOCAL_URL}/api/attendances/faculty/${user?.id}`, getData)
     // const { trigger: getAllTeachersClassRoomStudent } = useSWRMutation(`${LOCAL_URL}/api/students/rooms/faculty/${user?.id}`, getData)
     const { trigger: getAllTeacherTimeTable } = useSWRMutation(`${LOCAL_URL}/api/timesheet/faculty/${user?.id}`, getData)
     const { trigger: getAssignmentTypes } = useSWRMutation(`${LOCAL_URL}/api/grading.assignment.type/search`, getData)
@@ -147,11 +150,20 @@ function HomeScreen(props: any): React.JSX.Element {
     };
 
 
-    async function fetchLocalTeacherTimeTablesData() {
+    async function fetchLocalTeacherTimeTablesData(isSilent?: boolean) {
+        if (!user) return;
         try {
             setIsLoadingTimetable(true);
-            setTimeTables([]);
-            const res0 = await getSessionsFilter(db, user?.id, classRoom.length > 0 ? classRoom[classRoomIndex]?.id : undefined, moment().format("YYYY-MM-DD"));
+            if (!isSilent) {
+                setTimeTables([]);
+            }
+            // TODO
+            const res0 = await getSessionsFilter(
+                db,
+                user?.id,
+                classRoom.length > 0 ? classRoom[classRoomIndex]?.id : undefined,
+                moment().format("YYYY-MM-DD")
+            );
             if (res0.success && res0.data) {
                 console.log(res0.error, res0.data.length);
                 const timeTablesFormated = Object.entries(groupByDay(res0.data));
@@ -169,6 +181,8 @@ function HomeScreen(props: any): React.JSX.Element {
 
 
     const getTeacherTimeTablesAttendence = async () => {
+        if (!user) return;
+
         if (classRoom.length <= 0) {
             setIsLoadingAttendances(false);
             return;
@@ -254,7 +268,17 @@ function HomeScreen(props: any): React.JSX.Element {
         }
     }, [refresh, mustSuncFirtTime])
     useEffect(() => {
-        if (!mustSuncFirtTime) {
+
+        // {
+        //     icon: 'ic_start',
+        //     title: '🚀Appuyez signaler le début',
+        //     pressAction: { id: 'start+10' },
+        // },
+        // {
+        //     title: '✅ Signaler la fin',
+        //     pressAction: { id: 'end' },
+        // },
+        if (!mustSuncFirtTime && user?.id) {
             setAttendance([])
             fetchLocalTeacherTimeTablesData()
             if (refresh) {
@@ -314,17 +338,41 @@ function HomeScreen(props: any): React.JSX.Element {
             } else {
                 console.log(res);
                 if (mustSuncFirtTime)
-
                     showCustomMessage("Information1", res?.message ?? '', "warning", "bottom")
             }
-
         } catch (err: any) {
             if (mustSuncFirtTime)
-
                 showCustomMessage("Information", 'Une erreur s\'est produite :' + (err?.message ?? ''), "warning", "bottom")
-            // console.error('Une erreur s\'est produite :', err);
-        } finally {
+        }
 
+    };
+    const syncTeacherAttendancesLine = async () => {
+        try {
+            const res = await getAllTeacherAttendancesLine();
+            console.log("getAllTeacherAttendancesLine------size-------", res?.data);
+            // return;
+            if (res?.success) {
+                const data: any[] = res?.success ? res?.data : []
+                try {
+                    console.log(mustSuncFirtTime);
+
+                    // if (mustSuncFirtTime) {
+                    // }
+                    const insertRes = await syncOnlineFacultyAttendances(db, data, false);
+                    console.log("syncTeacherAttendancesLine------size-------", insertRes, "insertRes");
+                } catch (error: any) {
+                    console.log("syncTeacherAttendancesLine------size-------", error);
+                    if (mustSuncFirtTime)
+                        showCustomMessage("Information1", error?.message ?? '', "warning", "bottom")
+                }
+            } else {
+                console.log(res);
+                if (mustSuncFirtTime)
+                    showCustomMessage("Information1", res?.message ?? '', "warning", "bottom")
+            }
+        } catch (err: any) {
+            if (mustSuncFirtTime)
+                showCustomMessage("Information", 'Une erreur s\'est produite :' + (err?.message ?? ''), "warning", "bottom")
         }
 
     };
@@ -361,6 +409,9 @@ function HomeScreen(props: any): React.JSX.Element {
                 const attendanceLine: any[] = resStudent?.success ? resStudent?.data : []
                 // console.log("student", attendanceLine);
                 console.log("student.length;", attendanceLine.length);
+                if (mustSuncFirtTime) {
+                    await clearCustomTables(["attendanceLine"]);
+                }
                 const tmp = await syncOnlineAttendanceLines(db, attendanceLine, false);
                 console.log(tmp);
             } else {
@@ -434,13 +485,15 @@ function HomeScreen(props: any): React.JSX.Element {
         }
     };
     async function syncAllDataDown() {
-        if (isSyncing) return;
+        if (isSyncing || !user) return;
         try {
             setIsSyncing(true)
             // dispatch(updateSyncing(true))
             dispatch(updateBannerMessageIndex(0))
             await syncClassrooms();
             await syncAssignmentsTypes();
+            await fetchLocalTeacherTimeTablesData(user);
+
             dispatch(updateBannerMessageIndex(1))
             await syncTimeTable()
             await syncAllAttendenses();
@@ -448,6 +501,7 @@ function HomeScreen(props: any): React.JSX.Element {
             await syncStudents();
             dispatch(updateBannerMessageIndex(3))
             await syncAssignments();
+            await syncTeacherAttendancesLine();
             dispatch(updateBannerMessageIndex(5))
             dispatch(updateSyncing(false))
         }
@@ -461,12 +515,14 @@ function HomeScreen(props: any): React.JSX.Element {
     }
 
     useEffect(() => {
-        if (refresh) {
-            setIsSyncing(false)
+        if (user) {
+            if (refresh) {
+                setIsSyncing(false)
+            }
+            syncAllDataDown().then(() => {
+                fetchClassrooms();
+            });
         }
-        syncAllDataDown().then(() => {
-            fetchClassrooms();
-        });
     }, [refresh])
 
     async function fetchClassrooms() {
@@ -489,7 +545,7 @@ function HomeScreen(props: any): React.JSX.Element {
             }
             const response1 = await getClassrooms(db, true, user?.id);
             if (response1.success) {
-                console.log("Données des classes :", response1.data);
+                // console.log("Données des classes :", response1.data);
                 if (response1.data) {
                     setSecondaryClassRoom(response1.data);
                 }
@@ -619,9 +675,16 @@ function HomeScreen(props: any): React.JSX.Element {
     const renderTimeTable = () => (
         <View style={styles.logo}>
             <FlatList
-                data={timeTables}
+                data={timeTables.slice(0, 6)}
                 keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item, index }) => <TaskItemTimeTable item={item} theme={theme} key={index} />}
+                renderItem={({ item, index }) => <TaskItemTimeTable
+                    item={item}
+                    theme={theme}
+                    key={index}
+                    classRoom={classRoom.length > 0 ? classRoom[classRoomIndex] : null}
+                    onSuccess={() => {
+                        fetchLocalTeacherTimeTablesData(true)
+                    }} />}
                 scrollEnabled={false}
                 nestedScrollEnabled={false}
                 style={{ backgroundColor: theme.primaryBackground, marginHorizontal: 10, borderWidth: 1, borderColor: theme.gray3, elevation: 2, paddingBottom: 10 }}
@@ -871,7 +934,7 @@ function HomeScreen(props: any): React.JSX.Element {
                 <MyDivider theme={theme} />
 
             </ScrollView>
-            <SyncingModal visible={mustSuncFirtTime} index={currentBannerMessageIndex} />
+            <SyncingModal visible={mustSuncFirtTime && user} index={currentBannerMessageIndex} />
             <UnSyncModal handlesResync={() => {
                 syncAllDataDown();
             }} />

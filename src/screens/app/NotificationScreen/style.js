@@ -20,19 +20,23 @@ const dynamicStyles = (theme) => {
             // borderWidth: 1,
             backgroundColor: theme.gray3,
             borderRadius: 10
-
         },
         title: {
-            fontSize: 18,
-            fontWeight: 'bold',
+            fontSize: 16,
+            color: theme.primaryText,
+            ...Theme.fontStyle.inter.bold,
         },
         name: {
-            fontSize: 16,
-            color: '#333',
+            fontSize: 14,
+            color: theme.primaryText,
+            ...Theme.fontStyle.inter.regular,
+
         },
         date: {
-            fontSize: 14,
-            color: '#666',
+            fontSize: 13,
+            color: theme.primary,
+            ...Theme.fontStyle.inter.regular,
+
         },
     });
 };

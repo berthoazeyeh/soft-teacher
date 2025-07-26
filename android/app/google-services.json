@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "72965827039",
+    "project_id": "soft-education",
+    "storage_bucket": "soft-education.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:72965827039:android:46c50b399a7448b3da3c6a",
+        "android_client_info": {
+          "package_name": "com.soft_education_parents"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "112211725056743408302",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-dojDKzCtrnfGN7m20sRtfCgJcFU8I3Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "112211725056743408302",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:72965827039:android:549f77aa9866720dda3c6a",
+        "android_client_info": {
+          "package_name": "com.soft_education_teacher"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "112211725056743408302",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-dojDKzCtrnfGN7m20sRtfCgJcFU8I3Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "112211725056743408302",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -6,10 +6,11 @@ import { Button, Dialog, Portal } from "react-native-paper";
 import React, { useCallback, useEffect } from "react";
 import { getLocalUnSyncAttendanceLinesGroupedBySessionAndClass } from "services/AttendanceLineServices";
 import { db } from "apis/database";
-import { Assignment, AttendanceKey, AttendanceLine, syncAssignmentToServersPromise, syncAttendanceLinesToServersPromise } from "services/CommonServices";
+import { Assignment, AttendanceKey, AttendanceLine, FacultyAttendance, syncAssignmentToServersPromise, syncAttendanceLinesToServersPromise, syncTeacherAttendancesToServersPromise } from "services/CommonServices";
 import MyRotatingImage from "./MyRotatingImage";
 import { getLocalAssignmentsWithRooms } from "services/AssignmentsServices";
 import { useFocusEffect } from "@react-navigation/native";
+import { getLocalUnSyncFacultyAttendances } from "services/FacultyAttendanceServices";
 
 export const UnSyncModal = ({ handlesResync }: { handlesResync: () => void, }): React.JSX.Element => {
     const theme = useTheme()
@@ -17,6 +18,7 @@ export const UnSyncModal = ({ handlesResync }: { handlesResync: () => void, }): 
     const [isMutating, setIsMutating] = React.useState(false);
     const [dataToSync, setDataToSync] = React.useState<Map<AttendanceKey, AttendanceLine[]>>();
     const [assignmentToSync, setAssignmentToSync] = React.useState<Assignment[]>([]);
+    const [facultyAttendance, setFacultyAttendance] = React.useState<FacultyAttendance[]>([]);
     const SyncingModalLabels: any = I18n.t("UnSyncModal");
     const styles = createStyles(theme);
     const mustSuncFirtTime = useMustSuncFirtTime();
@@ -47,6 +49,7 @@ export const UnSyncModal = ({ handlesResync }: { handlesResync: () => void, }): 
         try {
             const response1 = await getLocalUnSyncAttendanceLinesGroupedBySessionAndClass(db);
             const responseAssignment = await getLocalAssignmentsWithRooms(db);
+            const responseattendance = await getLocalUnSyncFacultyAttendances(db);
 
             if (response1.success) {
                 const list: Map<AttendanceKey, AttendanceLine[]> | undefined = response1?.data;
@@ -69,6 +72,15 @@ export const UnSyncModal = ({ handlesResync }: { handlesResync: () => void, }): 
                 console.log("error", responseAssignment.error);
 
             }
+            if (responseattendance.success && responseattendance.data) {
+                if (responseattendance.data.length > 0 && !isVisible) {
+                    setFacultyAttendance(responseattendance.data);
+                    setIsVisible(true);
+                }
+            } else {
+                console.log("error", responseAssignment.error);
+
+            }
         } catch (error) {
             console.log("error", error);
             console.log("error", error);
@@ -85,11 +97,8 @@ export const UnSyncModal = ({ handlesResync }: { handlesResync: () => void, }): 
 
                 }
             }
-            getLocalUnSyncAttendanceLines();
         } catch (error) {
             console.log("error", error);
-        } finally {
-
         }
     }
     async function syncAssignmentToServers() {
@@ -102,11 +111,21 @@ export const UnSyncModal = ({ handlesResync }: { handlesResync: () => void, }): 
 
                 }
             }
-            getLocalUnSyncAttendanceLines();
         } catch (error) {
             console.log("error", error);
-        } finally {
-            handlesResync();
+        }
+    }
+    async function syncTeachersAttendancesToServers() {
+        try {
+            if (facultyAttendance.length > 0) {
+                try {
+                    await syncTeacherAttendancesToServersPromise(facultyAttendance);
+                } catch (error) {
+                    showCustomMessage("Information", "Erreur de synchronisation." + error, "warning", "bottom");
+                }
+            }
+        } catch (error) {
+            console.log("error", error);
         }
     }
 
@@ -117,14 +136,16 @@ export const UnSyncModal = ({ handlesResync }: { handlesResync: () => void, }): 
             setIsMutating(true);
             await syncAttendanceLinesToServers();
             await syncAssignmentToServers();
-            // showCustomMessage("Information", SyncingModalLabels?.sync_success, "success", "bottom");
+            await syncTeachersAttendancesToServers();
         } catch (error) {
             showCustomMessage("Information", "Erreur de synchronisation." + error, "warning", "bottom");
         } finally {
             setDataToSync(undefined);
             setAssignmentToSync([]);
+            setFacultyAttendance([]);
             setIsMutating(false);
             setIsVisible(false);
+            getLocalUnSyncAttendanceLines();
             handlesResync();
         }
     }
@@ -156,6 +177,9 @@ export const UnSyncModal = ({ handlesResync }: { handlesResync: () => void, }): 
                     </Text>
                     <Text style={[{ color: theme.primaryText, ...Theme.fontStyle.inter.regular, fontSize: 14, }]}>
                         {I18n.t("UnSyncModal.assignments", { count: assignmentToSync.length })}
+                    </Text>
+                    <Text style={[{ color: theme.primaryText, ...Theme.fontStyle.inter.regular, fontSize: 14, }]}>
+                        {I18n.t("UnSyncModal.presence", { count: facultyAttendance.length })}
                     </Text>
                 </View>
                 <View style={{ paddingTop: 12, justifyContent: "space-around", flexDirection: "row", gap: 10, }}>

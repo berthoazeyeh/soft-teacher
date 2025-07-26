@@ -118,12 +118,20 @@
             "loadingMessage": "chargement...",
             "errorLoadingAttendanceSheet": "Erreur rencontrée lors du chargement de la fiche d'appel.",
             "validateAndModify": "Valider et modifier",
-            "submitAttendance": "Soumettre {{current}}/{{total}}"
+            "submitAttendance": "Soumettre {{current}}/{{total}}",
+            "closeSessionTitle": "Clôturer la session",
+            "closeSessionMessage": "Voulez-vous clôturer cette session de cours ?",
+            "continueButton": "Continuer",
+            "closeButton": "Clôturer"
         },
         "AttendanceMenuButton": {
             "manageAttendance": "Gérer la Présence",
             "markAllPresent": "Tout marquer Présent",
-            "markAllAbsent": "Tout marquer Absent"
+            "markAllAbsent": "Tout marquer Absent",
+            "startPrompt": "Appuyez pour signaler le début du cours",
+            "endPrompt": "Appuyez pour signaler la fin du cours",
+            "courseStarted": "Cours débuté à",
+            "courseEnded": "Cours clôturé à"
         },
         "ElementList": [
             "Profil étudiant",
@@ -280,6 +288,14 @@
         "privacyTitle": "Confidentialités",
         "languageTitle": "Langue",
         "darkModeSwitch": "Mode sombre",
+        "notificationsTitle": "Notifications",
+        "notifications": {
+            "alerts": "Recevoir des alertes",
+            "courses": "Recevoir des alertes de Cours",
+            "badging": "Recevoir des alertes de Badging",
+            "updates": "Recevoir des mises à jour",
+            "successMessage": "Paramètres de notification mis à jour avec succès"
+        },
         "privacySettings": {
             "notificationPrimaryLabel": "Notifications",
             "notificationSecondaryLabel": "Cliquez pour Activer / Désactiver",
@@ -341,7 +357,20 @@
         "studentsFailed": "Elèves ayant Échoués",
         "attendanceSheets": "{{size}} Feuille(s) d'appel",
         "assignments": "{{count}} Devoir(s)",
+        "presence": "{{count}} Présence(s)",
         "dataToSync": "Données à synchroniser"
+    },
+    "PushNotification": {
+        "welcomeNotification_title": "Bienvenue !",
+        "welcomeNotification_body": "Bienvenue à votre journée de cours à Soft Education ! N'oubliez pas de badger avant d'entrer à l'école.",
+        "goodbyeNotification_title": "Au revoir !",
+        "goodbyeNotification_body": "Bonne fin de journée ! Et n'oubliez pas de badger en quittant l'école.",
+        "beforeStartNotification_title": "{{classroom}}: Cours imminent.",
+        "beforeStartNotification_body": "Votre prochaine session de cours commence dans {{timing}} minutes. Cours de {{subject}} du {{date}} à {{time}} en {{classroom}}.",
+        "beforeStartNotification_action": "🚀 Appuyez pour signaler le début.",
+        "beforeEndNotification_title": "{{classroom}}: Cours bientôt terminé.",
+        "beforeEndNotification_body": "Votre cours se termine dans 10 minutes. N'oubliez pas de faire l'appel et de signaler que le cours est terminé.",
+        "beforeEndNotification_action": "✅ Appuyez pour signaler la fin."
     },
     "InviteStudentForCourses": {
         "invitDescription": "Inviter des élèves à rejoindre un cours",

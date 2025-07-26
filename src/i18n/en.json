@@ -137,12 +137,20 @@
             "loadingMessage": "Loading...",
             "errorLoadingAttendanceSheet": "An error occurred while loading the attendance sheet.",
             "validateAndModify": "Validate and modify",
-            "submitAttendance": "Submit {{current}}/{{total}}"
+            "submitAttendance": "Submit {{current}}/{{total}}",
+            "closeSessionTitle": "Close the session",
+            "closeSessionMessage": "Do you want to close this class session?",
+            "continueButton": "Continue",
+            "closeButton": "Close"
         },
         "AttendanceMenuButton": {
             "manageAttendance": "Manage Attendance",
             "markAllPresent": "Mark All Present",
-            "markAllAbsent": "Mark All Absent"
+            "markAllAbsent": "Mark All Absent",
+            "startPrompt": "Tap to mark the start of the class",
+            "endPrompt": "Tap to mark the end of the class",
+            "courseStarted": "Class started at",
+            "courseEnded": "Class ended at"
         },
         "AssignmentsScreen": {
             "courses": "Classroom",
@@ -278,6 +286,14 @@
         "privacyTitle": "Privacy",
         "languageTitle": "Language",
         "darkModeSwitch": "Dark Mode",
+        "notificationsTitle": "Notifications",
+        "notifications": {
+            "alerts": "Receive alerts",
+            "courses": "Receive course alerts",
+            "badging": "Receive badging alerts",
+            "updates": "Receive updates",
+            "successMessage": "Notification settings updated successfully"
+        },
         "privacySettings": {
             "notificationPrimaryLabel": "Notifications",
             "notificationSecondaryLabel": "Click to Enable/Disable",
@@ -339,7 +355,20 @@
         "studentsFailed": "Students Failed",
         "attendanceSheets": "{{size}} Attendance(s) Sheet",
         "assignments": "{{count}} Assignment(s)",
+        "presence": "{{count}} Teachers Attendance(s)",
         "dataToSync": "Data to synchronize"
+    },
+    "PushNotification": {
+        "welcomeNotification_title": "Welcome!",
+        "welcomeNotification_body": "Welcome to your school day at Soft Education! Don't forget to check in before entering the school.",
+        "goodbyeNotification_title": "Goodbye!",
+        "goodbyeNotification_body": "Have a great end of the day! And don't forget to check out when leaving the school.",
+        "beforeStartNotification_title": "{{classroom}}: Class starting soon.",
+        "beforeStartNotification_body": "Your next class session starts in {{timing}} minutes. {{subject}} class on {{date}} at {{time}} in {{classroom}}.",
+        "beforeStartNotification_action": "🚀 Tap to mark the start.",
+        "beforeEndNotification_title": "{{classroom}}: Class ending soon.",
+        "beforeEndNotification_body": "Your class ends in 10 minutes. Don't forget to take attendance and mark the class as finished.",
+        "beforeEndNotification_action": "✅ Tap to mark the end."
     },
     "InviteStudentForCourses": {
         "inviteDescription": "Invite students to join a course",

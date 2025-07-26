@@ -11,7 +11,17 @@ import { name as appName } from './app.json';
 import { appStore, persistor } from 'store';
 import { useEffect } from 'react';
 import { enableScreens } from 'react-native-screens'
+import notifee, { EventType } from '@notifee/react-native';
 
+// Gestionnaire d'événements en arrière-plan
+notifee.onBackgroundEvent(async ({ type, detail }) => {
+    console.log('Notifee Background Event:', type, detail);
+
+    if (type === EventType.PRESS) {
+        console.log('Notification Pressed', detail.notification);
+        // Ajoute ici une navigation ou autre action si nécessaire
+    }
+});
 const AppWrapper = () => {
 
     useEffect(() => {

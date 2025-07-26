@@ -432,6 +432,7 @@ export const getStudentsByFilter = (db: any, classroom_id?: number, subject_id?:
             query += " AND ss.subject_id = ?";
             params.push(subject_id);
         }
+        query += " ORDER BY s.name ASC";
 
         db.transaction((tx: any) => {
             tx.executeSql(

@@ -1,16 +1,55 @@
 import { useEffect } from "react";
 import { StatusBar, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Image, Text } from "react-native"
-import { isDarkMode, updateUserStored, useCurrentUser, useTheme } from "store";
-import { ImageE2, logo, showCustomMessage, Theme } from "utils"
-import { getDataM, LOCAL_URL } from "apis";
+import { isDarkMode, updateNotificationSettings, updateUserStored, useCurrentUser, useTheme } from "store";
+import { displayNotificationTest, ImageE2, logo, showCustomMessage, Theme } from "utils"
+import { getData, getDataM, LOCAL_URL } from "apis";
 import { useDispatch } from "react-redux";
 import { ThemeActionTypes } from "store/actions/ThemeAction";
 import { useColorScheme } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { clearTables, createAllTable, db, dropCustomTables, dropTables } from "apis/database";
-import { getClassroomsTMP } from "services";
 
+import messaging from '@react-native-firebase/messaging';
+import notifee, { AndroidImportance, AndroidVisibility, AndroidAction, AndroidCategory, TimestampTrigger, TimeUnit, TriggerType, EventType } from '@notifee/react-native';
+import moment from "moment";
+import { fetchLocalTeacherTimeTablesData, FacultyAttendance, saveAttendance, onEventNotification } from "services/CommonServices";
+import { useCurrentNotificationSettings } from "store/selectors/NotificationSelector";
+import useSWR from "swr";
+import useSWRMutation from "swr/mutation";
+
+
+
+
+notifee.onForegroundEvent((event) => {
+    onEventNotification(event)
+});
+
+notifee.onBackgroundEvent((event) => {
+    onEventNotification(event)
+}),
+
+
+
+
+    messaging().onMessage(async remoteMessage => {
+        console.log('Message received!--', remoteMessage);
+        if (remoteMessage?.notification) {
+            onDisplayNotification(remoteMessage?.notification?.title, remoteMessage?.notification?.body, remoteMessage?.notification?.android)
+        }
+    });
+
+// messaging().setBackgroundMessageHandler(async remoteMessage => {
+//     console.log('Message push reçu en arrière-plan:', remoteMessage);
+// });
+
+// messaging().onNotificationOpenedApp(notificationOpen => {
+//     console.log('Notification opened!', notificationOpen);
+// });
+
+
+notifee.getTriggerNotifications().then(ids => console.log('All trigger notifications: ', ids.length));
+notifee.getTriggerNotifications().then(ids => console.log('All trigger notifications: ', ids));
+notifee.cancelTriggerNotifications();
 
 
 
@@ -19,11 +58,57 @@ const Welcome = (props) => {
     const { navigation } = props;
     const dispatch = useDispatch();
     const user = useCurrentUser();
+    const settings = useCurrentNotificationSettings();
+
+    async function requestUserPermission() {
+        const authStatus = await messaging().requestPermission();
+        const enabled =
+            authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+            authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+        if (enabled) {
+            console.log('Authorization status:|||||||||||||||||||11111', authStatus);
+        } else {
+            console.warn('Authorization status:|||||||||||||||||00000', authStatus);
+        }
+    }
+    const { data, error, isLoading } = useSWR(`${LOCAL_URL}/api/get/params`,
+        getData,
+    );
+
     useEffect(() => {
+        // console.warn("error");
+
+        if (data && data?.data?.time_notification) {
+            const tmpSettings = settings;
+            try {
+                tmpSettings.time = parseInt(data?.data?.time_notification)
+                // console.warn("error11111111", parseInt(data?.data?.time_notification));
+            } catch (error) {
+                console.log("error", error);
+            }
+            dispatch(updateNotificationSettings(tmpSettings));
+        }
+    }, [data]);
+
+
+    useEffect(() => {
+        // displayNotificationTest();
+        // registerForPushNotifications();
+        requestUserPermission();
         tryToLoginParents();
-        console.log("user------------", user);
+        console.log("user------------", user, settings);
     }, [navigation]);
     const scheme = useColorScheme();
+    async function registerForPushNotifications() {
+        const token = await messaging().getToken();
+        console.log('Push notification token: ', token);
+        if (token) {
+            return token;
+        } else {
+            return null;
+        }
+    }
 
 
     const createAllTables = async () => {
@@ -37,7 +122,6 @@ const Welcome = (props) => {
 
     useEffect(() => {
         dispatch({ type: ThemeActionTypes.SET_SYSTEM_THEME, payload: scheme });
-
     }, [dispatch, scheme]);
 
 
@@ -52,10 +136,12 @@ const Welcome = (props) => {
                 navigation.navigate("LoginScreen");
                 return;
             } else {
+                await fetchLocalTeacherTimeTablesData(user, settings);
                 navigation.reset({
                     index: 0,
                     routes: [{ name: 'AppStacks' }],
                 })
+                return;
             }
             const response = await getDataM(`${LOCAL_URL}/api/op.parent/${user_Parent_Id}`)
             if (response?.success) {

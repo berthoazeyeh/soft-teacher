@@ -7,7 +7,7 @@
 
 import { NavigationContainer } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StatusBar, useColorScheme } from 'react-native';
+import { AppState, SafeAreaView, StatusBar, useColorScheme } from 'react-native';
 import { DefaultTheme, PaperProvider } from 'react-native-paper';
 import SplashScreen from 'react-native-splash-screen';
 import { useSelector } from 'react-redux';
@@ -19,8 +19,43 @@ import { I18n } from 'i18n';
 import { AppStack } from '@navigation';
 import NetInfo from '@react-native-community/netinfo';
 import { showCustomMessage } from 'utils';
+import notifee from '@notifee/react-native';
 
+import { getApp } from '@react-native-firebase/app';
 
+try {
+  getApp();
+} catch (error) {
+}
+AppState.addEventListener("change", async (state) => {
+  // if (state === 'active') {
+  //   await notifee.displayNotification({
+  //     title: 'Bienvenue !',
+  //     body: 'Ravi de vous revoir 😊',
+  //     android: {
+  //       channelId: 'default',
+  //     },
+  //   });
+  // }
+  // if (state === "inactive") {
+  //   await notifee.displayNotification({
+  //     title: 'Bienvenue !...',
+  //     body: 'Ravi de vous revoir 😊',
+  //     android: {
+  //       channelId: 'default',
+  //     },
+  //   });
+  // }
+  // if (state === "background") {
+  //   await notifee.displayNotification({
+  //     title: 'Bienvenue !...background',
+  //     body: 'Ravi de vous revoir 😊',
+  //     android: {
+  //       channelId: 'default',
+  //     },
+  //   });
+  // }
+});
 const App = () => {
 
   const language = useSelector(selectLanguageValue);

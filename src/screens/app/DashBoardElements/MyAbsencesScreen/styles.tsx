@@ -175,7 +175,32 @@ const dynamicStyles = (theme: any) => {
             color: 'white',
             fontSize: 12,
         },
+        startedButton: {
+            // backgroundColor: theme.primary,
+            borderRadius: 5,
+            paddingHorizontal: 5,
+            paddingVertical: 5,
+            borderWidth: 1,
+            borderColor: theme.primary,
+            justifyContent: "center",
+            alignItems: "center"
+        },
+        unStartedButton: {
+            // backgroundColor: theme.primary,
+            borderRadius: 5,
+            paddingHorizontal: 5,
+            paddingVertical: 5,
+            borderWidth: 1,
+            borderColor: theme.gray4,
+            justifyContent: "center",
+            alignItems: "center"
+        },
+        taskText: {
+            fontSize: 11,
 
+            ...Theme.fontStyle.inter.regular,
+            color: theme.primaryText,
+        },
     });
 };
 

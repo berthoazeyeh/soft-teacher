@@ -70,6 +70,30 @@ export const createAllTable = async (db: any) => {
             () => console.log("Table sessions created"),
             (error: any) => console.error("Error creating table: ", error)
         );
+
+        tx.executeSql(
+            `CREATE TABLE IF NOT EXISTS faculty_attendances (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                session_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                date TEXT, -- Format YYYY-MM-DD
+                remark TEXT,
+                present BOOLEAN DEFAULT FALSE,
+                late BOOLEAN DEFAULT FALSE,        
+                absent BOOLEAN DEFAULT FALSE,
+                is_local BOOLEAN DEFAULT TRUE, -- Indique si la donnée est locale ou synchronisée
+                checkin TEXT,  
+                checkout TEXT, 
+                FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                UNIQUE(session_id, user_id) -- Assure qu'un utilisateur ne peut avoir qu'une seule entrée par session
+            );`,
+            [],
+            () => console.log("Table faculty_attendances created"),
+            (error: any) => console.error("Error creating table: ", error)
+        );
+
         tx.executeSql(
             `CREATE TABLE IF NOT EXISTS students (
                 id INTEGER PRIMARY KEY,
@@ -192,6 +216,20 @@ export const createAllTable = async (db: any) => {
             [],
             () => console.log("Table student_subject created"),
             (error: any) => console.error("Error creating table student_subject: ", error)
+        );
+        tx.executeSql(
+            `CREATE TABLE IF NOT EXISTS notifications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                body TEXT NOT NULL,
+                date TEXT NOT NULL,  -- Format YYYY-MM-DD HH:MM:SS
+                isRead BOOLEAN DEFAULT FALSE,  -- Indique si la notification a été lue
+                pressAction TEXT,  -- Stocke l'action associée à la notification
+                created_at TEXT DEFAULT (DATETIME('now', 'localtime')) -- Timestamp de création
+            );`,
+            [],
+            () => console.log("Table notifications created"),
+            (error: any) => console.error("Error creating table notifications: ", error)
         );
 
         tx.executeSql(
