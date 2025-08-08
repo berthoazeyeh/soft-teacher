@@ -21,12 +21,7 @@ import NetInfo from '@react-native-community/netinfo';
 import { showCustomMessage } from 'utils';
 import notifee from '@notifee/react-native';
 
-import { getApp } from '@react-native-firebase/app';
 
-try {
-  getApp();
-} catch (error) {
-}
 AppState.addEventListener("change", async (state) => {
   // if (state === 'active') {
   //   await notifee.displayNotification({

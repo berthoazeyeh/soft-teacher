@@ -9,7 +9,7 @@ import { ThemeActionTypes } from "store/actions/ThemeAction";
 import { useColorScheme } from "react-native";
 import { clearTables, createAllTable, db, dropCustomTables, dropTables } from "apis/database";
 
-import messaging from '@react-native-firebase/messaging';
+// import messaging from '@react-native-firebase/messaging';
 import notifee, { AndroidImportance, AndroidVisibility, AndroidAction, AndroidCategory, TimestampTrigger, TimeUnit, TriggerType, EventType } from '@notifee/react-native';
 import moment from "moment";
 import { fetchLocalTeacherTimeTablesData, FacultyAttendance, saveAttendance, onEventNotification } from "services/CommonServices";
@@ -31,23 +31,23 @@ notifee.onBackgroundEvent((event) => {
 
 
 
-    messaging().onMessage(async remoteMessage => {
-        console.log('Message received!--', remoteMessage);
-        if (remoteMessage?.notification) {
-            onDisplayNotification(remoteMessage?.notification?.title, remoteMessage?.notification?.body, remoteMessage?.notification?.android)
-        }
-    });
+    // messaging().onMessage(async remoteMessage => {
+    //     console.log('Message received!--', remoteMessage);
+    //     if (remoteMessage?.notification) {
+    //         onDisplayNotification(remoteMessage?.notification?.title, remoteMessage?.notification?.body, remoteMessage?.notification?.android)
+    //     }
+    // });
 
-// messaging().setBackgroundMessageHandler(async remoteMessage => {
-//     console.log('Message push reçu en arrière-plan:', remoteMessage);
-// });
+    // messaging().setBackgroundMessageHandler(async remoteMessage => {
+    //     console.log('Message push reçu en arrière-plan:', remoteMessage);
+    // });
 
-// messaging().onNotificationOpenedApp(notificationOpen => {
-//     console.log('Notification opened!', notificationOpen);
-// });
+    // messaging().onNotificationOpenedApp(notificationOpen => {
+    //     console.log('Notification opened!', notificationOpen);
+    // });
 
 
-notifee.getTriggerNotifications().then(ids => console.log('All trigger notifications: ', ids.length));
+    notifee.getTriggerNotifications().then(ids => console.log('All trigger notifications: ', ids.length));
 notifee.getTriggerNotifications().then(ids => console.log('All trigger notifications: ', ids));
 notifee.cancelTriggerNotifications();
 
@@ -61,16 +61,16 @@ const Welcome = (props) => {
     const settings = useCurrentNotificationSettings();
 
     async function requestUserPermission() {
-        const authStatus = await messaging().requestPermission();
-        const enabled =
-            authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-            authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+        // const authStatus = await messaging().requestPermission();
+        // const enabled =
+        //     authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        //     authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-        if (enabled) {
-            console.log('Authorization status:|||||||||||||||||||11111', authStatus);
-        } else {
-            console.warn('Authorization status:|||||||||||||||||00000', authStatus);
-        }
+        // if (enabled) {
+        //     console.log('Authorization status:|||||||||||||||||||11111', authStatus);
+        // } else {
+        //     console.warn('Authorization status:|||||||||||||||||00000', authStatus);
+        // }
     }
     const { data, error, isLoading } = useSWR(`${LOCAL_URL}/api/get/params`,
         getData,
@@ -101,13 +101,13 @@ const Welcome = (props) => {
     }, [navigation]);
     const scheme = useColorScheme();
     async function registerForPushNotifications() {
-        const token = await messaging().getToken();
-        console.log('Push notification token: ', token);
-        if (token) {
-            return token;
-        } else {
-            return null;
-        }
+        // const token = await messaging().getToken();
+        // console.log('Push notification token: ', token);
+        // if (token) {
+        //     return token;
+        // } else {
+        //     return null;
+        // }
     }
 
 
