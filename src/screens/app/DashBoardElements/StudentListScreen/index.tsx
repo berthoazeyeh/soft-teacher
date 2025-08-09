@@ -224,7 +224,7 @@ function StudentListScreen(props: any): React.JSX.Element {
         <Divider />
 
 
-        {classRoom.subjects.length > 0 &&
+        {classRoom?.subjects?.length > 0 &&
             <View style={styles.headerTimeConatiner}>
                 <TouchableOpacity disabled={subjectIndex <= 0} onPress={decrementClassRoom}>
                     <MaterialCommunityIcons name='chevron-left-circle' size={25} color={subjectIndex <= 0 ? theme.gray : theme.primaryText} />
@@ -234,7 +234,7 @@ function StudentListScreen(props: any): React.JSX.Element {
                     onPress={() => {
                         setShowPickSubject(true)
                     }}>
-                    <Text style={styles.classRoomText}>{classRoom.subjects[subjectIndex]?.name}</Text>
+                    <Text style={styles.classRoomText}>{classRoom?.subjects[subjectIndex]?.name}</Text>
                     <MaterialCommunityIcons name='chevron-down' size={25} color={theme.primary} />
                 </TouchableOpacity>
 
