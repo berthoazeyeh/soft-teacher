@@ -16,6 +16,7 @@ import { RefreshControl } from "react-native";
 function MyCourcesScreen(props: any): React.JSX.Element {
     const { navigation, route } = props
     const { classRoom, nexScreen } = route.params
+    console.log("classRoom", classRoom);
     const theme = useTheme()
     const [isLoading, setIsLoading] = useState(true);
     const [refresh, setRefresh] = useState(false);
@@ -75,7 +76,7 @@ function MyCourcesScreen(props: any): React.JSX.Element {
             }}
         >
             <MaterialCommunityIcons name='arrow-left' size={25} color={theme.primaryText} />
-            <Text style={{ ...Theme.fontStyle.inter.semiBold, fontSize: 18, color: theme.primary }}>{classRoom.name} ({subjects.length})</Text>
+            <Text style={{ ...Theme.fontStyle.inter.semiBold, fontSize: 18, color: theme.primary }}>{classRoom?.name} ({subjects.length})</Text>
         </TouchableOpacity>
         <Divider />
 
