@@ -445,7 +445,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
     </View >
     );
 
-    let position = classRoom.name;
+    let position = classRoom?.name;
     if (selectedSession) {
         position = position + " > " + sessions.find(item => item.id === selectedSession)?.name;
     }
