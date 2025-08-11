@@ -65,5 +65,22 @@
 		<string>Octicons.ttf</string>
 		<string>Zocial.ttf</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Cette application a besoin d'accéder à la caméra pour prendre des photos ou vidéos.</string>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Cette application a besoin d'accéder à votre galerie pour sélectionner des fichiers.</string>
+
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Cette application a besoin d'enregistrer des fichiers dans votre galerie.</string>
+
+	<key>NSUserNotificationUsageDescription</key>
+	<string>Cette application souhaite vous envoyer des notifications.</string>
+
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+
 </dict>
 </plist>
