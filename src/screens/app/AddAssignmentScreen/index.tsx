@@ -185,6 +185,10 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
 
 
     const permmition = async () => {
+        const isIOS = Platform.OS === 'ios';
+        if (isIOS) {
+            return true;
+        }
         const granted = await PermissionsAndroid.request(
             PermissionsAndroid.PERMISSIONS.CAMERA,
             {
@@ -288,8 +292,8 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
     const isIOS = Platform.OS === 'ios';
 
     const renderHeader = (data: any[], selectedValue: any, setSelectedValue: any, text: any, isLoading: boolean) => {
-            const options: { label: string, value: any }[] = data?.map((e) => ({ label: e?.name, value: e?.id })) ?? []
-    const selectedLabel = options.find((e) => e.value === selectedValue)
+        const options: { label: string, value: any }[] = data?.map((e) => ({ label: e?.name, value: e?.id })) ?? []
+        const selectedLabel = options.find((e) => e.value === selectedValue)
 
         return <>
             <View style={styles.header}>
@@ -302,11 +306,11 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
                     }
                 </View>
 
-                 {isIOS && <DropdownPicker onSelect={(item) => {
-                setSelectedValue(item.value);
-            }} textStyle={{ color: theme.primaryText }} items={options} buttonText={selectedLabel?.label ?? text} buttonStyle={{ ...styles.picker, backgroundColor: theme.gray3, width: "89%", flex: 1 }} />
-            }
-                {!isIOS &&<Picker
+                {isIOS && <DropdownPicker onSelect={(item) => {
+                    setSelectedValue(item.value);
+                }} textStyle={{ color: theme.primaryText }} items={options} buttonText={selectedLabel?.label ?? text} buttonStyle={{ ...styles.picker, backgroundColor: theme.gray3, width: "89%", flex: 1 }} />
+                }
+                {!isIOS && <Picker
                     itemStyle={{ color: theme.primaryText, ...Theme.fontStyle.inter.bold }}
                     selectedValue={selectedValue}
                     onValueChange={(itemValue) => setSelectedValue(itemValue)}

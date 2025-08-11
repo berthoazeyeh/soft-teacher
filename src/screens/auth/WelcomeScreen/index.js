@@ -2,20 +2,18 @@ import { useEffect } from "react";
 import { StatusBar, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Image, Text } from "react-native"
 import { isDarkMode, updateNotificationSettings, updateUserStored, useCurrentUser, useTheme } from "store";
-import { displayNotificationTest, ImageE2, logo, showCustomMessage, Theme } from "utils"
+import { ImageE2, logo, showCustomMessage, Theme } from "utils"
 import { getData, getDataM, LOCAL_URL } from "apis";
 import { useDispatch } from "react-redux";
 import { ThemeActionTypes } from "store/actions/ThemeAction";
 import { useColorScheme } from "react-native";
-import { clearTables, createAllTable, db, dropCustomTables, dropTables } from "apis/database";
+import { createAllTable, db } from "apis/database";
 
 // import messaging from '@react-native-firebase/messaging';
-import notifee, { AndroidImportance, AndroidVisibility, AndroidAction, AndroidCategory, TimestampTrigger, TimeUnit, TriggerType, EventType } from '@notifee/react-native';
-import moment from "moment";
-import { fetchLocalTeacherTimeTablesData, FacultyAttendance, saveAttendance, onEventNotification } from "services/CommonServices";
+import notifee, {  } from '@notifee/react-native';
+import { fetchLocalTeacherTimeTablesData, onEventNotification } from "services/CommonServices";
 import { useCurrentNotificationSettings } from "store/selectors/NotificationSelector";
 import useSWR from "swr";
-import useSWRMutation from "swr/mutation";
 
 
 

@@ -1,7 +1,7 @@
 import { Component } from "react";
 // @ts-ignore
 import TimeTableView, { genTimeBlock } from 'react-native-timetable';
-import { ScrollView, StyleSheet, View } from "react-native";
+import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import { Alert } from "react-native";
 import moment, { now } from "moment";
 import { CustomerLoader } from "components";
@@ -11,6 +11,7 @@ import { Divider } from "react-native-paper";
 import { getTimeSlotsForWeek, Theme } from "utils";
 import HeaderDashBoad from "./Header";
 import React from "react";
+import DropdownPicker from "components/DropdownPicker";
 
 
 interface RenderPickerSemesterProps {
@@ -115,27 +116,37 @@ class MyTimetable extends Component<Props, State> {
         // corecttransformedStudents?.push(...getTimeSlotsForWeek());
         // corecttransformedStudents = this.props.data;
         // console.log(";;;;;", this.props.data?.data);
-        const RenderPicker = ({ item, labels, onValueChange, value }: RenderPickerSemesterProps) => (<>
-            <View style={this.styles.header}>
-                <Picker
-                    itemStyle={{ color: this.props.theme.primaryText, ...Theme.fontStyle.montserrat.bold }}
-                    selectedValue={value}
-                    onValueChange={(itemValue: number) => onValueChange(itemValue)}
-                    style={this.styles.picker}>
-                    <Picker.Item
-                        style={this.styles.pickerItemStyle}
-                        label={labels}
-                        value={null} />
-                    {item.map((item: Item) => <Picker.Item
-                        style={this.styles.pickerItemStyle}
-                        key={item.id}
-                        label={item.labels?.toString()}
-                        value={item.value} />)}
-                </Picker>
-            </View>
-            <Divider />
-        </>
-        );
+        const RenderPicker = ({ item, labels, onValueChange, value }: RenderPickerSemesterProps) => {
+            const isIOS = Platform.OS === 'ios';
+
+            const options: { label: string, value: any }[] = item?.map((e: any) => ({ label: e?.labels, value: e?.value })) ?? []
+            const selectedLabel = options.find((e) => e.value === value)
+            return <>
+                <View style={this.styles.header}>
+                    {isIOS && <DropdownPicker onSelect={(item) => {
+                        onValueChange(item.value);
+                    }} textStyle={{ color: this.props.theme.primaryText }} items={options} buttonText={selectedLabel?.label ?? "Choisir une salle de classe"} buttonStyle={{ ...this.styles.pickerItemStyle, backgroundColor: this.props.theme.gray3, width: "89%", flex: 1 }} />
+                    }
+
+                    {!isIOS && <Picker
+                        itemStyle={{ color: this.props.theme.primaryText, ...Theme.fontStyle.montserrat.bold }}
+                        selectedValue={value}
+                        onValueChange={(itemValue: number) => onValueChange(itemValue)}
+                        style={this.styles.picker}>
+                        <Picker.Item
+                            style={this.styles.pickerItemStyle}
+                            label={labels}
+                            value={null} />
+                        {item.map((item: Item) => <Picker.Item
+                            style={this.styles.pickerItemStyle}
+                            key={item.id}
+                            label={item.labels?.toString()}
+                            value={item.value} />)}
+                    </Picker>}
+                </View>
+                <Divider />
+            </>
+        };
 
 
         return (<View style={this.styles.container}>

@@ -59,7 +59,7 @@ const App = () => {
   const scheme = useColorScheme();
 
   useEffect(() => {
-    SplashScreen.hide();
+    // SplashScreen.hide();
   }, []);
 
   const [isConnected, setIsConnected] = useState<boolean>(false);
