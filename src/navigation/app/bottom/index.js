@@ -32,9 +32,7 @@ const HomeBottomTabNavigation = () => {
 
         } catch (error) {
             console.error("Erreur lors de la récupération :", error);
-        } finally {
-            setIsLocalLoading(false);
-        }
+        } 
     }
     useEffect(() => {
         fetchNotification();
