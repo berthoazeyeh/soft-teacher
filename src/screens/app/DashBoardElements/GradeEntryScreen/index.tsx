@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, TouchableOpacity, TextInput, ActivityIndicator, Easing } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, ActivityIndicator, Easing, Platform } from "react-native";
 import { isDarkMode, useCurrentUser, useTheme } from "store";
 import dynamicStyles from "./styles";
 import { showCustomMessage, Theme } from "utils";
@@ -20,6 +20,7 @@ import { dataStucture } from "./AddNewOrUpdateExams";
 import { hideHeader, showHeader } from "./utils";
 import { I18n } from 'i18n';
 import { SatisticModal } from "./components/SatisticModal";
+import DropdownPicker from "components/DropdownPicker";
 
 
 function GradeEntryScreen(props: any): React.JSX.Element {
@@ -59,9 +60,9 @@ function GradeEntryScreen(props: any): React.JSX.Element {
     const { trigger: getTeacherSubjectInClassRoome, isMutating: isLoadingSubjects } = useSWRMutation(`${LOCAL_URL}/api/subjects/faculty/${user?.id}/${classRoom?.id}`, getData)
     const { trigger: getTeacherExamsSessions } = useSWRMutation(`${LOCAL_URL}/api/exams-sessions/${classRoom?.id}`, getData);
     const { trigger: getStudentWithListNote } = useSWRMutation(`${LOCAL_URL}/api/notes/exam/type/${selectedExam}/${classRoom?.id}/${selectedExamType?.toLowerCase()}`, getData);
-    const { trigger: getStudentWithOneSubExam } = useSWRMutation(`${LOCAL_URL}/api/notes/sub-exam/${selectedSubExam?.id}/${classRoom?.id}`, getData);
+    const { trigger: getStudentWithOneSubExam } = useSWRMutation(`${LOCAL_URL}/api/notes/sub-exam/${selectedSubExam}/${classRoom?.id}`, getData);
     const { trigger: setNoteForStudent } = useSWRMutation(`${LOCAL_URL}/api/change-notes/student/exam/${selectedExam}`, postData)
-    const { trigger: postNoteForStudentSubExam } = useSWRMutation(`${LOCAL_URL}/api/change-notes/student/sub-exam/${selectedSubExam?.id}`, postData)
+    const { trigger: postNoteForStudentSubExam } = useSWRMutation(`${LOCAL_URL}/api/change-notes/student/sub-exam/${selectedSubExam}`, postData)
 
 
     const postNoteForStudent = async () => {
@@ -391,59 +392,73 @@ function GradeEntryScreen(props: any): React.JSX.Element {
         </View>
     );
 
-    const renderHeader = (data: any, selectedValue: any, setSelectedValue: any, text: any, isLoading: boolean, showAdd: boolean, takeObject: boolean) =>
-    (<View style={{
-        flexDirection: "row", justifyContent: showAdd ? "space-between" : "center",
-        width: "100%",
-        alignItems: "center",
-        alignContent: "center",
-        paddingHorizontal: 10,
+    const isIOS = Platform.OS === 'ios';
+    const renderHeader = (data: any[], selectedValue: any, setSelectedValue: any, text: any, isLoading: boolean, showAdd: boolean, takeObject: boolean) => {
 
-    }}>
-        <View style={[styles.headers, { flex: 1, }]}>
-            <View style={styles.profil}>
-                {isLoading &&
-                    <ActivityIndicator color={"green"} size={25} />
+        const options: { label: string, value: any }[] = data?.map((e) => ({ label: e?.name, value: e?.id })) ?? []
+        const selectedLabel = options.find((e) => e.value === selectedValue)
+
+
+        return <View style={{
+            flexDirection: "row", justifyContent: showAdd ? "space-between" : "center",
+            width: "100%",
+            alignItems: "center",
+            alignContent: "center",
+            paddingHorizontal: 10,
+
+        }}>
+            <View style={[styles.headers, { flex: 1, }]}>
+                <View style={styles.profil}>
+                    {isLoading &&
+                        <ActivityIndicator color={"green"} size={25} />
+                    }
+                    {!isLoading &&
+                        <MaterialCommunityIcons name={"chart-line"} size={25} color={theme.primaryText} />
+                    }
+                </View>
+
+                {isIOS && <DropdownPicker onSelect={(item) => {
+                    setSelectedValue(item.value);
+                }} textStyle={{ color: theme.primaryText }} items={options} buttonText={selectedLabel?.label ?? text} buttonStyle={{ ...styles.picker, backgroundColor: theme.gray3, width: "89%", flex: 1 }} />
                 }
-                {!isLoading &&
-                    <MaterialCommunityIcons name={"chart-line"} size={25} color={theme.primaryText} />
-                }
+                {!isIOS && <Picker
+                    itemStyle={{ color: theme.primaryText, ...Theme.fontStyle.inter.bold }}
+                    selectedValue={selectedValue}
+                    onValueChange={(itemValue) => setSelectedValue(itemValue)}
+                    onFocus={() => selectedExamType && getCorrectFormatedExams(selectedExamType)}
+                    onTouchStart={() => selectedExamType && getCorrectFormatedExams(selectedExamType)}
+                    style={[styles.picker]}>
+                    <Picker.Item
+                        style={[styles.pickerItemStyle, { fontSize: 10, }]}
+                        label={text}
+                        value={null} />
+                    {data && data?.map((studentI: any) => <Picker.Item
+                        style={styles.pickerItemStyle}
+                        key={studentI}
+                        label={studentI.name}
+                        value={takeObject ? studentI : studentI?.id} />)}
+                </Picker>}
             </View>
-            <Picker
-                itemStyle={{ color: theme.primaryText, ...Theme.fontStyle.inter.bold }}
-                selectedValue={selectedValue}
-                onValueChange={(itemValue) => setSelectedValue(itemValue)}
-                onFocus={() => selectedExamType && getCorrectFormatedExams(selectedExamType)}
-                onTouchStart={() => selectedExamType && getCorrectFormatedExams(selectedExamType)}
-                style={[styles.picker]}>
-                <Picker.Item
-                    style={[styles.pickerItemStyle, { fontSize: 10, }]}
-                    label={text}
-                    value={null} />
-                {data && data?.map((studentI: any) => <Picker.Item
-                    style={styles.pickerItemStyle}
-                    key={studentI}
-                    label={studentI.name}
-                    value={takeObject ? studentI : studentI?.id} />)}
-            </Picker>
-        </View>
-        {showAdd && <TouchableOpacity
-            onPress={() => {
-                navigation.navigate(
-                    "AddNewOrUpdateExams",
-                    {
-                        classRoom,
-                        subject: subject.find(item => item.id === selectedSubject),
-                        exam: examsList.find((item: any) => item.id === selectedExam),
-                        session: sessions.find(item => item.id === selectedSession)
-                    })
-            }}
-            style={[styles.item, { backgroundColor: theme.primary, marginLeft: 5, flexDirection: "row", paddingHorizontal: 7, paddingVertical: 7, justifyContent: "center" }]}>
-            <MaterialCommunityIcons name='plus' size={15} color={theme.secondaryText} />
-            <Text style={{ fontSize: 10, ...Theme.fontStyle.inter.semiBold, color: theme.secondaryText }}>{"Add"}</Text>
-        </TouchableOpacity>}
-    </View >
-    );
+            {showAdd && <TouchableOpacity
+                onPress={() => {
+                    navigation.navigate(
+                        "AddNewOrUpdateExams",
+                        {
+                            classRoom,
+                            subject: subject.find(item => item.id === selectedSubject),
+                            exam: examsList.find((item: any) => item.id === selectedExam),
+                            session: sessions.find(item => item.id === selectedSession)
+                        })
+                }}
+                style={[styles.item, { backgroundColor: theme.primary, marginLeft: 5, flexDirection: "row", paddingHorizontal: 7, paddingVertical: 7, justifyContent: "center" }]}>
+                <MaterialCommunityIcons name='plus' size={15} color={theme.secondaryText} />
+                <Text style={{ fontSize: 10, ...Theme.fontStyle.inter.semiBold, color: theme.secondaryText }}>{"Add"}</Text>
+            </TouchableOpacity>}
+        </View >
+    };
+const selectedSubExamData=subExamList.find((s)=>s.id===selectedSubExam);
+
+    // console.log("text",selectedSubExam,selectedSubExamData);
 
     let position = classRoom?.name;
     if (selectedSession) {
@@ -467,7 +482,7 @@ function GradeEntryScreen(props: any): React.JSX.Element {
         >
             <View style={styles.titleContainer}>
                 <Text style={styles.text}>
-                    {GradeEntryText?.header_title} ({filteredData?.length})
+                    {GradeEntryText?.header_title} {filteredData?`(${filteredData?.length})`:""}
                 </Text>
                 <View style={{ flexDirection: "row", gap: 18 }}>
                     <TouchableOpacity
@@ -526,7 +541,12 @@ function GradeEntryScreen(props: any): React.JSX.Element {
                                 return (
                                     <View key={index} style={{ flexDirection: "row", alignItems: "center" }}>
                                         <RadioButton value={item} />
-                                        <Text style={{ ...Theme.fontStyle.inter.semiBold, color: theme.primaryText }}>{item}</Text>
+                                        <TouchableOpacity onPress={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedExamType(item)
+                                        }}>
+                                            <Text style={{ ...Theme.fontStyle.inter.semiBold, color: theme.primaryText }}>{item}</Text>
+                                        </TouchableOpacity>
                                     </View>
                                 )
                             })}
@@ -537,11 +557,16 @@ function GradeEntryScreen(props: any): React.JSX.Element {
 
                 {(!selectedSubExam && selectedExam) && renderHeader(subExamList, selectedSubExam, setSelectedSubExam, GradeEntryText.choose_partial, isLoadingExam, true, true)}
             </View>
-            {selectedSubExam && <View style={{ padding: 10, marginHorizontal: 10, alignItems: "center", gap: 7, backgroundColor: theme.secondaryText }}>
-                <MyCustomerTextAndValue theme={theme} text={GradeEntryText.evaluation} value={selectedSubExam?.name} />
+            {selectedSubExam&&selectedSubExamData && <View style={{ padding: 10, marginHorizontal: 10, alignItems: "center", gap: 7, backgroundColor: theme.secondaryText }}>
+                <MyCustomerTextAndValue theme={theme} text={GradeEntryText.evaluation} value={selectedSubExamData?.name} />
                 <View style={{ flexDirection: "row", justifyContent: "space-around", width: "100%" }}>
-                    <MyCustomerTextAndValue theme={theme} text={GradeEntryText.weight} value={selectedSubExam?.weight?.toString().slice(0, 4) + " %"} />
-                    <MyCustomerTextAndValue theme={theme} text={GradeEntryText.note} value={selectedSubExam?.total_marks ?? "/20"} />
+                    <MyCustomerTextAndValue theme={theme} text={GradeEntryText.weight} value={selectedSubExamData?.weight?.toString().slice(0, 4) + " %"} />
+                    <MyCustomerTextAndValue 
+                    theme={theme} 
+                    text={GradeEntryText.note} 
+
+                    value={selectedSubExamData?.total_marks?.length>0 ?selectedSubExamData?.total_marks: "/20"} 
+                    />
                 </View>
             </View>}
         </LinearGradient>

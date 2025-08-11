@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'; // Import de MaterialCommunityIcons
 import { Badge } from 'react-native-paper';
-import { useNotificationCount, useTheme } from 'store';
+import { changeNotificationCount, updateNotificationSettings, useNotificationCount, useTheme } from 'store';
 import { DashBoardScreen, HomeScreen, NotificationScreen } from 'screens';
+import { useDispatch } from 'react-redux';
+import { getNotifications } from 'services/NotificationsServices';
+import { db } from 'apis/database';
 
 const Tab = createBottomTabNavigator();
 
@@ -15,6 +18,28 @@ const Tab = createBottomTabNavigator();
 const HomeBottomTabNavigation = () => {
     const [badgeCount, setBadgeCount] = useState(40);
     const theme = useTheme()
+    const dispatch = useDispatch();
+    async function fetchNotification() {
+        try {
+            const response = await getNotifications(db, false);
+            if (response.success) {
+                console.log(response.data, "response.data");
+                            dispatch(changeNotificationCount(response.data.length));
+
+
+            } else {
+            }
+
+        } catch (error) {
+            console.error("Erreur lors de la récupération :", error);
+        } finally {
+            setIsLocalLoading(false);
+        }
+    }
+    useEffect(() => {
+        fetchNotification();
+    }, [])
+
     return (
         <Tab.Navigator
             initialRouteName="HomeScreen"

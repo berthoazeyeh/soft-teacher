@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator, Platform } from "react-native";
 import { isDarkMode, useCurrentUser, useTheme } from "store";
 import dynamicStyles from "./style";
 import { getRandomColor, groupTasksByDate, showCustomMessage, Theme } from "utils";
@@ -26,6 +26,7 @@ import React from "react";
 import { createAssignment, getAssignmentTypes } from "services/AssignmentsServices";
 import { db } from "apis/database";
 import { Assignment, AssignmentType } from "services/CommonServices";
+import DropdownPicker from "components/DropdownPicker";
 
 
 const schema = z.object({
@@ -284,35 +285,46 @@ function AddAssignmentScreen(props: any): React.JSX.Element {
         onchange(updatedList);
         setFiles(updatedList);
     }
+    const isIOS = Platform.OS === 'ios';
 
-    const renderHeader = (data: any[], selectedValue: any, setSelectedValue: any, text: any, isLoading: boolean) => (<>
-        <View style={styles.header}>
-            <View style={styles.profil}>
-                {isLoading &&
-                    <ActivityIndicator color={"green"} size={25} />
-                }
-                {!isLoading &&
-                    <MaterialCommunityIcons name={"school"} size={20} color={theme.primaryText} />
-                }
+    const renderHeader = (data: any[], selectedValue: any, setSelectedValue: any, text: any, isLoading: boolean) => {
+            const options: { label: string, value: any }[] = data?.map((e) => ({ label: e?.name, value: e?.id })) ?? []
+    const selectedLabel = options.find((e) => e.value === selectedValue)
+
+        return <>
+            <View style={styles.header}>
+                <View style={styles.profil}>
+                    {isLoading &&
+                        <ActivityIndicator color={"green"} size={25} />
+                    }
+                    {!isLoading &&
+                        <MaterialCommunityIcons name={"school"} size={20} color={theme.primaryText} />
+                    }
+                </View>
+
+                 {isIOS && <DropdownPicker onSelect={(item) => {
+                setSelectedValue(item.value);
+            }} textStyle={{ color: theme.primaryText }} items={options} buttonText={selectedLabel?.label ?? text} buttonStyle={{ ...styles.picker, backgroundColor: theme.gray3, width: "89%", flex: 1 }} />
+            }
+                {!isIOS &&<Picker
+                    itemStyle={{ color: theme.primaryText, ...Theme.fontStyle.inter.bold }}
+                    selectedValue={selectedValue}
+                    onValueChange={(itemValue) => setSelectedValue(itemValue)}
+                    style={styles.picker}>
+                    <Picker.Item
+                        style={styles.pickerItemStyle}
+                        label={text}
+                        value={"studentI.id"} />
+                    {data?.map(studentI => <Picker.Item
+                        style={styles.pickerItemStyle}
+                        key={studentI}
+                        label={studentI.name}
+                        value={studentI?.id} />)}
+                </Picker>}
             </View>
-            <Picker
-                itemStyle={{ color: theme.primaryText, ...Theme.fontStyle.inter.bold }}
-                selectedValue={selectedValue}
-                onValueChange={(itemValue) => setSelectedValue(itemValue)}
-                style={styles.picker}>
-                <Picker.Item
-                    style={styles.pickerItemStyle}
-                    label={text}
-                    value={"studentI.id"} />
-                {data?.map(studentI => <Picker.Item
-                    style={styles.pickerItemStyle}
-                    key={studentI}
-                    label={studentI.name}
-                    value={studentI?.id} />)}
-            </Picker>
-        </View>
-    </>
-    );
+        </>
+    }
+        ;
 
 
     return <SafeAreaView style={styles.container}>

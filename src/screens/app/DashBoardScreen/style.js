@@ -50,7 +50,7 @@ const dynamicStyles = (theme) => {
         },
         header: {
             alignItems: "center",
-            justifyContent: "center",
+            justifyContent: "flex-start",
             flexDirection: "row",
             marginBottom: 10,
             backgroundColor: theme.gray3,

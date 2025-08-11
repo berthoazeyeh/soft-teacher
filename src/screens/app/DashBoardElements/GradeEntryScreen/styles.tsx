@@ -57,6 +57,7 @@ const dynamicStyles = (theme: any) => {
             justifyContent: "center",
             flexDirection: "row",
             marginBottom: 10,
+            height:40,
             backgroundColor: theme.gray3,
             borderRadius: 1,
         },

@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
+import { Platform, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 import { StatusBar } from "react-native";
 import { ActivityIndicator, Image, Text } from "react-native"
 import { changeLanguage, selectLanguageValue, updateUserStored, useTheme } from "store";
@@ -16,6 +16,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DATABASE, LOCAL_URL, postData } from "apis";
 import { createOrUpdateUser, loginUserWithPartner } from "apis/database";
+import DropdownPicker from "components/DropdownPicker";
 
 const schema = z.object({
     email: z.string()
@@ -138,7 +139,13 @@ const LoginScreen = (props: any) => {
             showCustomMessage("Information", response?.message ? response?.message : "Une erreur est survenue lors de l'authentification. veillez reessayer", "warning", "bottom")
         }
     }
+const options = [
+  { label: I18n.t("Login.languageEnglish"), value: 'en' },
+  { label: I18n.t("Login.languageFrench"), value: 'fr' },
+];
+  const isIOS = Platform.OS === 'ios';
 
+const selectedLabel=options.find((e)=>e.value===language)
     return (
         <View style={styles.container}>
             <Image
@@ -148,7 +155,11 @@ const LoginScreen = (props: any) => {
             <View style={styles.boxContainer}>
                 <View style={styles.languageContainer}>
                     <Text style={styles.textlangauge}>{I18n.t("changeLanguage")}</Text>
-                    <Picker
+                        {isIOS && <DropdownPicker items={options} onSelect={(item)=>{
+                             dispatch(changeLanguage(item.value));
+                          }}  buttonText={selectedLabel?.label}/>}
+
+                    {!isIOS&&<Picker
                         selectedValue={language}
                         onValueChange={(itemValue, itemIndex) => {
                             dispatch(changeLanguage(itemValue));
@@ -158,7 +169,7 @@ const LoginScreen = (props: any) => {
                         mode="dropdown" >
                         <Picker.Item style={{ fontSize: 12, ...Theme.fontStyle.montserrat.bold }} label={I18n.t("Login.languageFrench")} value="fr" />
                         <Picker.Item style={{ fontSize: 12, ...Theme.fontStyle.montserrat.bold }} label={I18n.t("Login.languageEnglish")} value="en" />
-                    </Picker >
+                    </Picker >}
                 </View >
                 <Controller
                     control={form.control}

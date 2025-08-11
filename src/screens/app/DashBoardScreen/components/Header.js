@@ -4,60 +4,16 @@ import { Button, Checkbox, Divider, Menu, Text } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Theme } from 'utils';
 import { I18n } from 'i18n';
+import { MyMenu } from 'screens/app/HomeScreen/components/Header';
 
-const Header = ({ title, onLogoutPressed, theme, visible, setVisible }) => {
+const Header = ({ title, onLogoutPressed, theme, visible, setVisible,navigation }) => {
 
     return (
         <View style={styles(theme).header}>
             <Text style={styles(theme).headerText}>{title}</Text>
-
-            <Menu
-                visible={visible}
-                onDismiss={() => { setVisible(false) }}
-                style={{ width: '50%' }}
-                contentStyle={{ backgroundColor: theme.primaryBackground, }}
-                anchor={
-                    <TouchableOpacity onPress={setVisible}>
-                        <MaterialCommunityIcons
-                            name="more"
-                            size={27}
-                            color={theme.primaryText}
-                            style={styles.icon}
-                        />
-                    </TouchableOpacity>
-                }
-            >
-                <Menu.Item style={{ alignSelf: "center" }} titleStyle={{
-                    fontWeight: "bold", textAlign: "center", color: theme.primaryText,
-                    ...Theme.fontStyle.inter.regular,
-                }} onPress={() => { }} title={I18n.t('more')} />
-
-
-                <Divider />
-                <TouchableOpacity style={styles(theme).menuItem}
-                    onPress={() => onLogoutPressed(true)}
-                >
-                    <MaterialCommunityIcons
-                        name="cog"
-                        size={27}
-                        color={theme.primaryText}
-                        style={styles(theme).icon}
-                    />
-                    <Text style={styles(theme).menuText}>{I18n.t('settings')}</Text>
-                </TouchableOpacity>
-                <Divider />
-                <TouchableOpacity style={styles(theme).menuItem}
-                    onPress={() => onLogoutPressed(false)}
-                >
-                    <MaterialCommunityIcons
-                        name="logout"
-                        size={27}
-                        color={theme.primaryText}
-                        style={styles(theme).icon}
-                    />
-                    <Text style={styles(theme).menuText}>{I18n.t('logout')}</Text>
-                </TouchableOpacity>
-            </Menu>
+                                        <MyMenu theme={theme} styles={styles} navigation={navigation} onLogoutPressed={onLogoutPressed}/>
+            
+           
         </View>
     );
 };

@@ -66,6 +66,8 @@ function AddNewOrUpdateExams(props: any): React.JSX.Element {
     const { navigation, route } = props
     const [isLoading, setIsLoading] = useState(false);
     const { classRoom, session, exam: exams, subject } = route.params
+    console.log(exams,".......");
+    
     const theme = useTheme()
     const styles = dynamicStyles(theme)
     const [selectedIndex, setSelectedIndex] = useState(0)
@@ -89,7 +91,9 @@ function AddNewOrUpdateExams(props: any): React.JSX.Element {
 
     useFocusEffect(
         useCallback(() => {
-            GetExamByID();
+            if(exams){
+                GetExamByID();
+            }
             return () => {
             };
         }, [])
@@ -97,7 +101,7 @@ function AddNewOrUpdateExams(props: any): React.JSX.Element {
 
     const { trigger: creacteNewExamenForSubject } = useSWRMutation(`${LOCAL_URL}/api/create/exam`, postData);
     const { trigger: updateExamenForSubject } = useSWRMutation(`${LOCAL_URL}/api/update/exam/${exam?.id}`, postData);
-    const { trigger: getExamByID } = useSWRMutation(`${LOCAL_URL}/api/get-exam//${exam?.id}`, getData);
+    const { trigger: getExamByID } = useSWRMutation(`${LOCAL_URL}/api/get-exam/${exam?.id}`, getData);
 
     const postNewExamenForSubjects = async (data: any) => {
         setIsLoading(true)
@@ -193,40 +197,6 @@ function AddNewOrUpdateExams(props: any): React.JSX.Element {
             [index]: { ...prev[index], [field]: validationResult.success ? undefined : validationResult.error.errors[0]?.message, },
         }));
     };
-
-
-
-
-    const books: any[] = [
-        {
-            title: "DS1-TS1-1",
-            isbn: "978-0-06-112008-4",
-            genre: "Fiction",
-            language: "English",
-            edition: "25%"
-        },
-        {
-            title: "DS1-TS1-2",
-            isbn: "978-0-452-28423-4",
-            genre: "Dystopian",
-            language: "English",
-            edition: "25%"
-        },
-        {
-            title: "DS1-TS1-3",
-            isbn: "978-0-14-243724-7",
-            genre: "Adventure",
-            language: "English",
-            edition: "25%"
-        },
-        {
-            title: "DS1-TS1-1",
-            isbn: "978-0-19-953556-9",
-            genre: "Romance",
-            language: "English",
-            edition: "25%"
-        },
-    ];
 
 
     const handleSubmit = async () => {

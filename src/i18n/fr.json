@@ -398,5 +398,22 @@
         "verify": "Vérifier",
         "success_message": "Élève(s) invité(s) avec succès",
         "error_message": "Une erreur s'est produite lors de l'invitation des élèves"
-    }
+    },
+    
+    "SeeAndMarkStudentAsignmemtScreen": {
+        "submittedOn": "Soumis le :",
+        "note": "Note",
+        "status": "Statut",
+        "assignmentDescription": "Description de l'assignation",
+        "attachedDocuments": "Documents joints",
+        "enterGrade": "Entrer la note",
+        "gradingConfirmation": "En attribuant une note, vous acceptez l'assignation",
+        "placeholderNote": "Note",
+        "maxGrade": "/20",
+        "validate": "Valider",
+        "assignGrade": "Attribuer une note",
+        "enterValidGrade": "Veuillez entrer une note valide."
+    
+}
+
 }

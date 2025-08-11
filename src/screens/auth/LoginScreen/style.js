@@ -50,6 +50,7 @@ const dynamicStyles = (theme) => {
         },
         languageContainer: {
             width: "100%",
+            height:50,
             backgroundColor: "#EBF5EE",
             justifyContent: "space-around",
             alignContent: "center",

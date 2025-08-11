@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Badge, Divider, Menu, Text } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -33,26 +33,36 @@ const Header = ({ title, onLogoutPressed, theme, visible, setVisible, navigation
                     {1}
                 </Badge>
             </TouchableOpacity>
-            <Menu
-                visible={visible}
-                onDismiss={() => { setVisible(false) }}
-                style={{ width: '50%' }}
-                contentStyle={{ backgroundColor: theme.primaryBackground, }}
-                anchor={
-                    <TouchableOpacity onPress={setVisible}>
-                        <MaterialCommunityIcons
-                            name="more"
+         
+                            <MyMenu theme={theme} styles={styles} navigation={navigation} onLogoutPressed={onLogoutPressed}/>
+
+        </View>
+    );
+};
+
+export const MyMenu = ({ theme, styles, navigation, onLogoutPressed }) => {
+    const [visible, setVisible] = useState(false)
+    return (
+        <Menu
+            visible={visible}
+            onDismiss={() => { setVisible(false) }}
+            style={{ width: '50%' }}
+            contentStyle={{ backgroundColor: theme.primaryBackground, }}
+            anchor={
+                <TouchableOpacity onPress={() => setVisible(true)} style={{ marginRight: 10 }}>
+                    <MaterialCommunityIcons
+                        name="more"
                             size={20}
                             color={theme.primaryText}
                             style={styles.icon}
-                        />
-                    </TouchableOpacity>}>
-                <Menu.Item style={{ alignSelf: "center" }} titleStyle={{
-                    fontWeight: "bold", textAlign: "center", color: theme.primaryText,
-                    ...Theme.fontStyle.montserrat.regular,
-                }} onPress={() => { }} title={I18n.t('more')} />
+                    />
+                </TouchableOpacity>}>
+            <Menu.Item style={{ alignSelf: "center" }} titleStyle={{
+                fontWeight: "bold", textAlign: "center", color: theme.primaryText,
+                ...Theme.fontStyle.montserrat.regular,
+            }} onPress={() => { }} title={I18n.t('more')} />
 
-                <Divider />
+            <Divider />
                 <TouchableOpacity style={styles(theme).menuItem}
                     onPress={() => {
                         navigation.navigate("SettingsScreenStacks")
@@ -79,17 +89,9 @@ const Header = ({ title, onLogoutPressed, theme, visible, setVisible, navigation
                     />
                     <Text style={styles(theme).menuText}> {I18n.t('logout')}</Text>
                 </TouchableOpacity>
-            </Menu>
-            {/* <TouchableOpacity onPress={onLogoutPressed}>
-                <MaterialCommunityIcons
-                    name="power" size={33} color={"red"}
-                    style={styles(theme).icon}
-                />
-            </TouchableOpacity> */}
-        </View>
-    );
-};
-
+        </Menu>
+    )
+}
 
 
 

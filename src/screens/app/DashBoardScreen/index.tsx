@@ -1,5 +1,5 @@
 import { useEffect, useState, } from 'react';
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { clearUserStored, updateSyncing, useCurrentUser, useTheme } from 'store';
 import dynamicStyles from './style';
 import { Header } from './components';
@@ -19,6 +19,7 @@ import useSWRMutation from 'swr/mutation';
 import React from 'react';
 import { getClassrooms, syncAllClassrooms } from 'services';
 import { clearCustomTables, db } from 'apis/database';
+import DropdownPicker from 'components/DropdownPicker';
 
 
 
@@ -163,6 +164,11 @@ function DashBoardScreen(props: any): React.JSX.Element {
             console.log("log out");
         }
     }
+
+    const isIOS = Platform.OS === 'ios';
+
+    const options: { label: string, value: any }[] = classRoom?.map((e) => ({ label: e?.name, value: e?.id })) ?? []
+    const selectedLabel = options.find((e) => e.value === selectedValue)
     const renderHeader = () => (<>
         <View style={styles.header}>
             <View style={styles.profil}>
@@ -173,7 +179,11 @@ function DashBoardScreen(props: any): React.JSX.Element {
                     <MaterialCommunityIcons name={"school"} size={20} color={theme.primaryText} />
                 }
             </View>
-            <Picker
+            {isIOS && <DropdownPicker onSelect={(item) => {
+                setSelectedValue(item.value);
+            }} textStyle={{ color: theme.primaryText }} items={options} buttonText={selectedLabel?.label ?? "Choisir une salle de classe"} buttonStyle={{ ...styles.picker, backgroundColor: theme.gray3, width: "89%", flex: 1 }} />
+            }
+            {!isIOS && <Picker
                 itemStyle={{ color: theme.primaryText, ...Theme.fontStyle.inter.bold }}
                 selectedValue={selectedValue}
                 onValueChange={(itemValue) => setSelectedValue(itemValue)}
@@ -187,7 +197,7 @@ function DashBoardScreen(props: any): React.JSX.Element {
                     key={studentI}
                     label={studentI.name}
                     value={studentI?.id} />)}
-            </Picker>
+            </Picker>}
         </View>
         <Divider />
     </>
@@ -329,7 +339,7 @@ function DashBoardScreen(props: any): React.JSX.Element {
 
     return (
         <View style={styles.container}>
-            <Header title={I18n.t("Dashboard.title")} visible={visible} theme={theme} onLogoutPressed={onLogoutPressed} setVisible={onMenuPressed} />
+            <Header title={I18n.t("Dashboard.title")} visible={visible} theme={theme} onLogoutPressed={onLogoutPressed} navigation={navigation} setVisible={onMenuPressed} />
             <FlatList
                 data={data}
                 showsVerticalScrollIndicator={false}
